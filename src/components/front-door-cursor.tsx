@@ -68,7 +68,21 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
         ref={buttonRef}
         type="button"
       >
-        <span aria-hidden="true" className="front-door-leaf" />
+        {/*
+          The doorway, in the closed cursor's exact footprint and behind the
+          leaf in both source order and paint order. It is always in the
+          markup - CSS fades it in - because a hole that appears on click has
+          nothing to fade from.
+        */}
+        <span aria-hidden="true" className="front-door-aperture" />
+        <span aria-hidden="true" className="front-door-leaf">
+          {/*
+            The knob rides on the leaf rather than beside it, so it travels and
+            foreshortens with the door. A fixed point on a moving surface is
+            what tells the eye this is a rotation and not a resize.
+          */}
+          <span className="front-door-knob" />
+        </span>
         <span className="sr-only">
           {open ? "Close the front door" : "Open the front door"}
         </span>

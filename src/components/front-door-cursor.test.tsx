@@ -44,6 +44,28 @@ describe(FrontDoorCursor, () => {
     expect(screen.queryByRole("link", { name: terminalName })).toBeNull();
   });
 
+  it("hangs the knob on the leaf and keeps the doorway behind it", () => {
+    const { container } = render(<FrontDoorCursor />);
+
+    const leaf = container.querySelector(".front-door-leaf");
+    const aperture = container.querySelector(".front-door-aperture");
+
+    // The knob is a child of the leaf rather than a sibling, which is the
+    // whole of why it travels and foreshortens with the swinging door.
+    expect(leaf?.querySelector(".front-door-knob")).not.toBeNull();
+
+    // The doorway is in the markup before the door is ever opened, because a
+    // hole that appears on click has nothing to fade in from - and it precedes
+    // the leaf, which is what paints it behind the door rather than over it.
+    expect(aperture).not.toBeNull();
+    expect(aperture?.nextElementSibling).toBe(leaf);
+
+    // None of it is a thing a screen reader is told about: the `sr-only` span
+    // is the door's name, and it has to stay the door's whole name.
+    expect(leaf?.getAttribute("aria-hidden")).toBe("true");
+    expect(aperture?.getAttribute("aria-hidden")).toBe("true");
+  });
+
   it("closes on Escape and hands focus back to the door", () => {
     render(<FrontDoorCursor />);
 

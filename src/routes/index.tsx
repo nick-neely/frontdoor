@@ -38,8 +38,13 @@ const updates = mergeUpdates(posts, projects);
  */
 const heroParallaxEnabled = import.meta.env.VITE_HERO_PARALLAX === "true";
 
-/** The differential ceiling the doctrine sets: 8% of the reader's scroll. */
-const parallaxRatio = 0.08;
+/**
+ * The differential the doctrine caps at 20% of the reader's scroll. 8% was the
+ * original ceiling and read as nothing at all on a poster this large, so the
+ * cap moved and this sits just under it: enough drift to be seen, still
+ * bounded by the poster's own height so the line never reaches the copy below.
+ */
+const parallaxRatio = 0.18;
 
 /**
  * The one thing that crosses the server boundary on this page.
@@ -284,9 +289,11 @@ function HomePage() {
           I&apos;m a product-minded software consultant. By day I help teams
           turn the workflows everyone dreads - the spreadsheet imports, the
           brittle pipelines, the two-hour tasks that should take two minutes -
-          into software they can actually maintain. On my own time I ship
-          products like tendnote, diffbill, and pilog, and I write about the
-          practical AI-assisted patterns behind all of it.
+          into software they can actually maintain. The rest of the time
+          I&apos;m experimenting: shipping my own products, exploring AI-agentic
+          workflows, and writing about what actually holds up. Away from the
+          keyboard: weightlifting, 3D printing, and four cats with strong
+          opinions.
         </p>
 
         <NowLine />

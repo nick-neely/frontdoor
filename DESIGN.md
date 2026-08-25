@@ -38,7 +38,7 @@ Scroll-triggered fade-up-stagger on section entry, cursor followers and trails, 
 
 ### Parallax
 
-Permitted only as a bounded exception: a non-textual layer, at most 8% differential, transform-only, over a bounded scroll range. Anything the reader has to read stays fixed to the page. It ships behind a flag and is judged with eyes, not in a specification. If it reads cheap, it is deleted, and nothing else depends on it.
+Permitted only as a bounded exception: a non-textual layer, at most 20% differential, transform-only, over a bounded scroll range. The cap began at 8% and was raised deliberately after that rendered the effect invisible; 20% is the ceiling, not the target. Anything the reader has to read stays fixed to the page. It ships behind a flag and is judged with eyes, not in a specification. If it reads cheap, it is deleted, and nothing else depends on it.
 
 ### Always
 

@@ -319,25 +319,113 @@
    * of it in light, which is what keeps the block readable on both grounds.
    */
   .front-door {
+    /*
+     * The room behind the door. Darker than the ground in either theme,
+     * because a doorway is a hole and a hole is not a panel. Kept local to the
+     * component rather than added to the theme blocks: nothing else on the
+     * site has an opinion about what is behind a door.
+     */
+    --front-door-room: oklch(0.26 0.014 70);
     display: inline-flex;
-    /* Also what makes this the containing block for the reveal below. */
-    perspective: 720px;
+    /* What makes this the containing block for the reveal below. */
     position: relative;
   }
 
+  .dark .front-door {
+    --front-door-room: oklch(0.07 0.006 75);
+  }
+
+  /*
+   * The perspective belongs on the leaf's own parent. `perspective` reaches
+   * direct children only, so declaring it on `.front-door` - one level further
+   * out - left the leaf rotating in an orthographic projection, and a flat
+   * `rotateY` is arithmetically a horizontal scale. That is why the door used
+   * to read as a panel sliding shut rather than a door swinging open.
+   *
+   * The focal length is stated in `em` like every other measure here, which is
+   * the only way the foreshortening survives the type scale: a fixed 500px
+   * against a 23rem poster is a wide-angle lens, and the same 500px against
+   * the 5rem mobile cursor is very nearly no lens at all. At 1.4em it is 2.8x
+   * the door's own width at every size, so the door opens identically on a
+   * phone and on a 1440.
+   */
   .front-door-button {
     display: inline-block;
     height: 0.72em;
+    perspective: 1.4em;
+    position: relative;
     width: 0.5em;
+  }
+
+  /*
+   * The doorway, pinned to the closed cursor's exact footprint. Absolutely
+   * positioned inside a button that is already sized in `em`, so the hole
+   * costs no layout whether it is visible or not and opening the door cannot
+   * move a letter of the poster. The amber is the light of the room leaking
+   * out along the hinge: a hard rim at the very edge, then a soft falloff
+   * across the opening.
+   */
+  .front-door-aperture {
+    background-color: var(--front-door-room);
+    background-image:
+      linear-gradient(to right, var(--signal) 0 5%, transparent 5%),
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--signal) 42%, transparent),
+        transparent 60%
+      );
+    inset: 0;
+    opacity: 0;
+    position: absolute;
   }
 
   .front-door-leaf {
     background-color: var(--signal);
     display: block;
     height: 100%;
+    /* Its own containing block, for the shading and the knob it carries. */
+    position: relative;
     /* The hinge. The door swings from its left edge, like the mark's does. */
     transform-origin: left center;
     width: 100%;
+  }
+
+  /*
+   * The shading that turns a rotation into a swing: the face darkens toward
+   * the hinge as it turns out of the light, which leaves the free edge the
+   * brightest amber on the screen and reads as the door's lit edge standing
+   * against the dark room. Black rather than a token because this is a shadow,
+   * not a colour either theme has an opinion about.
+   */
+  .front-door-leaf::after {
+    background-image: linear-gradient(
+      to left,
+      transparent,
+      oklch(0 0 0 / 0.68)
+    );
+    content: "";
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+  }
+
+  /*
+   * The knob: the page ground punched through the leaf, the inverse of the
+   * mark's amber knob on a dark leaf. Sized and placed as a fraction of the
+   * leaf, so it holds its proportion from the 23rem poster down to the mobile
+   * cursor, and painted under the shading above, because it is on the door
+   * rather than in front of it.
+   */
+  .front-door-knob {
+    aspect-ratio: 1;
+    background-color: var(--background);
+    border-radius: 50%;
+    inset-block-start: 50%;
+    inset-inline-end: 12%;
+    opacity: 0;
+    position: absolute;
+    transform: translateY(-50%) scale(0.4);
+    width: 10%;
   }
 
   @keyframes front-door-blink {
@@ -349,6 +437,24 @@
     }
   }
 
+  /*
+   * The knob is the affordance, not the motion, so its states sit outside the
+   * reduced-motion query: it appears the moment a pointer or a focus ring
+   * arrives either way, and only the fade is conditional.
+   */
+  .front-door-button:focus-visible .front-door-knob {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+
+  /* Gated on a real pointer for the same reason `.link-underline` is. */
+  @media (hover: hover) {
+    .front-door-button:hover .front-door-knob {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     /*
      * A real terminal cadence: a hard step at the half-cycle rather than an
@@ -356,34 +462,85 @@
      */
     .front-door-leaf {
       animation: front-door-blink 1.06s steps(2, jump-none) infinite;
-      transition: transform 120ms ease-out;
+      transition: transform 280ms ease-out;
     }
 
-    /* Gated on a real pointer for the same reason `.link-underline` is. */
+    .front-door-aperture,
+    .front-door-leaf::after {
+      transition: opacity 280ms ease-out;
+    }
+
+    .front-door-knob {
+      transition:
+        opacity 120ms ease-out,
+        transform 120ms ease-out;
+    }
+
     @media (hover: hover) {
+      /*
+       * The crack, and `DESIGN.md`'s 120ms with it. A sliver of the room shows
+       * through it, because a crack that shows the page behind it is a gap,
+       * not a door standing off its frame.
+       */
       .front-door-button:hover .front-door-leaf {
         animation: none;
         opacity: 1;
         transform: rotateY(-14deg);
+        transition-duration: 120ms;
+      }
+
+      .front-door-button:hover .front-door-aperture {
+        opacity: 0.6;
+        transition-duration: 120ms;
       }
     }
   }
 
   /*
-   * After the hover rule on purpose: the two selectors weigh the same, so
-   * source order is what keeps an open door open while the pointer is on it.
-   * Outside the reduced-motion query on purpose too - the open door is a
+   * The swing. After the hover rules on purpose: the selectors weigh the same,
+   * so source order is what keeps an open door open while the pointer is on
+   * it. Outside the reduced-motion query on purpose too - the open door is a
    * state, and under reduced motion it simply arrives with no transition.
+   *
+   * It opens towards the reader, the way the site mark's door does
+   * - the mark draws its free edge taller than its hinged edge, which is a
+   * door coming at you - so the leaf's far edge grows rather than shrinks and
+   * the whole footprint of the room is left uncovered behind it.
+   *
+   * The `translateZ` is what pays for that. A door that only rotates towards
+   * the reader is magnified by the perspective divide and hangs over the
+   * poster line and the reveal beneath it; pushing the hinge a little further
+   * back re-centres the leaf on the plane of the page, so the near edge grows
+   * by about as much as the hinge shrinks. What is left is the taper - the far
+   * edge about 35% taller than the hinge - which is the whole tell, plus a
+   * sliver of the lit jamb at the hinge that the leaf would otherwise cover
+   * for the entire life of the animation.
+   *
+   * -60deg rather than further: past about 65 the leaf turns near enough to
+   * edge-on that the face, the shading on it, and the knob all collapse into
+   * a line, and a door you cannot see the front of is just a hinge.
    */
   .front-door-button[aria-expanded="true"] .front-door-leaf {
     animation: none;
     opacity: 1;
-    transform: rotateY(-65deg);
+    transform: translateZ(-0.22em) rotateY(-60deg);
+  }
+
+  .front-door-button[aria-expanded="true"] .front-door-aperture,
+  .front-door-button[aria-expanded="true"] .front-door-leaf::after {
+    opacity: 1;
+  }
+
+  .front-door-button[aria-expanded="true"] .front-door-knob {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .front-door-button[aria-expanded="true"] .front-door-leaf {
-      transition-duration: 200ms;
+    .front-door-button[aria-expanded="true"] .front-door-leaf,
+    .front-door-button[aria-expanded="true"] .front-door-aperture,
+    .front-door-button[aria-expanded="true"] .front-door-leaf::after {
+      transition-duration: 280ms;
     }
   }
 
@@ -397,7 +554,13 @@
     flex-direction: column;
     gap: 0.1rem;
     inset-inline-start: 0;
-    margin-top: 0.6rem;
+    /*
+     * `em` so the gap clears the open door's near edge, which overhangs the
+     * closed footprint in proportion to the type scale rather than by a fixed
+     * number of pixels. The `rem` floor keeps the small-screen spacing exactly
+     * where it was.
+     */
+    margin-top: max(0.6rem, 0.11em);
     max-width: min(20rem, 70vw);
     position: absolute;
     text-shadow: 0 0 22px color-mix(in oklab, var(--signal) 35%, transparent);
