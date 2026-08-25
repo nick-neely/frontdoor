@@ -1,0 +1,39 @@
+{
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mjs"],
+  "exclude": [
+    "node_modules",
+    ".agents",
+    ".claude",
+    ".codex",
+    ".cursor",
+    ".impeccable",
+    ".output",
+    "dist",
+    "tools/oxlint/anti-slop"
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "allowJs": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    /* Linting */
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}
