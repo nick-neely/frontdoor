@@ -56,7 +56,53 @@ Draft generation runs on Pi, the open-source TypeScript agent framework, embedde
 
 ## 5. Media inventory
 
-**Confirmed, in the pilog repo:**
+### Captured for this page (2026-08-25)
+
+Captured from a live `pnpm dev` build of pilog running against a throwaway profile, at 1440x900 (scratchpad at its real 480x360 window size, rendered 2x). All files in `docs/drafts/projects/media/pilog/`. The three notes visible in the inbox shots were typed into the real scratchpad through the real save path; they are plausible dev observations, not fixture data.
+
+**The scratchpad - the defining gesture.** No asset for this existed before.
+
+| File | Caption |
+| --- | --- |
+| `pilog-scratchpad-02-capturing-note.png` | The pick of the set. The frameless global-hotkey overlay mid-capture: IBM Plex Mono, no toolbar, no fields, no repo picker. Just the thought. |
+| `pilog-scratchpad-03-dark.png` | Same window in dark, cursor visible at the end of the line. Arguably the stronger of the two as a hero image. |
+| `pilog-scratchpad-01-empty.png` | The waiting state, nearly blank by design. Honest to "the scratchpad is a sanctuary, not a form," but too empty to carry a page on its own. |
+
+**Onboarding.**
+
+| File | Caption |
+| --- | --- |
+| `pilog-onboarding-01-hotkey.png` | Step 1 of 7. Sets the capture hotkey and states the local-first storage boundary before asking for anything. |
+| `pilog-onboarding-02-connect-github.png` | Step 2 of 7, at "2 of 7 complete" - the onboarding had already marked the note step done because it detected the notes I captured. It reads real state rather than tracking a wizard cursor. |
+
+**Inbox.**
+
+| File | Caption |
+| --- | --- |
+| `pilog-inbox-02-note-selected.png` | Best inbox shot. Status counts, a selected note in the editor, the "1 selected" multi-select bar, the Generate Drafts action, and the honest "No repos linked" footer. |
+| `pilog-inbox-03-dark.png` | Same view in dark. |
+| `pilog-inbox-01-unprocessed-notes.png` | List with nothing selected. Weaker; the detail pane is empty. |
+
+**Settings - the "what leaves your machine" evidence.**
+
+| File | Caption |
+| --- | --- |
+| `pilog-settings-04-data-sharing.png` | The strongest asset for the privacy claim. The "Local records" banner plus the open data-sharing note: "Generating sends selected notes and bounded repository context to your configured Pi provider. Drafts and run history are saved locally." Also shows "key not stored" and the Import / View / Reset Pi config controls from ADR-0005 §3. |
+| `pilog-settings-03-provider-model.png` | Provider and model pickers driven by Pi's catalogs, the API key field, and the Advanced summary reading "Turn budget 20 · Web search off" - the ADR-0005 defaults, visible in the product. |
+| `pilog-settings-01-general.png` | Hotkey rebinding, tray-only startup toggle, light/dark/auto theme, and the Runtime prerequisites panel with per-item readiness. |
+| `pilog-settings-02-general-full.png` | Full-page version of the above (1430x1394), showing the whole runtime readiness list. |
+| `pilog-settings-05-github-repos.png` | GitHub tab: connect account, manage repositories. |
+| `pilog-settings-06-repositories-empty.png` | Repositories empty state. Thin; reference only. |
+
+**Other.**
+
+| File | Caption |
+| --- | --- |
+| `pilog-command-palette.png` | Strong keyboard-first evidence. Commands plus a keyboard-shortcut reference including "Open scratchpad Ctrl + Shift + Space". |
+| `pilog-drafts-empty.png` | Drafts view, empty. Reference only. |
+| `pilog-agent-runs-empty.png` | Run history, empty, but the four filter chips are visible: Running / Succeeded / Failed / Cancelled. That is ADR-0005's four-state enum with `cancelled` as a distinct terminal state, shown in the product. Reference only. |
+
+### Existing assets in the pilog repo
 
 | Asset | Path | Notes |
 | --- | --- | --- |
@@ -69,13 +115,16 @@ Draft generation runs on Pi, the open-source TypeScript agent framework, embedde
 | Tray icon variants | `design/tray-variants/` | Light and dark previews, several variants |
 | App icon variants | `design/icon-variants/` | Five explorations plus the chosen icon |
 
-**Gaps:**
+### Remaining gaps
 
-- All three landing screenshots show the same surface (the inbox with triage and draft generation). There is no image of the scratchpad, which is the product's defining gesture and the thing the first paragraph of this page describes.
-- No image of the Draft Review surface, the Agent Runs transcript view, or Settings, all of which are the concrete evidence for the "show the source, always" and "you can see what leaves your machine" claims.
-- No motion asset. The capture gesture is a two-second interaction and reads far better as a short loop than as a still. Note that `DESIGN.md` motion doctrine applies to how it is presented on the page: it cannot autoplay on scroll into view.
-- Every screenshot is a full-window shot at large dimensions. They will need cropping and compression before they go into `public/screenshots/` on this site.
-- `projects.ts` currently gives pilog no `featured` block, so there is no screenshot slot for it on the Projects list at all. If pilog gets one, option-02 is the pick.
+- **Draft Review is still uncaptured**, and it is the surface that proves "show the source, always" - a draft anchored to its source notes with named confidence and a grouping reason. Generating a draft needs a linked repository (which needs GitHub sign-in) and a Pi provider API key. I had neither and did not authenticate as Nick to a third party to get one. This is the biggest hole in the set.
+- **Agent Runs has no populated transcript view.** Same blocker: no run can exist without a draft generation. The empty state is captured; the transcript that backs the "full Pi event stream is persisted" claim is not.
+- **The repository linking flow is uncaptured**, including the WSL path affordance. "Add local repo" opens a native OS file dialog, which I could not dismiss in this environment without OS-level input, so I did not open it.
+- **No motion asset.** The capture gesture is a two-second interaction and reads far better as a short loop than a still. `DESIGN.md`'s motion doctrine still applies to presentation: it cannot autoplay on scroll into view.
+- **Onboarding shots have wide dead margins.** The app's natural window is 900x670, so at 1440x900 the centered onboarding column floats in empty space. If these ship, crop them or re-shoot nearer 1100x800.
+- **One honest blemish in `pilog-settings-01-general.png` and `-02-`:** the Keychain row reads "Development plaintext credential fallback is active," because WSL2 exposes no keyring and the app fell back to its documented dev-only path. That is correct behavior and correctly disclosed, but on a portfolio page it reads as though pilog stores credentials in plaintext. Either re-shoot on a machine with a real keyring, crop that row, or caption it.
+- **These are raw captures.** They still need cropping and compression before they go into `public/screenshots/` on this site.
+- `projects.ts` currently gives pilog no `featured` block, so there is no screenshot slot for it on the Projects list at all. If pilog gets one, `pilog-scratchpad-03-dark.png` is the pick - it shows the thing the row description leads with.
 
 ---
 
@@ -180,7 +229,7 @@ Things I found that read well but do not survive the "numbers are real or absent
 
 4. **How much of Pi to name.** Naming Pi (`earendil-works/pi`, version 0.74.0) is honest and the ADR discussion is the most interesting engineering in the project. It also ties your product's story to a third-party framework's maturity. Name it, or describe it as "an embedded open-source agent runtime" and let the ADR link carry the detail?
 
-5. **Scratchpad media.** Section 5 flags this: all three screenshots show the inbox, and none show the scratchpad, which is the gesture the whole page is about. Is there an existing capture, or should this page wait on one?
+5. **Draft Review media, and how far to go to get it.** The scratchpad gap is now closed - see section 5. The one that remains is Draft Review, the surface that proves "show the source, always." Capturing it needs a GitHub-linked repo and a Pi provider API key, neither of which I have and neither of which I was going to obtain by signing in as you. Options: you run one draft generation against a sandbox repo and grab three screenshots (Draft Review, a populated Agent Runs transcript, and the repo linking flow), or the page ships without them and leans on the scratchpad and Settings shots. I would spend the ten minutes: Draft Review is the payoff the whole page builds toward, and without it section 2's second paragraph has no picture behind it.
 
 6. **Which decisions to keep.** Section 4 has six. Three or four is probably the right number for the page. My ranking: read-only by construction, in-process embedding, prompt quality loop, then Device Flow / `safeStorage`. The release manifest and the version pin are the two I would cut first.
 
