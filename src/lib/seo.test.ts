@@ -8,39 +8,40 @@ import {
   createWebsiteSchema,
   pageTitle,
 } from "./seo.ts";
+import { siteConfig } from "./site-config.ts";
 
 describe(pageTitle, () => {
   it("suffixes a page name with the configured site name", () => {
-    expect(pageTitle("About")).toBe("About | TanStack Start Template");
+    expect(pageTitle("Work")).toBe(`Work | ${siteConfig.name}`);
   });
 
   it("returns the site name alone when no page name is given", () => {
-    expect(pageTitle()).toBe("TanStack Start Template");
+    expect(pageTitle()).toBe(siteConfig.name);
   });
 });
 
 describe("SEO helpers", () => {
   it("builds canonical URLs from the configured public origin", () => {
-    expect(absoluteUrl("/about")).toBe("https://example.com/about");
+    expect(absoluteUrl("/work")).toBe(`${siteConfig.origin}/work`);
   });
 
   it("keeps visible and social metadata aligned", () => {
     const head = createSeoHead({
-      canonicalPath: "/about",
-      description: "Template decisions and replacement points.",
-      title: pageTitle("About"),
+      canonicalPath: "/work",
+      description: "How engagements work and what they produced.",
+      title: pageTitle("Work"),
     });
 
     expect(head.links).toContainEqual({
-      href: "https://example.com/about",
+      href: `${siteConfig.origin}/work`,
       rel: "canonical",
     });
     expect(head.meta).toContainEqual({
-      content: pageTitle("About"),
+      content: pageTitle("Work"),
       property: "og:title",
     });
     expect(head.meta).toContainEqual({
-      content: "https://example.com/social-card.png",
+      content: `${siteConfig.origin}${siteConfig.socialImage.path}`,
       property: "og:image",
     });
     expect(head.meta).toContainEqual({
@@ -53,10 +54,9 @@ describe("SEO helpers", () => {
     const graph = createGraph([
       createWebsiteSchema(),
       createWebPageSchema({
-        description: "Template decisions.",
-        name: "About",
-        path: "/about",
-        type: "AboutPage",
+        description: "How engagements work.",
+        name: "Work",
+        path: "/work",
       }),
     ]);
 

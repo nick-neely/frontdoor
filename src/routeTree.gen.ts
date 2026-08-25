@@ -10,8 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as RuntimeRouteImport } from './routes/runtime'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as WorkRouteImport } from './routes/work'
+import { Route as WritingRouteImport } from './routes/writing'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 
 const IndexRoute = IndexRouteImport.update({
@@ -19,14 +20,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RuntimeRoute = RuntimeRouteImport.update({
-  id: '/runtime',
-  path: '/runtime',
+const WorkRoute = WorkRouteImport.update({
+  id: '/work',
+  path: '/work',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WritingRoute = WritingRouteImport.update({
+  id: '/writing',
+  path: '/writing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -37,35 +43,39 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/runtime': typeof RuntimeRoute
+  '/projects': typeof ProjectsRoute
+  '/work': typeof WorkRoute
+  '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/runtime': typeof RuntimeRoute
+  '/projects': typeof ProjectsRoute
+  '/work': typeof WorkRoute
+  '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/runtime': typeof RuntimeRoute
+  '/projects': typeof ProjectsRoute
+  '/work': typeof WorkRoute
+  '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/runtime' | '/api/health'
+  fullPaths: '/' | '/projects' | '/work' | '/writing' | '/api/health'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/runtime' | '/api/health'
-  id: '__root__' | '/' | '/about' | '/runtime' | '/api/health'
+  to: '/' | '/projects' | '/work' | '/writing' | '/api/health'
+  id: '__root__' | '/' | '/projects' | '/work' | '/writing' | '/api/health'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  RuntimeRoute: typeof RuntimeRoute
+  ProjectsRoute: typeof ProjectsRoute
+  WorkRoute: typeof WorkRoute
+  WritingRoute: typeof WritingRoute
   ApiHealthRoute: typeof ApiHealthRoute
 }
 
@@ -78,18 +88,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/runtime': {
-      id: '/runtime'
-      path: '/runtime'
-      fullPath: '/runtime'
-      preLoaderRoute: typeof RuntimeRouteImport
+    '/work': {
+      id: '/work'
+      path: '/work'
+      fullPath: '/work'
+      preLoaderRoute: typeof WorkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/writing': {
+      id: '/writing'
+      path: '/writing'
+      fullPath: '/writing'
+      preLoaderRoute: typeof WritingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -104,8 +121,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  RuntimeRoute: RuntimeRoute,
+  ProjectsRoute: ProjectsRoute,
+  WorkRoute: WorkRoute,
+  WritingRoute: WritingRoute,
   ApiHealthRoute: ApiHealthRoute,
 }
 export const routeTree = rootRouteImport

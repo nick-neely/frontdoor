@@ -39,7 +39,7 @@ export const Route = createRootRoute({
       <p className="text-sm font-medium text-muted-foreground">404</p>
       <h1 className="text-4xl font-semibold tracking-tight">Page not found</h1>
       <p className="max-w-xl text-muted-foreground">
-        This route does not exist in the starter.
+        That page does not exist here.
       </p>
       <Link className="text-sm font-medium underline underline-offset-4" to="/">
         Return home

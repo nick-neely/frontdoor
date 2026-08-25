@@ -1,21 +1,22 @@
 export const siteConfig = {
   description:
-    "A production-minded TanStack Start foundation with a strict, fast feedback loop.",
+    "Nick Neely is a product-minded software consultant who turns messy business and engineering workflows into maintainable software.",
   /** Header logo and SVG favicon. Replace the file, keep the shape. */
-  icon: { path: "/tanstack.svg", type: "image/svg+xml" },
+  icon: { path: "/mark.svg", type: "image/svg+xml" },
   language: "en-US",
   locale: "en_US",
-  name: "TanStack Start Template",
+  name: "Nick Neely",
   navigation: [
     { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/runtime", label: "Runtime" },
+    { href: "/work", label: "Work" },
+    { href: "/projects", label: "Projects" },
+    { href: "/writing", label: "Writing" },
   ],
-  origin: "https://example.com",
+  origin: "https://nickneely.dev",
   /** Installed-application name. Keep it short enough to sit under an icon. */
-  shortName: "Start Template",
+  shortName: "Nick Neely",
   socialImage: {
-    alt: "TanStack Start Template. Production-minded and ready to build.",
+    alt: "Nick Neely. Maintainable software for messy workflows.",
     height: 630,
     path: "/social-card.png",
     type: "image/png",
