@@ -35,7 +35,8 @@ Manually verify domain and editorial correctness, source quality, user experienc
 
 ## Learned user preferences
 
-- None yet.
+- Use a library's idiomatic components over hand-rolled equivalents even when the hand-rolled version works: emails are built from react-email primitives, not raw elements with inline styles.
+- Saturated defaults lose to distinctive choices when flagged: Inter was swapped for Hanken Grotesk on the design detector's overused-font finding.
 
 ## Agent skills
 
