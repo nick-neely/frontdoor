@@ -13,6 +13,10 @@ Semantic colours live in `src/styles.css`. Component interfaces never encode a c
 
 Monospace is a deliberate signal, not decoration. It carries the developer-tool heritage and is the reason the site needs no other reference to the terminal résumé it replaced.
 
+## The front door
+
+The project codename is visible identity. The site mark is an ajar door leaking accent amber, and the hero's blinking block cursor doubles as that door: one amber rectangle that blinks at terminal cadence until the reader opens it. Opening it reveals a single easter-egg line linking to the terminal résumé, framed as the old front door. The metaphor also carries the copy voice where it fits naturally: the 404 page is a wrong door. The door never gates anything; every page reads completely without touching it.
+
 ## Motion doctrine
 
 **Motion only ever confirms an action the reader took. Nothing moves because it scrolled into view.**
@@ -23,6 +27,7 @@ That single rule is the line between intriguing and generic. Sites that animate 
 
 - Hover underline draw, about 120ms, in accent amber.
 - The hero cursor blink, about 1.06s, an actual terminal cadence rather than a CSS default.
+- The front-door cursor opening and closing, strictly reader-triggered: a hover crack of about 120ms and a click swing that reveals the easter-egg line. Under reduced motion the states swap instantly with no transition.
 - Route-change view transitions, about 150ms, with a shared-element transition on a post title. This is the one place motion explains where the page went.
 - `focus-visible` rings.
 - One state transition on newsletter subscribe success.
