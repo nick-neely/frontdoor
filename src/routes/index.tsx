@@ -287,13 +287,11 @@ function HomePage() {
         {/* Bio approved by Nick 2026-08-25; edit freely */}
         <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
           I&apos;m a product-minded software consultant. By day I help teams
-          turn the workflows everyone dreads - the spreadsheet imports, the
-          brittle pipelines, the two-hour tasks that should take two minutes -
-          into software they can actually maintain. The rest of the time
-          I&apos;m experimenting: shipping my own products, exploring AI-agentic
-          workflows, and writing about what actually holds up. Away from the
-          keyboard: weightlifting, 3D printing, and four cats with strong
-          opinions.
+          turn the workflows everyone dreads into software they can actually
+          maintain. The rest of the time I&apos;m experimenting: shipping my own
+          products, exploring AI-agentic workflows, and writing about what
+          actually holds up. Away from the keyboard: weightlifting, 3D printing,
+          and four cats with strong opinions.
         </p>
 
         <NowLine />
