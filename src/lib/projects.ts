@@ -119,17 +119,12 @@ export const projects: readonly Project[] = [
     year: 2026,
   },
   {
-    // Unresolved for Nick: `PRODUCT.md` records this as a headless Shopify
-    // storefront, but frontlinefuel.com currently serves a Wix site with no
-    // Shopify markers anywhere in the response. Until that is reconciled this
-    // line describes only what the live site says the business does, and
-    // claims nothing about how the site was built.
     description:
-      "Commercial and residential fuel delivery across the D.M.V. region: diesel, heating oil, and residential heating oil ordered online.",
+      "A headless Shopify storefront for zero-sugar electrolytes, designed by first responders for anyone who demands peak performance on duty or in the gym.",
     kind: "client-work",
     name: "Frontline Fuel",
     status: "shipped",
-    url: "https://frontlinefuel.com",
+    url: "https://drinkfrontlinefuel.com",
     year: 2026,
   },
   {
