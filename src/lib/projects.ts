@@ -97,7 +97,7 @@ export const projects: readonly Project[] = [
       "Turns merged GitHub pull requests into invoice-ready line items and Stripe drafts, built for freelance developers and small dev agencies.",
     featured: {
       blurb:
-        "Pick a repository and a date range, review the line items diffbill rewrites from developer shorthand into descriptions a client can read, then create the draft in your own Stripe account. It reads pull request metadata only: source files, commit diffs, and repository contents are never accessed.",
+        "Pick a repository and a date range, review the line items diffbill rewrites from developer shorthand into descriptions a client can read, then create the draft in your own Stripe account. It reads pull request metadata and short excerpts of the changed lines, and never your full source files or repository contents.",
       // Pending from Nick. Drop the file in `public/screenshots/` and
       // replace this with `{ alt, src }`; the page renders a marked
       // placeholder until then.
