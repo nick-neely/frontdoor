@@ -504,7 +504,9 @@
   }
 
   .prose blockquote {
-    border-left: 2px solid var(--signal);
+    /* The rule stays in the neutral border colour: DESIGN.md's amber list is
+       underlines, status dots, hover/focus, and code highlighting only. */
+    border-left: 2px solid var(--border);
     color: var(--muted-foreground);
     padding-left: 1.2em;
   }

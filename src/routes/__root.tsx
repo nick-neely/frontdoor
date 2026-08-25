@@ -51,7 +51,7 @@ export const Route = createRootRoute({
         That page does not exist here.
       </p>
       <Link
-        className="link-underline font-mono text-[13px] text-foreground"
+        className="link-underline link-underline-resting font-mono text-[13px] text-foreground"
         to="/"
       >
         Back through the front door
