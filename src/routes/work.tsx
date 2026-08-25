@@ -47,17 +47,31 @@ const proofPoints = [
     client: "Vermeer",
     outcome:
       "Bill of Materials upload workflow: a 10,000-part import went from about two hours to about two minutes.",
+    year: 2026,
   },
   {
     client: "Lean TECHniques",
     outcome:
       "CI/CD changes that cut pull-request verification time by roughly two-thirds.",
+    year: 2025,
   },
   {
     client: "ClaimDoc",
     outcome: "Secure multi-file uploads, built on Vue 3, .NET, and Azure.",
+    year: 2024,
   },
 ];
+
+/*
+ * Jared's words as he wrote them, with his written sign-off on file. The
+ * grammar is his and stays his: a testimonial that has been tidied into the
+ * site's voice is no longer evidence that a client said it.
+ */
+const testimonial = {
+  attribution: "Jared Gringer, Owner, Frontline Fuel",
+  quote:
+    "Needed a website for marketing and for an online store. Website I now have a fully functioning website that advertises my product and allow people to purchase my product. I 100% recommend Neely Solutions to anyone who needs any website work done. Especially a small business or anyone who needs a professional website. Nick will work with you to create whatever you need and keep you updated along the way.",
+};
 
 const engagementSteps = [
   {
@@ -130,8 +144,6 @@ function WorkPage() {
           <h2 className={sectionHeading} id="proof">
             Proof
           </h2>
-          {/* oxlint-disable-next-line eslint/no-warning-comments */}
-          {/* TODO(nick): add years to Proof Points - not documented, must not be guessed */}
           <ul className="mt-8 max-w-2xl space-y-8">
             {proofPoints.map((point) => (
               <li className="relative pl-6" key={point.client}>
@@ -139,8 +151,15 @@ function WorkPage() {
                   aria-hidden="true"
                   className="absolute top-1.5 left-0 size-1.5 rounded-full bg-signal"
                 />
-                <p className="font-mono text-[13px] text-muted-foreground">
-                  {point.client}
+                {/* Client and year on one mono line, separated the way every
+                    other metadata row on the site is. The dot is decorative:
+                    a screen reader hears "Vermeer 2026". */}
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[13px] text-muted-foreground">
+                  <span>{point.client}</span>
+                  <span aria-hidden="true" className="text-border">
+                    ·
+                  </span>
+                  <span>{point.year}</span>
                 </p>
                 <p className="mt-2 text-lg leading-8">{point.outcome}</p>
               </li>
@@ -148,8 +167,6 @@ function WorkPage() {
           </ul>
         </section>
 
-        {/* oxlint-disable-next-line eslint/no-warning-comments */}
-        {/* TODO(nick): confirm this matches how engagements really run */}
         <section
           aria-labelledby="how-engagements-work"
           className="mt-16 sm:mt-20"
@@ -211,15 +228,12 @@ function WorkPage() {
             </a>
             .
           </p>
-          {/* oxlint-disable-next-line eslint/no-warning-comments */}
-          {/* TODO(nick): paste Jared Gringer's testimonial verbatim */}
           <figure className="mt-6 border-t pt-6">
             <blockquote className="leading-7 text-muted-foreground">
-              [Testimonial pending - Jared&apos;s words go here verbatim, with
-              his written sign-off already on file.]
+              {testimonial.quote}
             </blockquote>
             <figcaption className="mt-3 font-mono text-[13px] text-muted-foreground">
-              Jared Gringer, Owner, Frontline Fuel
+              {testimonial.attribution}
             </figcaption>
           </figure>
         </aside>

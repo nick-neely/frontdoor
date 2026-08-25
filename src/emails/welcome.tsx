@@ -25,8 +25,6 @@ const whatArrives =
 const whatIsNotWatched =
   "No open tracking, no click tracking, no pixel. I have no idea whether you read any of it, which is how I'd want it if I were on the other end.";
 const startHere = "Start with what's already there";
-const unsubscribeNote =
-  "Every newsletter I send carries an unsubscribe link in its footer.";
 
 export function WelcomeEmail() {
   return (
@@ -42,7 +40,7 @@ export function WelcomeEmail() {
           {startHere}
         </Link>
       </Text>
-      <EmailFooter>{unsubscribeNote} Nick Neely · nickneely.dev</EmailFooter>
+      <EmailFooter>Nick Neely · nickneely.dev</EmailFooter>
     </EmailLayout>
   );
 }
