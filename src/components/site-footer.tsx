@@ -4,6 +4,7 @@ const footerLinks = [
   { href: siteConfig.links.github, label: "GitHub" },
   { href: siteConfig.links.linkedin, label: "LinkedIn" },
   { href: siteConfig.links.x, label: "X" },
+  { href: "/subscribe", label: "Newsletter" },
   { href: siteConfig.links.rss, label: "RSS" },
   {
     href: siteConfig.links.contact,
