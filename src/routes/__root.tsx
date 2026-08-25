@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { Analytics } from "@vercel/analytics/react";
 
 import { ErrorFallback } from "@/components/error-fallback.tsx";
 import { SiteFooter } from "@/components/site-footer.tsx";
@@ -112,6 +113,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             ]}
           />
         ) : null}
+        <Analytics />
         <Scripts />
       </body>
     </html>
