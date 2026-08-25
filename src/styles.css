@@ -1,13 +1,65 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+
+/*
+ * Fonts are latin-only on purpose. The Fontsource *variable* packages ship one
+ * stylesheet per axis covering every subset, not one stylesheet per subset, so
+ * importing them would emit `@font-face` blocks for cyrillic, greek, and
+ * vietnamese and copy their `.woff2` files into the bundle. Declaring the latin
+ * faces here against the packaged files keeps the build to exactly the three
+ * files the site can render.
+ */
+@font-face {
+  font-family: "Bricolage Grotesque Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Hanken Grotesk Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-display:
+    "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* shadcn generates `font-heading`; the site's display face is opt-in. */
   --font-heading: var(--font-sans);
-  --font-sans: "Inter Variable", sans-serif;
+  --color-signal: var(--signal);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,78 +100,93 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Light theme. Warm off-white, warm near-black. `--signal` is the light-theme
+ * rendering of signal amber: `#F5A524` reaches only 1.9:1 on this background,
+ * so the token darkens to 4.6:1 and stays safe for underlines, focus rings,
+ * status dots, and code. The brand amber itself is constant and lives in the
+ * door mark, which is a graphic rather than a text colour.
+ */
 :root {
-  --background: oklch(0.987 0.002 197.1);
-  --foreground: oklch(0.148 0.004 228.8);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.148 0.004 228.8);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.148 0.004 228.8);
-  --primary: oklch(0.218 0.008 223.9);
-  --primary-foreground: oklch(0.987 0.002 197.1);
-  --secondary: oklch(0.963 0.002 197.1);
-  --secondary-foreground: oklch(0.218 0.008 223.9);
-  --muted: oklch(0.963 0.002 197.1);
-  --muted-foreground: oklch(0.45 0.017 213.2);
-  --accent: oklch(0.963 0.002 197.1);
-  --accent-foreground: oklch(0.218 0.008 223.9);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.925 0.005 214.3);
-  --input: oklch(0.925 0.005 214.3);
-  --ring: oklch(0.723 0.014 214.4);
-  --chart-1: oklch(0.872 0.007 219.6);
-  --chart-2: oklch(0.56 0.021 213.5);
-  --chart-3: oklch(0.45 0.017 213.2);
-  --chart-4: oklch(0.378 0.015 216);
-  --chart-5: oklch(0.275 0.011 216.9);
+  color-scheme: light;
+  --background: oklch(0.975 0.005 85);
+  --foreground: oklch(0.19 0.012 60);
+  --card: oklch(0.993 0.003 85);
+  --card-foreground: oklch(0.19 0.012 60);
+  --popover: oklch(0.993 0.003 85);
+  --popover-foreground: oklch(0.19 0.012 60);
+  --primary: oklch(0.19 0.012 60);
+  --primary-foreground: oklch(0.985 0.004 85);
+  --secondary: oklch(0.955 0.006 85);
+  --secondary-foreground: oklch(0.19 0.012 60);
+  --muted: oklch(0.955 0.006 85);
+  --muted-foreground: oklch(0.48 0.018 70);
+  --accent: oklch(0.955 0.006 85);
+  --accent-foreground: oklch(0.19 0.012 60);
+  --destructive: oklch(0.505 0.199 27.325);
+  --border: oklch(0.895 0.008 85);
+  --input: oklch(0.875 0.008 85);
+  --signal: oklch(0.555 0.128 60);
+  --ring: var(--signal);
+  --chart-1: oklch(0.555 0.128 60);
+  --chart-2: oklch(0.62 0.09 62);
+  --chart-3: oklch(0.48 0.018 70);
+  --chart-4: oklch(0.68 0.05 75);
+  --chart-5: oklch(0.35 0.015 70);
   --radius: 0.625rem;
-  --sidebar: oklch(0.987 0.002 197.1);
-  --sidebar-foreground: oklch(0.148 0.004 228.8);
-  --sidebar-primary: oklch(0.218 0.008 223.9);
-  --sidebar-primary-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-accent: oklch(0.963 0.002 197.1);
-  --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
-  --sidebar-border: oklch(0.925 0.005 214.3);
-  --sidebar-ring: oklch(0.723 0.014 214.4);
+  --sidebar: oklch(0.955 0.006 85);
+  --sidebar-foreground: oklch(0.19 0.012 60);
+  --sidebar-primary: oklch(0.19 0.012 60);
+  --sidebar-primary-foreground: oklch(0.985 0.004 85);
+  --sidebar-accent: oklch(0.975 0.005 85);
+  --sidebar-accent-foreground: oklch(0.19 0.012 60);
+  --sidebar-border: oklch(0.895 0.008 85);
+  --sidebar-ring: var(--signal);
 }
 
+/*
+ * Dark theme, and the site's default. `--card` is the single elevation level;
+ * there is no second step. `--signal` here is `#F5A524` exactly.
+ */
 .dark {
-  --background: oklch(0.148 0.004 228.8);
-  --foreground: oklch(0.987 0.002 197.1);
-  --card: oklch(0.218 0.008 223.9);
-  --card-foreground: oklch(0.987 0.002 197.1);
-  --popover: oklch(0.218 0.008 223.9);
-  --popover-foreground: oklch(0.987 0.002 197.1);
-  --primary: oklch(0.925 0.005 214.3);
-  --primary-foreground: oklch(0.218 0.008 223.9);
-  --secondary: oklch(0.275 0.011 216.9);
-  --secondary-foreground: oklch(0.987 0.002 197.1);
-  --muted: oklch(0.275 0.011 216.9);
-  --muted-foreground: oklch(0.723 0.014 214.4);
-  --accent: oklch(0.275 0.011 216.9);
-  --accent-foreground: oklch(0.987 0.002 197.1);
+  color-scheme: dark;
+  --background: oklch(0.152 0.009 75);
+  --foreground: oklch(0.96 0.006 85);
+  --card: oklch(0.188 0.009 75);
+  --card-foreground: oklch(0.96 0.006 85);
+  --popover: oklch(0.188 0.009 75);
+  --popover-foreground: oklch(0.96 0.006 85);
+  --primary: oklch(0.93 0.006 85);
+  --primary-foreground: oklch(0.17 0.009 75);
+  --secondary: oklch(0.245 0.009 75);
+  --secondary-foreground: oklch(0.96 0.006 85);
+  --muted: oklch(0.245 0.009 75);
+  --muted-foreground: oklch(0.72 0.014 82);
+  --accent: oklch(0.245 0.009 75);
+  --accent-foreground: oklch(0.96 0.006 85);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.56 0.021 213.5);
-  --chart-1: oklch(0.872 0.007 219.6);
-  --chart-2: oklch(0.56 0.021 213.5);
-  --chart-3: oklch(0.45 0.017 213.2);
-  --chart-4: oklch(0.378 0.015 216);
-  --chart-5: oklch(0.275 0.011 216.9);
-  --sidebar: oklch(0.218 0.008 223.9);
-  --sidebar-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-accent: oklch(0.275 0.011 216.9);
-  --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.56 0.021 213.5);
+  --border: oklch(0.272 0.009 75);
+  --input: oklch(0.32 0.009 75);
+  --signal: oklch(0.7819 0.1585 72.33);
+  --ring: var(--signal);
+  --chart-1: oklch(0.7819 0.1585 72.33);
+  --chart-2: oklch(0.66 0.11 65);
+  --chart-3: oklch(0.72 0.014 82);
+  --chart-4: oklch(0.55 0.06 75);
+  --chart-5: oklch(0.42 0.02 75);
+  --sidebar: oklch(0.188 0.009 75);
+  --sidebar-foreground: oklch(0.96 0.006 85);
+  --sidebar-primary: oklch(0.93 0.006 85);
+  --sidebar-primary-foreground: oklch(0.17 0.009 75);
+  --sidebar-accent: oklch(0.245 0.009 75);
+  --sidebar-accent-foreground: oklch(0.96 0.006 85);
+  --sidebar-border: oklch(0.272 0.009 75);
+  --sidebar-ring: var(--signal);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -130,5 +197,81 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+  /*
+   * One amber focus ring for the whole site, so a new interactive element is
+   * keyboard-visible without remembering to opt in. Components that need a
+   * different shape still override it from the utilities layer.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /*
+   * The site's one hover affordance: an amber rule that draws left to right in
+   * 120ms. Used by navigation, the footer, and prose links. `data-status` is
+   * what TanStack Router puts on an active `Link`, so an active route keeps the
+   * rule drawn.
+   */
+  .link-underline {
+    background-image: linear-gradient(to right, var(--signal), var(--signal));
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1.5px;
+    padding-bottom: 2px;
+    text-decoration: none;
+  }
+
+  .link-underline:focus-visible,
+  .link-underline[data-status="active"] {
+    background-size: 100% 1.5px;
+  }
+
+  /*
+   * Gated on a real pointer because Tailwind gates its own `hover:` utilities
+   * the same way. Without it a tap on a touch device leaves `:hover` stuck and
+   * the rule stays drawn while the colour change that belongs with it does not.
+   */
+  @media (hover: hover) {
+    .link-underline:hover {
+      background-size: 100% 1.5px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .link-underline {
+    transition:
+      background-size 120ms ease-out,
+      color 120ms ease-out;
+  }
+
+  /* Route changes, and only route changes. Nothing animates on arrival. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 150ms;
+  }
+}
+
+/*
+ * Reduced motion removes the site's own motion and nothing else. A blanket
+ * `* { animation: none }` would also break anything functional that arrives
+ * later, so this list stays scoped to the utilities declared above.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .link-underline {
+    transition: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }

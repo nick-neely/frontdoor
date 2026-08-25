@@ -1,0 +1,38 @@
+---
+title: "Building the new front door"
+slug: "building-the-new-front-door"
+description: "Why I demoted my interactive terminal résumé to a subdomain and rebuilt nickneely.dev as one canonical front door."
+published: "2026-08-25"
+pillar: "building-in-public"
+tags: ["redesign", "tanstack-start", "personal-site"]
+---
+
+{/_ DRAFT FOR NICK'S EDIT: written from documented decisions in this repo. Adjust voice and personal detail before launch; every factual claim below is sourced from PRODUCT.md, DESIGN.md, or docs/adr/. _/}
+
+For a few years, nickneely.dev has been an interactive terminal emulator. You typed `help`, poked around some commands, and eventually found a résumé. People liked it. It was also a gimmick standing where a front door should be: it showed cleverness, but it hid the work.
+
+The problem wasn't the terminal. The problem was fragmentation. My footprint was scattered across LinkedIn, X, GitHub, Neely Solutions, and a handful of product domains, and no single place tied the story together. Search engines and humans had to guess which Nick Neely they'd found, and the answer to "can this person solve my problem" was buried behind a `projects` command.
+
+So I rebuilt the site around one job: be the canonical front door. Consulting, shipped projects, and writing, all reachable within two clicks, under one identity.
+
+## What stayed, what moved
+
+The terminal résumé isn't dead. It moved to [terminal.nickneely.dev](https://terminal.nickneely.dev) and lives on as an easter egg - there's exactly one small link to it in the footer, and one hidden somewhere better. Novelty is fine as a side door. It just doesn't get to be the front one.
+
+Neely Solutions stays its own brand for local and small-business work. This site links to it and never co-headlines with it; the two serve different buyers, and pretending otherwise was part of the identity mess.
+
+## The stack
+
+The site is TanStack Start on React 19, built to a Nitro output and deployed on Vercel, styled with Tailwind CSS 4. Writing is MDX compiled at build time, indexed with content-collections, with RSS and per-post OG images generated during the build. The newsletter runs on Resend with a stateless double opt-in: the confirmation link carries an HMAC-signed payload, so nothing is stored anywhere until a person actually confirms. No database, no analytics beyond Vercel's, no tracking pixels - not even in the newsletter.
+
+Publishing a post is a deploy. That's deliberate: the whole validation gate - lint, types, tests, build, prerender, rendered SEO checks - runs in about five seconds, so the deploy is not the bottleneck. Owning the distribution surface beats renting it.
+
+## The design rule I actually care about
+
+The visual direction is typography-driven and dark by default: one display face for the big moments, one accent colour, and restraint everywhere else. But the rule doing the real work is about motion:
+
+> Motion only ever confirms an action the reader took. Nothing moves because it scrolled into view.
+
+Sites that animate on arrival read as templates. Sites that animate on interaction read as craft. Everything animated on this site - the underline that draws on hover, the blinking cursor in the hero, the route transitions - happens because you did something, and all of it respects `prefers-reduced-motion`.
+
+The one indulgence is the cursor itself. This project's codename was "front door," and the blinking block at the end of my name is exactly that: a door. Try opening it.

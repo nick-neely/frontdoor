@@ -8,7 +8,7 @@ Semantic colours live in `src/styles.css`. Component interfaces never encode a c
 
 - **Background**: warm off-black, not pure black. Light theme is a warm off-white, not pure white.
 - **Accent**: signal amber `#F5A524`, used only for link underlines, status dots, hover and focus states, and code highlighting. One accent, used sparingly, is the whole colour story.
-- **Type**: Bricolage Grotesque Variable for the display moment, Inter Variable for prose, JetBrains Mono Variable for navigation, dates, status tags, and metadata. All self-hosted and subset to latin.
+- **Type**: Bricolage Grotesque Variable for the display moment, Hanken Grotesk Variable for prose, JetBrains Mono Variable for navigation, dates, status tags, and metadata. All self-hosted and subset to latin.
 - **Theme**: dark by default with a light toggle. Both are first-class; neither is an afterthought.
 
 Monospace is a deliberate signal, not decoration. It carries the developer-tool heritage and is the reason the site needs no other reference to the terminal résumé it replaced.

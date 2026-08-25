@@ -8,6 +8,9 @@ export function getRouter() {
 
     defaultPreloadStaleTime: 0,
 
+    /** Route changes are the one place motion explains where the page went. */
+    defaultViewTransition: true,
+
     routeTree,
 
     scrollRestoration: true,
