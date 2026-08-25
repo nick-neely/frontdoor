@@ -1,23 +1,28 @@
-import { rmSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { readPublishedWriting } from "./writing-source.ts";
 
 const fixtureSlug = "writing-source-fixture";
-const fixturePath = fileURLToPath(
-  new URL(`../../content/writing/${fixtureSlug}.mdx`, import.meta.url)
-);
+
+// A fresh directory per test keeps fixtures out of content/writing/, which
+// the dev server's content-collections watcher scans. Writing fixtures there
+// triggers rebuilds mid-test-run, and the loud-failure case below would leave
+// the generated index empty for whatever runs next against the real content.
+let fixtureDirectory: string;
 
 function withFixture(frontmatter: string, assertion: () => void) {
-  writeFileSync(fixturePath, `---\n${frontmatter}\n---\n\nBody.\n`, "utf-8");
+  fixtureDirectory = mkdtempSync(path.join(tmpdir(), "writing-source-"));
+  writeFileSync(
+    path.join(fixtureDirectory, `${fixtureSlug}.mdx`),
+    `---\n${frontmatter}\n---\n\nBody.\n`,
+    "utf-8"
+  );
 
-  try {
-    assertion();
-  } finally {
-    rmSync(fixturePath, { force: true });
-  }
+  assertion();
 }
 
 const published = [
@@ -29,19 +34,25 @@ const published = [
 ].join("\n");
 
 describe("what the build reads off disk", () => {
+  afterEach(() => {
+    if (fixtureDirectory) {
+      rmSync(fixtureDirectory, { force: true, recursive: true });
+    }
+  });
+
   it("excludes drafts, so a draft never reaches the prerenderer or the feed", () => {
     withFixture(`${published}\ndraft: true`, () => {
-      expect(readPublishedWriting().map((post) => post.slug)).not.toContain(
-        fixtureSlug
-      );
+      expect(
+        readPublishedWriting(fixtureDirectory).map((post) => post.slug)
+      ).not.toContain(fixtureSlug);
     });
   });
 
   it("includes the same file once it is no longer a draft", () => {
     withFixture(published, () => {
-      expect(readPublishedWriting().map((post) => post.slug)).toContain(
-        fixtureSlug
-      );
+      expect(
+        readPublishedWriting(fixtureDirectory).map((post) => post.slug)
+      ).toContain(fixtureSlug);
     });
   });
 
@@ -55,7 +66,7 @@ describe("what the build reads off disk", () => {
     ["YAML that does not parse", `${published}\n  indented: oops`],
   ])("refuses %s, naming the file", (_case, frontmatter) => {
     withFixture(frontmatter, () => {
-      expect(() => readPublishedWriting()).toThrow(fixtureSlug);
+      expect(() => readPublishedWriting(fixtureDirectory)).toThrow(fixtureSlug);
     });
   });
 });

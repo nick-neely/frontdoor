@@ -41,15 +41,20 @@ function tryParse(source: string) {
   }
 }
 
-export function readPublishedWriting(): WritingFrontmatter[] {
+// `directory` defaults to the real content/writing/ but is overridable so
+// tests can point it at a throwaway fixture directory instead of writing
+// into the tree the dev server's content-collections watcher is scanning.
+export function readPublishedWriting(
+  directory = writingDirectory
+): WritingFrontmatter[] {
   const entries: WritingFrontmatter[] = [];
 
-  for (const fileName of readdirSync(writingDirectory)) {
+  for (const fileName of readdirSync(directory)) {
     if (!fileName.endsWith(".mdx")) {
       continue;
     }
 
-    const source = readFileSync(path.join(writingDirectory, fileName), "utf-8");
+    const source = readFileSync(path.join(directory, fileName), "utf-8");
     // Malformed YAML throws out of `matter`, so both failure modes are caught
     // here. Either way the message has to name the file: the next thing to run
     // is the prerenderer, and its error would name a route instead.
@@ -57,7 +62,7 @@ export function readPublishedWriting(): WritingFrontmatter[] {
 
     if (!result.success) {
       throw new Error(
-        `content/writing/${fileName}: invalid frontmatter.\n${result.error.message}`
+        `${path.join(directory, fileName)}: invalid frontmatter.\n${result.error.message}`
       );
     }
 
