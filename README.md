@@ -50,6 +50,8 @@ pnpm validate   # Run every CI and pre-push gate
 - `src/lib/site-files.ts` generates `robots.txt` and `manifest.json`, so nothing under `public/` restates identity.
 - `src/lib/public-routes.ts` classifies every route as `public` or `private` and expands `/writing/$slug` into real paths. It is the prerender and sitemap inventory, checked against the generated route tree at compile time.
 - `src/lib/rss.ts` and `src/lib/og-image.ts` produce `/rss.xml` and one social card per Post; `vite.config.ts` emits both into the build output and serves them in development.
+- `src/lib/updates.ts` merges Posts and Project milestones into the one Update feed the home page renders.
+- `src/lib/github-activity.ts` sanitizes GitHub events into the label the home page may show; `src/lib/github-activity.server.ts` does the authenticated read. A private repository name never leaves the second file.
 - `src/lib/env.server.ts` validates server environment variables and never reaches the client bundle.
 - `src/start.ts` registers global request middleware; `src/server.ts` is the server entry.
 - `scripts/verify-seo-output.mjs` verifies rendered production artifacts rather than trusting configuration.

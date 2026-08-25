@@ -312,6 +312,116 @@
   }
 
   /*
+   * The front door: the hero's block cursor, which is also the door in the
+   * site mark. Sized in `em` throughout, so it scales with whatever display
+   * size the poster line resolves to and stays a cap-height block. `--signal`
+   * is the brand amber exactly in dark and the darkened light-theme rendering
+   * of it in light, which is what keeps the block readable on both grounds.
+   */
+  .front-door {
+    display: inline-flex;
+    /* Also what makes this the containing block for the reveal below. */
+    perspective: 720px;
+    position: relative;
+  }
+
+  .front-door-button {
+    display: inline-block;
+    height: 0.72em;
+    width: 0.5em;
+  }
+
+  .front-door-leaf {
+    background-color: var(--signal);
+    display: block;
+    height: 100%;
+    /* The hinge. The door swings from its left edge, like the mark's does. */
+    transform-origin: left center;
+    width: 100%;
+  }
+
+  @keyframes front-door-blink {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /*
+     * A real terminal cadence: a hard step at the half-cycle rather than an
+     * ease, because a cursor that fades is a cursor from a different site.
+     */
+    .front-door-leaf {
+      animation: front-door-blink 1.06s steps(2, jump-none) infinite;
+      transition: transform 120ms ease-out;
+    }
+
+    /* Gated on a real pointer for the same reason `.link-underline` is. */
+    @media (hover: hover) {
+      .front-door-button:hover .front-door-leaf {
+        animation: none;
+        opacity: 1;
+        transform: rotateY(-14deg);
+      }
+    }
+  }
+
+  /*
+   * After the hover rule on purpose: the two selectors weigh the same, so
+   * source order is what keeps an open door open while the pointer is on it.
+   * Outside the reduced-motion query on purpose too - the open door is a
+   * state, and under reduced motion it simply arrives with no transition.
+   */
+  .front-door-button[aria-expanded="true"] .front-door-leaf {
+    animation: none;
+    opacity: 1;
+    transform: rotateY(-65deg);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .front-door-button[aria-expanded="true"] .front-door-leaf {
+      transition-duration: 200ms;
+    }
+  }
+
+  /*
+   * Absolutely positioned against the door itself, so opening it cannot move a
+   * single letter of the poster line. The glow is the light through the
+   * doorway: static, quiet, and never animated.
+   */
+  .front-door-reveal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    inset-inline-start: 0;
+    margin-top: 0.6rem;
+    max-width: min(20rem, 70vw);
+    position: absolute;
+    text-shadow: 0 0 22px color-mix(in oklab, var(--signal) 35%, transparent);
+    top: 100%;
+    width: max-content;
+  }
+
+  /*
+   * On a narrow viewport the cursor sits close enough to the right edge that a
+   * line starting there would overflow, so the reveal hangs from the door's
+   * right edge instead and grows leftwards under the poster.
+   */
+  @media (width < 40rem) {
+    .front-door-reveal {
+      inset-inline-end: 0;
+      inset-inline-start: auto;
+    }
+  }
+
+  .front-door-reveal[hidden] {
+    display: none;
+  }
+
+  /*
    * The reading surface. Measure is capped in `ch` so it tracks the prose font
    * rather than a pixel guess, and every colour and radius comes from a token.
    */

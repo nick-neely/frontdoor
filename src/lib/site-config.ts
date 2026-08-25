@@ -27,6 +27,17 @@ export const siteConfig = {
     { href: "/projects", label: "Projects" },
     { href: "/writing", label: "Writing" },
   ],
+  /**
+   * The Now Line: what Nick is building, where he consults, and where he
+   * lives. It is always rendered, so every field here is required to be true
+   * right now rather than aspirational.
+   */
+  now: {
+    building: "tendnote",
+    buildingUrl: "https://tendnote.com",
+    consulting: "Lean TECHniques",
+    location: "Iowa",
+  },
   origin: "https://nickneely.dev",
   /** Installed-application name. Keep it short enough to sit under an icon. */
   shortName: "Nick Neely",
