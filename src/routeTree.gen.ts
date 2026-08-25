@@ -14,6 +14,7 @@ import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as WorkRouteImport } from './routes/work'
 import { Route as WritingRouteImport } from './routes/writing'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as WritingSlugRouteImport } from './routes/writing_.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WritingSlugRoute = WritingSlugRouteImport.update({
+  id: '/writing_/$slug',
+  path: '/writing/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
+  '/writing/$slug': typeof WritingSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
+  '/writing/$slug': typeof WritingSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,23 @@ export interface FileRoutesById {
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
+  '/writing_/$slug': typeof WritingSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/projects' | '/work' | '/writing' | '/api/health'
+  fullPaths:
+    '/' | '/projects' | '/work' | '/writing' | '/api/health' | '/writing/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/projects' | '/work' | '/writing' | '/api/health'
-  id: '__root__' | '/' | '/projects' | '/work' | '/writing' | '/api/health'
+  to:
+    '/' | '/projects' | '/work' | '/writing' | '/api/health' | '/writing/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/projects'
+    | '/work'
+    | '/writing'
+    | '/api/health'
+    | '/writing_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +95,7 @@ export interface RootRouteChildren {
   WorkRoute: typeof WorkRoute
   WritingRoute: typeof WritingRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  WritingSlugRoute: typeof WritingSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/writing_/$slug': {
+      id: '/writing_/$slug'
+      path: '/writing/$slug'
+      fullPath: '/writing/$slug'
+      preLoaderRoute: typeof WritingSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +151,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkRoute: WorkRoute,
   WritingRoute: WritingRoute,
   ApiHealthRoute: ApiHealthRoute,
+  WritingSlugRoute: WritingSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

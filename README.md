@@ -27,6 +27,7 @@ Open `http://localhost:3000`. Copy `.env.example` to `.env` when working on the 
 ## Commands
 
 ```bash
+pnpm content    # Rebuild the typed writing index (also runs on install, and inside check, dev, and build)
 pnpm dev        # Start the development server
 pnpm fix        # Apply safe Oxlint and Oxfmt fixes
 pnpm check      # Check lint, formatting, and type-aware rules
@@ -40,11 +41,15 @@ pnpm validate   # Run every CI and pre-push gate
 
 ## Project shape
 
+- `content/writing` holds authored MDX. Frontmatter is the source of truth for a Post's slug, Pillar, and publication date.
+- `content-collections.ts` builds the typed frontmatter index into `.content-collections/generated`. Post bodies stay out of it; see `docs/adr/0001-mdx-compiled-as-modules.md`.
+- `src/lib/writing-schema.ts` holds the frontmatter contract and everything derived from it. `src/lib/writing.ts` is what pages read; `src/lib/writing-source.ts` is what the build reads. They share the schema and are asserted to agree.
 - `src/routes` owns file-based routes and route-level metadata.
 - `src/lib/site-config.ts` is the single seam for public identity and canonical origin.
 - `src/lib/seo.ts` builds page metadata and JSON-LD from that config.
 - `src/lib/site-files.ts` generates `robots.txt` and `manifest.json`, so nothing under `public/` restates identity.
-- `src/lib/public-routes.ts` classifies every route as `public` or `private`. It is the prerender and sitemap inventory, checked against the generated route tree at compile time.
+- `src/lib/public-routes.ts` classifies every route as `public` or `private` and expands `/writing/$slug` into real paths. It is the prerender and sitemap inventory, checked against the generated route tree at compile time.
+- `src/lib/rss.ts` and `src/lib/og-image.ts` produce `/rss.xml` and one social card per Post; `vite.config.ts` emits both into the build output and serves them in development.
 - `src/lib/env.server.ts` validates server environment variables and never reaches the client bundle.
 - `src/start.ts` registers global request middleware; `src/server.ts` is the server entry.
 - `scripts/verify-seo-output.mjs` verifies rendered production artifacts rather than trusting configuration.

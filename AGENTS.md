@@ -29,7 +29,8 @@ Manually verify domain and editorial correctness, source quality, user experienc
 
 ## Learned workspace facts
 
-- None yet.
+- Anything `vite.config.ts` imports becomes a Vite config dependency, and Vite restarts the dev server when one changes. Importing the generated content-collections index from the config is therefore an endless restart loop, because the plugin rewrites that index on every start. `server.watch.ignored` does not help; config dependencies are watched separately. Build-time consumers read `src/lib/writing-source.ts` instead.
+- Oxfmt formats `.mdx` as Markdown and rewrites `*` to `_`, which turns `{/* a comment */}` into an expression MDX cannot parse. `content/**` is excluded from Oxfmt for that reason.
 
 ## Learned user preferences
 

@@ -6,6 +6,7 @@ dist-ssr
 .env*
 !.env.example
 .tanstack
+.content-collections
 .wrangler
 .output
 .vinxi

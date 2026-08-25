@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { publicPaths } from "../src/lib/public-routes.ts";
 import { siteConfig } from "../src/lib/site-config.ts";
 import { generatedSiteFiles } from "../src/lib/site-files.ts";
+import { postOgImagePath, postPath, posts } from "../src/lib/writing.ts";
 
 const pageTitles = new Set();
 const pageDescriptions = new Set();
@@ -142,4 +143,91 @@ assert.equal(
   "Social image height"
 );
 
-console.log(`Verified SEO output for ${publicPaths.length} public pages.`);
+/**
+ * @param {string} assetPath Path under `.output/public`.
+ * @param {number} width Expected pixel width.
+ * @param {number} height Expected pixel height.
+ */
+function assertPng(assetPath, width, height) {
+  const file = readFileSync(path.resolve(".output/public", assetPath));
+
+  assert.ok(
+    file.subarray(0, pngSignature.length).equals(pngSignature),
+    `${assetPath} must be a PNG`
+  );
+  assert.equal(file.readUInt32BE(16), width, `${assetPath} width`);
+  assert.equal(file.readUInt32BE(20), height, `${assetPath} height`);
+}
+
+// Every Post carries an Article, a card of its own, and a feed item. These are
+// generated during the build rather than authored, so they are verified in the
+// output rather than trusted from configuration.
+const feed = readFileSync(
+  path.resolve(".output/public", siteConfig.links.rss.slice(1)),
+  "utf-8"
+);
+
+assert.ok(feed.startsWith("<?xml"), "Feed must be XML");
+assert.equal(
+  countMatches(feed, /<item>/gu),
+  posts.length,
+  "Feed item count must match the published Posts"
+);
+assert.ok(
+  !sitemap.includes(siteConfig.links.rss),
+  "The feed is not a page and does not belong in the sitemap"
+);
+
+for (const post of posts) {
+  const routePath = postPath(post);
+  const html = readFileSync(htmlOutputPath(routePath), "utf-8");
+  const imagePath = postOgImagePath(post);
+  const imageUrl = `${siteConfig.origin}${imagePath}`;
+
+  assert.ok(
+    html.includes('content="article" property="og:type"'),
+    `${routePath}: Open Graph type`
+  );
+  assert.ok(
+    html.includes(`content="${imageUrl}" property="og:image"`),
+    `${routePath}: generated card referenced absolutely`
+  );
+  assert.ok(html.includes('"@type":"Article"'), `${routePath}: Article schema`);
+  assert.ok(
+    html.includes(`"datePublished":"${post.published}"`),
+    `${routePath}: publication date in schema`
+  );
+  assert.ok(
+    feed.includes(`${siteConfig.origin}${routePath}`),
+    `${routePath}: feed item`
+  );
+
+  assertPng(
+    imagePath.slice(1),
+    siteConfig.socialImage.width,
+    siteConfig.socialImage.height
+  );
+}
+
+// Shiki runs during the build. Any of it reaching a client chunk would mean a
+// megabyte of grammars shipped to highlight code that is already highlighted.
+const clientScripts = readdirSync(path.resolve(".output/public/assets")).filter(
+  (fileName) => fileName.endsWith(".js")
+);
+
+assert.ok(clientScripts.length > 0, "Client assets must exist");
+for (const fileName of clientScripts) {
+  const source = readFileSync(
+    path.resolve(".output/public/assets", fileName),
+    "utf-8"
+  );
+
+  assert.ok(
+    !source.includes("createHighlighter"),
+    `${fileName} must not contain a syntax highlighter`
+  );
+}
+
+console.log(
+  `Verified SEO output for ${publicPaths.length} public pages, ${posts.length} generated cards, and the feed.`
+);

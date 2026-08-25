@@ -142,6 +142,25 @@
   --sidebar-accent-foreground: oklch(0.19 0.012 60);
   --sidebar-border: oklch(0.895 0.008 85);
   --sidebar-ring: var(--signal);
+
+  /*
+   * Syntax highlighting. Shiki resolves every token to one of these at build
+   * time, so the palette lives here with the tokens it borrows from. The range
+   * is warm and deliberately short, and amber is spent on exactly one token
+   * type. Every value clears 4.5:1 on `--card`, which is the only surface a
+   * code block ever sits on.
+   */
+  --code-background: var(--card);
+  --code-foreground: oklch(0.24 0.012 60);
+  --code-token-comment: oklch(0.5 0.015 70);
+  --code-token-constant: oklch(0.5 0.13 60);
+  --code-token-function: oklch(0.3 0.02 70);
+  --code-token-keyword: oklch(0.45 0.14 30);
+  --code-token-link: var(--signal);
+  --code-token-parameter: oklch(0.34 0.03 70);
+  --code-token-punctuation: oklch(0.46 0.012 70);
+  --code-token-string: oklch(0.42 0.1 130);
+  --code-token-string-expression: oklch(0.42 0.1 130);
 }
 
 /*
@@ -182,6 +201,18 @@
   --sidebar-accent-foreground: oklch(0.96 0.006 85);
   --sidebar-border: oklch(0.272 0.009 75);
   --sidebar-ring: var(--signal);
+
+  --code-background: var(--card);
+  --code-foreground: oklch(0.9 0.006 85);
+  --code-token-comment: oklch(0.62 0.012 80);
+  --code-token-constant: var(--signal);
+  --code-token-function: oklch(0.85 0.055 85);
+  --code-token-keyword: oklch(0.77 0.115 35);
+  --code-token-link: var(--signal);
+  --code-token-parameter: oklch(0.84 0.02 85);
+  --code-token-punctuation: oklch(0.66 0.012 80);
+  --code-token-string: oklch(0.8 0.09 130);
+  --code-token-string-expression: oklch(0.8 0.09 130);
 }
 
 @layer base {
@@ -240,10 +271,175 @@
       background-size: 100% 1.5px;
     }
   }
+
+  /*
+   * Prose links need to be visible before the pointer arrives, which navigation
+   * links do not. Rather than fight `.link-underline`'s resting state, this
+   * stacks a second gradient underneath the amber one and draws the amber over
+   * it, so both rules land on the same baseline and the hover behaviour, timing,
+   * and reduced-motion handling stay identical.
+   */
+  .link-underline-resting {
+    background-image:
+      linear-gradient(to right, var(--signal), var(--signal)),
+      linear-gradient(
+        to right,
+        var(--muted-foreground),
+        var(--muted-foreground)
+      );
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size:
+      0 1.5px,
+      100% 1px;
+    padding-bottom: 2px;
+    text-decoration: none;
+  }
+
+  .link-underline-resting:focus-visible {
+    background-size:
+      100% 1.5px,
+      100% 1px;
+  }
+
+  @media (hover: hover) {
+    .link-underline-resting:hover {
+      background-size:
+        100% 1.5px,
+        100% 1px;
+      color: var(--signal);
+    }
+  }
+
+  /*
+   * The reading surface. Measure is capped in `ch` so it tracks the prose font
+   * rather than a pixel guess, and every colour and radius comes from a token.
+   */
+  .prose {
+    color: var(--foreground);
+    font-size: 1.125rem;
+    line-height: 1.75;
+    max-width: 70ch;
+  }
+
+  .prose > * + * {
+    margin-top: 1.4em;
+  }
+
+  .prose h2,
+  .prose h3 {
+    @apply font-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .prose h2 {
+    font-size: 1.6em;
+    margin-top: 2.2em;
+  }
+
+  .prose h3 {
+    font-size: 1.25em;
+    margin-top: 1.8em;
+  }
+
+  .prose h2 + *,
+  .prose h3 + * {
+    margin-top: 0.7em;
+  }
+
+  .prose ol,
+  .prose ul {
+    padding-left: 1.4em;
+  }
+
+  .prose ul {
+    list-style: disc;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose li::marker {
+    color: var(--muted-foreground);
+  }
+
+  .prose li + li {
+    margin-top: 0.4em;
+  }
+
+  .prose blockquote {
+    border-left: 2px solid var(--signal);
+    color: var(--muted-foreground);
+    padding-left: 1.2em;
+  }
+
+  .prose hr {
+    border-top: 1px solid var(--border);
+    margin-block: 2.5em;
+  }
+
+  .prose :not(pre) > code {
+    @apply rounded-sm font-mono;
+    background-color: var(--muted);
+    font-size: 0.85em;
+    padding: 0.15em 0.4em;
+  }
+
+  /*
+   * Shiki writes the surface and every token colour as `var(--code-*)`, which
+   * the theme blocks above define. The border and radius are stated here so a
+   * code block is one restrained card rather than a slab of colour.
+   */
+  .prose pre {
+    @apply rounded-md font-mono;
+    border: 1px solid var(--border);
+    font-size: 0.85em;
+    line-height: 1.7;
+    overflow-x: auto;
+    padding: 1.1em 1.25em;
+  }
+
+  .prose pre code {
+    display: block;
+    width: fit-content;
+    min-width: 100%;
+  }
+
+  .prose img,
+  .prose video {
+    @apply rounded-md;
+    max-width: 100%;
+  }
+
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    text-align: left;
+    width: 100%;
+  }
+
+  .prose td,
+  .prose th {
+    border-bottom: 1px solid var(--border);
+    padding: 0.5em 0.9em 0.5em 0;
+  }
+
+  .prose th {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8em;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .link-underline {
+  .link-underline,
+  .link-underline-resting {
     transition:
       background-size 120ms ease-out,
       color 120ms ease-out;
@@ -252,6 +448,14 @@
   /* Route changes, and only route changes. Nothing animates on arrival. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
+    animation-duration: 150ms;
+  }
+
+  /*
+   * A Post title carries a per-slug `view-transition-name`, so there is no
+   * fixed selector to write; the wildcard is the only way to reach the pair.
+   */
+  ::view-transition-group(*) {
     animation-duration: 150ms;
   }
 }
@@ -266,12 +470,21 @@
     scroll-behavior: auto;
   }
 
-  .link-underline {
+  .link-underline,
+  .link-underline-resting {
     transition: none;
   }
 
   ::view-transition-old(root),
   ::view-transition-new(root) {
+    animation: none;
+  }
+
+  /* The shared post title swaps in place instead of travelling. */
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
     animation: none;
   }
 }
