@@ -41,10 +41,18 @@ function tryParse(source: string) {
   }
 }
 
-// `directory` defaults to the real content/writing/ but is overridable so
-// tests can point it at a throwaway fixture directory instead of writing
-// into the tree the dev server's content-collections watcher is scanning.
-export function readPublishedWriting(
+/**
+ * Every entry on disk, drafts included.
+ *
+ * Only tooling that has to tell a draft from a missing file reads this -
+ * `pnpm broadcast` refuses a draft slug by name rather than calling it
+ * unknown. Nothing that renders a page should use it.
+ *
+ * `directory` defaults to the real content/writing/ but is overridable so
+ * tests can point it at a throwaway fixture directory instead of writing
+ * into the tree the dev server's content-collections watcher is scanning.
+ */
+export function readWriting(
   directory = writingDirectory
 ): WritingFrontmatter[] {
   const entries: WritingFrontmatter[] = [];
@@ -66,12 +74,18 @@ export function readPublishedWriting(
       );
     }
 
-    // A draft has no prerendered page, no sitemap entry, no card, and no feed
-    // item. Excluding it here is what makes all four true at once.
-    if (!result.data.draft) {
-      entries.push(result.data);
-    }
+    entries.push(result.data);
   }
 
   return entries.toSorted(comparePosts);
+}
+
+/**
+ * A draft has no prerendered page, no sitemap entry, no card, and no feed
+ * item. Excluding it here is what makes all four true at once.
+ */
+export function readPublishedWriting(
+  directory = writingDirectory
+): WritingFrontmatter[] {
+  return readWriting(directory).filter((entry) => !entry.draft);
 }

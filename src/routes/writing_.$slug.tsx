@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import type { MDXContent } from "mdx/types";
 
 import { mdxComponents } from "@/components/mdx-components.tsx";
+import { NewsletterCapture } from "@/components/newsletter-capture.tsx";
 import {
   createArticleSchema,
   createGraph,
@@ -146,6 +147,11 @@ function PostPage() {
         <div className="prose mt-12">
           <Body components={mdxComponents} />
         </div>
+        {/* After the prose and before the way back: the reader has finished,
+            which is the only moment asking for an address is not an interruption.
+            The source is the Post's own path, so the analytics event answers
+            which piece of writing earned the signup. */}
+        <NewsletterCapture className="mt-16" source={postPath(post)} />
         <footer className="mt-16 max-w-2xl border-t border-border pt-8">
           <Link
             className="link-underline font-mono text-[13px] text-foreground"

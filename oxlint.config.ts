@@ -80,6 +80,14 @@ export default defineConfig({
       rules: { "react-doctor/only-export-components": "off" },
     },
     {
+      // An email template is not a Fast Refresh surface. It is rendered on a
+      // server and in `pnpm email`, never in the application, and each file
+      // deliberately exports both the component and the sendable form of it so
+      // the two cannot describe different mail.
+      files: ["src/emails/**/*.tsx"],
+      rules: { "react-doctor/only-export-components": "off" },
+    },
+    {
       files: ["scripts/**/*.mjs"],
       rules: { "anti-slop/no-runtime-typeof": "off" },
     },

@@ -29,6 +29,8 @@ Open `http://localhost:3000`. Copy `.env.example` to `.env` when working on the 
 ```bash
 pnpm content    # Rebuild the typed writing index (also runs on install, and inside check, dev, and build)
 pnpm dev        # Start the development server
+pnpm email      # Preview the newsletter templates at http://localhost:3001
+pnpm broadcast  # Draft a broadcast in Resend from a Post slug; it never sends
 pnpm fix        # Apply safe Oxlint and Oxfmt fixes
 pnpm check      # Check lint, formatting, and type-aware rules
 pnpm typecheck  # Run TypeScript without emitting files
@@ -53,7 +55,10 @@ pnpm validate   # Run every CI and pre-push gate
 - `src/lib/updates.ts` merges Posts and Project milestones into the one Update feed the home page renders.
 - `src/lib/github-activity.ts` sanitizes GitHub events into the label the home page may show; `src/lib/github-activity.server.ts` does the authenticated read. A private repository name never leaves the second file.
 - `src/lib/env.server.ts` validates server environment variables and never reaches the client bundle.
+- `src/lib/newsletter.ts` holds the newsletter's copy, address check, and anti-abuse heuristics, all browser-safe. `src/lib/newsletter-signing.server.ts` signs and verifies the Confirmation that stands in for stored state; `src/lib/newsletter.server.ts` is the only module that touches Resend. See `docs/adr/0002-stateless-double-opt-in.md`.
+- `src/emails` holds the three React Email templates and the palette they share. `pnpm email` previews them; `src/lib/newsletter-broadcast.ts` turns a Post into a draft payload that has no way to ask Resend to send it.
 - `src/start.ts` registers global request middleware; `src/server.ts` is the server entry.
+- `scripts/broadcast.mts` is `pnpm broadcast <slug>`. It creates a draft and prints its id; sending stays a deliberate act in the Resend dashboard.
 - `scripts/verify-seo-output.mjs` verifies rendered production artifacts rather than trusting configuration.
 - `tools/oxlint/anti-slop` is vendored lint plug-in source from [`dmmulroy/anti-slop`](https://github.com/dmmulroy/anti-slop).
 

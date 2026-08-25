@@ -422,6 +422,29 @@
   }
 
   /*
+   * The newsletter capture block's success state: the form is gone and its
+   * confirmation line settles in over 150ms. This is the one state transition
+   * `DESIGN.md` permits, and it qualifies because the reader caused it by
+   * submitting - nothing here fires on arrival or on scroll. Under reduced
+   * motion the line simply appears, which is the whole of the transition's
+   * meaning anyway.
+   */
+  @keyframes newsletter-settle {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .newsletter-settle {
+      animation: newsletter-settle 150ms ease-out;
+    }
+  }
+
+  /*
    * The reading surface. Measure is capped in `ch` so it tracks the prose font
    * rather than a pixel guess, and every colour and radius comes from a token.
    */

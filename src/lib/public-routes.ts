@@ -24,6 +24,10 @@ const routeVisibility = {
   // list in the sitemap, or verify with `pnpm seo:verify`.
   "/api/health": "private",
   "/projects": "public",
+  // The confirm landing is the same document, reached with `?token=...`. A
+  // query string does not make a second page, so there is one entry here and
+  // one URL in the sitemap.
+  "/subscribe": "public",
   "/work": "public",
   "/writing": "public",
   "/writing/$slug": "public",

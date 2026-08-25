@@ -1,5 +1,5 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "**/*.mjs"],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.mjs"],
   "exclude": [
     "node_modules",
     ".agents",

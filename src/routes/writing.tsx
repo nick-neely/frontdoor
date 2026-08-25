@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { NewsletterCapture } from "@/components/newsletter-capture.tsx";
 import {
   createGraph,
   createSeoHead,
@@ -87,6 +88,7 @@ function WritingPage() {
             ))}
           </ul>
         )}
+        <NewsletterCapture className="mt-20" source="/writing" />
       </section>
     </main>
   );
