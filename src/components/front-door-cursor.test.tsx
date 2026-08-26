@@ -81,6 +81,29 @@ describe(FrontDoorCursor, () => {
     expect(document.activeElement).toBe(button);
   });
 
+  it("closes on Escape from elsewhere and leaves that reader's place alone", () => {
+    render(
+      <>
+        <FrontDoorCursor />
+        <button type="button">Elsewhere on the page</button>
+      </>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: openName }));
+
+    const elsewhere = screen.getByRole("button", {
+      name: "Elsewhere on the page",
+    });
+    elsewhere.focus();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(screen.queryByRole("link", { name: terminalName })).toBeNull();
+    // Focus is only reclaimed when it was inside the door; a reader who was
+    // somewhere else entirely is not dragged back to it.
+    expect(document.activeElement).toBe(elsewhere);
+  });
+
   it("ignores keys that are not Escape", () => {
     render(<FrontDoorCursor />);
 

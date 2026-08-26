@@ -7,7 +7,7 @@ pillar: "building-in-public"
 tags: ["redesign", "tanstack-start", "personal-site"]
 ---
 
-{/* DRAFT FOR NICK'S EDIT: written from documented decisions in this repo. Adjust voice and personal detail before launch; every factual claim below is sourced from PRODUCT.md, DESIGN.md, or docs/adr/. */}
+{/* DRAFT FOR NICK'S EDIT: written from documented decisions in this repo and in the template repository. Adjust voice and personal detail before launch, and give the new "The template underneath" section the same voice pass as the rest; every factual claim below is sourced from PRODUCT.md, DESIGN.md, docs/adr/, or tanstack-start-template. */}
 
 For a few years, nickneely.dev has been an interactive terminal emulator. You typed `help`, poked around some commands, and eventually found a résumé. People liked it. It was also a gimmick standing where a front door should be: it showed cleverness, but it hid the work.
 
@@ -25,7 +25,21 @@ Neely Solutions stays its own brand for local and small-business work. This site
 
 The site is TanStack Start on React 19, built to a Nitro output and deployed on Vercel, styled with Tailwind CSS 4. Writing is MDX compiled at build time, indexed with content-collections, with RSS and per-post OG images generated during the build. The newsletter runs on Resend with a stateless double opt-in: the confirmation link carries an HMAC-signed payload, so nothing is stored anywhere until a person actually confirms. No database, no analytics beyond Vercel's, no tracking pixels - not even in the newsletter.
 
-Publishing a post is a deploy. That's deliberate: the whole validation gate - lint, types, tests, build, prerender, rendered SEO checks - runs in about five seconds, so the deploy is not the bottleneck. Owning the distribution surface beats renting it.
+Publishing a post is a deploy. That's deliberate: the deploy is cheap enough that it never becomes the bottleneck, and owning the distribution surface beats renting it.
+
+## The template underneath
+
+Almost none of that foundation was built here. It was built first in [a TanStack Start template](https://github.com/neely-labs/tanstack-start-template) that lives in its own public repository, and this site was started from it. The reasoning wasn't reuse for its own sake. The opening stretch of any new project is always the same stretch - routing, styling, linting, tests, a production build, SEO plumbing, CI - and that work is easy to do and easy to do slightly wrong. The slightly wrong version doesn't announce itself, it just sits there as a page no crawler ever saw. So I did it once, on purpose, in a repository whose only job is to be a starting point, and kept every product decision out of it.
+
+What makes it worth talking about isn't the dependency list, it's the handful of places where it refuses to let you get something wrong. Every route in the application is classified exactly once, `public` or `private`, in a single file typed against the route tree TanStack Router generates. Public means the route is prerendered, listed in `sitemap.xml`, and inspected after the build. Because that classification has to be exhaustive, adding a route and forgetting to classify it doesn't quietly ship a page missing from the sitemap. It fails `pnpm typecheck`. A decision you forgot to make becomes a compiler error instead of a hole in your search presence.
+
+This site takes that one step further: `/writing/$slug` is a placeholder rather than a URL, so the inventory here also carries the function that expands it into every published post before the prerenderer ever sees it.
+
+The SEO check has the same temperament. It doesn't read the configuration and agree with itself. It opens the HTML the build actually wrote to disk and asserts against that: one title, one description, one canonical URL pointing where it should point, Open Graph tags, JSON-LD, an `<h1>` that exists before hydration, and no two pages sharing a title. Configuration that is correct and output that is correct are two different claims, and only the second one is visible to a crawler. Public identity works the same way - name, origin, social card, theme colour live in one config module, and `robots.txt` and `manifest.json` are generated from it at build time instead of sitting in `public/` going stale.
+
+All of it is one command. `pnpm validate` runs lint, types, tests, the Nitro build, the prerender, and the rendered SEO check, and finishes in about five seconds. The same command runs before every push and again in CI, so there's one gate and one answer rather than a local ritual that disagrees with the pipeline. Five seconds is short enough that I run it out of habit instead of stopping to guess which stage a change could have broken.
+
+The payoff is that this repository started from a considered baseline instead of an empty directory. The template deliberately declines to pick a database, an auth provider, or an analytics vendor, which left me free to pick none of them here. The boring parts were solved before I opened the editor, so the work on nickneely.dev went into the parts that are actually mine: the door, and the pipeline that turns a Markdown file into a post, an OG image, an RSS item, and a prerendered page. The template is public and MIT licensed, in case any of that sounds like a week you'd rather not spend.
 
 ## The design rule I actually care about
 
@@ -33,6 +47,6 @@ The visual direction is typography-driven and dark by default: one display face 
 
 > Motion only ever confirms an action the reader took. Nothing moves because it scrolled into view.
 
-Sites that animate on arrival read as templates. Sites that animate on interaction read as craft. Everything animated on this site - the underline that draws on hover, the blinking cursor in the hero, the route transitions - happens because you did something, and all of it respects `prefers-reduced-motion`.
+Sites that animate on arrival read like an off-the-shelf theme. Sites that animate on interaction read as craft. Everything animated on this site - the underline that draws on hover, the blinking cursor in the hero, the route transitions - happens because you did something, and all of it respects `prefers-reduced-motion`.
 
 The one indulgence is the cursor itself. This project's codename was "front door," and the blinking block at the end of my name is exactly that: a door. Try opening it.

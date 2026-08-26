@@ -333,7 +333,10 @@ stage "Verify the launched site"
 say "Checking the production origin end to end."
 if command -v curl >/dev/null 2>&1; then
   for path in "/" "/work" "/projects" "/writing" "/subscribe" "/rss.xml" "/sitemap.xml" "/robots.txt"; do
-    if curl -sfI --max-time 20 "https://nickneely.dev${path}" >/dev/null 2>&1; then
+    # The status is read rather than trusted to curl's exit code: -f treats a
+    # 301 or 308 as success, and a route that redirects has not answered.
+    status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://nickneely.dev${path}" 2>/dev/null || true)
+    if [[ "$status" == "200" ]]; then
       say "✓ ${path}"
     else
       warn "✗ ${path} did not answer 200"

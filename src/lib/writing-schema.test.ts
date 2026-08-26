@@ -59,17 +59,25 @@ describe("writing frontmatter", () => {
     ).toBeFalsy();
   });
 
+  // The override is resolved against the origin for `og:image` and used as a
+  // file name during the build, so anything that can name another host is
+  // refused here rather than published as this Post's card.
+  it.each([
+    "https://example.com/card.png",
+    "//example.com/card.png",
+    String.raw`/\example.com/card.png`,
+    "og/custom.png",
+  ])("rejects the ogImage %j", (ogImage) => {
+    expect(
+      writingFrontmatterSchema.safeParse({ ...valid, ogImage }).success
+    ).toBeFalsy();
+  });
+
   it("keeps an ogImage override site-relative", () => {
     expect(
       writingFrontmatterSchema.safeParse({
         ...valid,
-        ogImage: "https://example.com/card.png",
-      }).success
-    ).toBeFalsy();
-    expect(
-      writingFrontmatterSchema.safeParse({
-        ...valid,
-        ogImage: "/og/custom.png",
+        ogImage: "/og/writing/a-real-post.png",
       }).success
     ).toBeTruthy();
   });

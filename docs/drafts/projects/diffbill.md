@@ -10,7 +10,7 @@ Content draft for `/projects/diffbill`. Not site code. Voice is first person as 
 >
 > Nick's direction (2026-08-25) is to write this page as though all three are in their ideal state, so sections 3 and 4 now describe the fixed behavior rather than the gap:
 >
-> - **#156** - the GitHub trust section corrected: short diff excerpts are read and stored, and diffbill *never writes* rather than *cannot* write.
+> - **#156** - the GitHub trust section corrected: short diff excerpts are read and stored, and diffbill _never writes_ rather than _cannot_ write.
 > - **#157** - the redactor applied to patch excerpts and commit messages, not only to the PR body excerpt.
 > - **#158** - the revoke-access claim made true: disconnecting GitHub actually purges the synced data.
 >

@@ -209,6 +209,16 @@ for (const post of posts) {
   );
 }
 
+// The GitHub activity read is server-only: the module carries the `.server`
+// suffix, the token it reads lives in the environment, and the home route
+// reaches it through a server function. Any of these strings in a client chunk
+// would mean that arrangement quietly stopped holding.
+const serverOnlyStrings = [
+  "github-activity.server",
+  "GITHUB_ACTIVITY_TOKEN",
+  "api.github.com/users",
+];
+
 // Shiki runs during the build. Any of it reaching a client chunk would mean a
 // megabyte of grammars shipped to highlight code that is already highlighted.
 const clientScripts = readdirSync(path.resolve(".output/public/assets")).filter(
@@ -226,6 +236,13 @@ for (const fileName of clientScripts) {
     !source.includes("createHighlighter"),
     `${fileName} must not contain a syntax highlighter`
   );
+
+  for (const serverOnly of serverOnlyStrings) {
+    assert.ok(
+      !source.includes(serverOnly),
+      `${fileName} must not contain the server-only ${serverOnly}`
+    );
+  }
 }
 
 console.log(

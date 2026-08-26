@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { fitTitle } from "./og-card-layout.ts";
+import { fitTitle, ogCardSize } from "./og-card-layout.ts";
+
+/**
+ * The drawable width, and the glyph advance the layout fits lines to. Kept
+ * here rather than exported so the test states the limit it is asserting
+ * instead of borrowing the arithmetic it is checking.
+ */
+const contentWidth = ogCardSize.width - ogCardSize.padding * 2;
+const averageGlyphWidth = 0.54;
 
 describe("the social card title", () => {
   it("uses the largest size for a title that fits one line", () => {
@@ -17,6 +25,20 @@ describe("the social card title", () => {
 
     expect(long.lines.length).toBeLessThanOrEqual(3);
     expect(long.fontSize).toBeLessThan(76);
+  });
+
+  it("breaks a token no line could hold, rather than letting it run off the card", () => {
+    const { fontSize, lines } = fitTitle(
+      "https://nickneely.dev/writing/an-unbreakable-identifier-no-line-can-hold"
+    );
+    const maxCharacters = Math.floor(
+      contentWidth / (fontSize * averageGlyphWidth)
+    );
+
+    expect(lines.length).toBeGreaterThan(1);
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(maxCharacters);
+    }
   });
 
   it("truncates once even the smallest size runs out of room", () => {

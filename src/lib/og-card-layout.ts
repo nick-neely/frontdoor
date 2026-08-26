@@ -20,6 +20,26 @@ const maxTitleLines = 3;
  */
 const averageGlyphWidth = 0.54;
 
+/**
+ * A token too long for any line - a URL, a hashed identifier - cut into pieces
+ * that fit. Nothing shorter is ever cut. Without this a single such token is
+ * accepted whole onto an empty line and runs off the edge of the canvas,
+ * because there is no space in it for a break to land on.
+ */
+function breakToken(token: string, maxCharacters: number): string[] {
+  if (token.length <= maxCharacters) {
+    return [token];
+  }
+
+  const pieces: string[] = [];
+
+  for (let start = 0; start < token.length; start += maxCharacters) {
+    pieces.push(token.slice(start, start + maxCharacters));
+  }
+
+  return pieces;
+}
+
 function wrap(title: string, fontSize: number): string[] {
   const maxCharacters = Math.floor(
     contentWidth / (fontSize * averageGlyphWidth)
@@ -28,13 +48,15 @@ function wrap(title: string, fontSize: number): string[] {
   let current = "";
 
   for (const word of title.split(/\s+/u).filter((part) => part.length > 0)) {
-    const candidate = current === "" ? word : `${current} ${word}`;
+    for (const piece of breakToken(word, maxCharacters)) {
+      const candidate = current === "" ? piece : `${current} ${piece}`;
 
-    if (candidate.length <= maxCharacters || current === "") {
-      current = candidate;
-    } else {
-      lines.push(current);
-      current = word;
+      if (candidate.length <= maxCharacters) {
+        current = candidate;
+      } else {
+        lines.push(current);
+        current = piece;
+      }
     }
   }
 

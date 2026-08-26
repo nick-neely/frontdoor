@@ -40,6 +40,15 @@ export const pillarLabels = {
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 /**
+ * One leading slash and no backslashes. A second slash makes the value a
+ * network-path reference, and a backslash is treated as one by every browser,
+ * so either would send `absoluteUrl` to a foreign origin and publish that as
+ * this Post's `og:image`. The path is also a file name under `.output/public`
+ * during the build, which the same constraint keeps honest.
+ */
+const sitePathPattern = /^\/(?![/\\])[^\\]*$/u;
+
+/**
  * Frontmatter for everything under `content/writing`. Posts and Notes share
  * the schema and the namespace; `kind` is what separates them, and the visible
  * split is deferred.
@@ -51,7 +60,7 @@ export const writingFrontmatterSchema = z.object({
   draft: z.boolean().default(false),
   kind: z.enum(["post", "note"]).default("post"),
   /** Site-relative path to a hand-made card, replacing the generated one. */
-  ogImage: z.string().startsWith("/").optional(),
+  ogImage: z.string().regex(sitePathPattern).optional(),
   pillar: z.enum(pillarIds),
   published: z.iso.date(),
   slug: z.string().regex(slugPattern),

@@ -27,7 +27,7 @@ That single rule is the line between intriguing and generic. Sites that animate 
 
 - Hover underline draw, about 120ms, in accent amber.
 - The hero cursor blink, about 1.06s, an actual terminal cadence rather than a CSS default.
-- The front-door cursor opening and closing, strictly reader-triggered: a hover crack of about 120ms and a click swing that reveals the easter-egg line. Under reduced motion the states swap instantly with no transition.
+- The front-door cursor opening and closing, strictly reader-triggered: a hover crack of about 120ms and a click swing that reveals the easter-egg line. Under reduced motion the open state swaps in instantly with no transition, and the hover crack does not run at all.
 - Route-change view transitions, about 150ms, with a shared-element transition on a post title. This is the one place motion explains where the page went.
 - `focus-visible` rings.
 - One state transition on newsletter subscribe success.

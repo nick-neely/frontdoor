@@ -709,6 +709,10 @@
   .prose img,
   .prose video {
     @apply rounded-md;
+    /* Paired with `max-width` on purpose: an author who writes intrinsic
+     * `width` and `height` attributes gets a correctly reserved aspect ratio,
+     * and the height still yields when the measure is narrower than the file. */
+    height: auto;
     max-width: 100%;
   }
 

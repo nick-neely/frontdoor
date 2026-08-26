@@ -51,13 +51,14 @@ export function ConfirmSubscriptionEmail({
 }
 
 /**
- * Sample data for `pnpm email`. The token is nonsense that happens to have the
- * right shape, because a preview should look like the real thing and a real
- * signature has no business sitting in the repository.
+ * Sample data for `pnpm email`. The token carries the three fields a real one
+ * has - base64url address, epoch milliseconds, signature - and says in the
+ * signature field that it is not a signature, so nothing here reads as a
+ * credential to a human or to a secret scanner.
  */
 ConfirmSubscriptionEmail.PreviewProps = {
   confirmUrl:
-    "https://nickneely.dev/subscribe?token=cmVhZGVyQGV4YW1wbGUuY29t.1787000000000.cHJldmlldy1vbmx5LW5vdC1hLXNpZ25hdHVyZQ",
+    "https://nickneely.dev/subscribe?token=cHJldmlld0BleGFtcGxlLmNvbQ.1787000000000.preview-signature-not-real",
 } satisfies ConfirmSubscriptionProps;
 
 export default ConfirmSubscriptionEmail;

@@ -107,6 +107,8 @@ export const projects: readonly Project[] = [
     name: "diffbill",
     status: "active",
     url: "https://diffbill.com",
+    // Year per the Project table in issue #6, which Nick wrote. That
+    // table is the documented source for this one.
     year: 2026,
   },
   {
@@ -125,6 +127,8 @@ export const projects: readonly Project[] = [
     name: "Frontline Fuel",
     status: "shipped",
     url: "https://drinkfrontlinefuel.com",
+    // Year per the Project table in issue #6, which Nick wrote. That
+    // table is the documented source for this one.
     year: 2026,
   },
   {
