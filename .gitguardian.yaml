@@ -1,0 +1,10 @@
+# GitGuardian secret-scanning configuration (ggshield v2 schema).
+version: 2
+
+secret:
+  ignored_paths:
+    # React Email preview data for `pnpm email`. Earlier revisions carried a
+    # realistic-shaped sample confirm token that scanners read as a JWT-like
+    # credential; it never was one, and the current file contains nothing
+    # token-shaped. Ignored by path so historical commits stop failing scans.
+    - "src/emails/confirm-subscription.tsx"

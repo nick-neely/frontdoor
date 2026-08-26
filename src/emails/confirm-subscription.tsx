@@ -51,14 +51,13 @@ export function ConfirmSubscriptionEmail({
 }
 
 /**
- * Sample data for `pnpm email`. The token carries the three fields a real one
- * has - base64url address, epoch milliseconds, signature - and says in the
- * signature field that it is not a signature, so nothing here reads as a
- * credential to a human or to a secret scanner.
+ * Sample data for `pnpm email`. The template only interpolates the URL, so the
+ * preview needs no token-shaped value at all - and anything shaped like one
+ * (dotted fields, base64-ish segments) reads as a JWT to secret scanners.
  */
 ConfirmSubscriptionEmail.PreviewProps = {
   confirmUrl:
-    "https://nickneely.dev/subscribe?token=cHJldmlld0BleGFtcGxlLmNvbQ.1787000000000.preview-signature-not-real",
+    "https://nickneely.dev/subscribe?token=preview-token-for-email-rendering-only",
 } satisfies ConfirmSubscriptionProps;
 
 export default ConfirmSubscriptionEmail;
