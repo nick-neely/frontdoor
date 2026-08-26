@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+import { projectPages } from "../src/lib/project-pages.ts";
+import { projectOgImagePath, projectPath } from "../src/lib/projects.ts";
 import { publicPaths } from "../src/lib/public-routes.ts";
 import { siteConfig } from "../src/lib/site-config.ts";
 import { generatedSiteFiles } from "../src/lib/site-files.ts";
@@ -209,6 +211,36 @@ for (const post of posts) {
   );
 }
 
+// A Project detail page carries a card of its own and a schema naming the
+// thing it is about. Same treatment as a Post: verified in the output rather
+// than trusted from configuration.
+for (const page of projectPages) {
+  const routePath = projectPath(page.slug);
+  const html = readFileSync(htmlOutputPath(routePath), "utf-8");
+  const imagePath = projectOgImagePath(page.slug);
+  const imageUrl = `${siteConfig.origin}${imagePath}`;
+
+  assert.ok(
+    html.includes(`content="${imageUrl}" property="og:image"`),
+    `${routePath}: generated card referenced absolutely`
+  );
+  assert.ok(
+    html.includes('"@type":"SoftwareApplication"') ||
+      html.includes('"@type":"CreativeWork"'),
+    `${routePath}: Project schema`
+  );
+  assert.ok(
+    html.includes(`"mainEntityOfPage":"${siteConfig.origin}${routePath}"`),
+    `${routePath}: schema points at the page it is on`
+  );
+
+  assertPng(
+    imagePath.slice(1),
+    siteConfig.socialImage.width,
+    siteConfig.socialImage.height
+  );
+}
+
 // The GitHub activity read is server-only: the module carries the `.server`
 // suffix, the token it reads lives in the environment, and the home route
 // reaches it through a server function. Any of these strings in a client chunk
@@ -258,5 +290,5 @@ for (const fileName of clientScripts) {
 }
 
 console.log(
-  `Verified SEO output for ${publicPaths.length} public pages, ${posts.length} generated cards, and the feed.`
+  `Verified SEO output for ${publicPaths.length} public pages, ${posts.length + projectPages.length} generated cards, and the feed.`
 );

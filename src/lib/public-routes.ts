@@ -1,4 +1,6 @@
 import type { FileRouteTypes } from "../routeTree.gen.ts";
+import { readProjectPages } from "./projects-source.ts";
+import { projectPath } from "./projects.ts";
 import { postPath } from "./writing-schema.ts";
 import { readPublishedWriting } from "./writing-source.ts";
 
@@ -24,6 +26,7 @@ const routeVisibility = {
   // list in the sitemap, or verify with `pnpm seo:verify`.
   "/api/health": "private",
   "/projects": "public",
+  "/projects/$slug": "public",
   // The confirm landing is the same document, reached with `?token=...`. A
   // query string does not make a second page, so there is one entry here and
   // one URL in the sitemap.
@@ -39,6 +42,11 @@ const routeVisibility = {
  * to expand it fails `pnpm typecheck`.
  */
 const dynamicRouteExpansions = {
+  // A Project only has a detail page when someone wrote one, so this expands
+  // over `content/projects` rather than over the inventory: the rows without a
+  // page keep linking straight out to the live thing.
+  "/projects/$slug": () =>
+    readProjectPages().map((page) => projectPath(page.slug)),
   "/writing/$slug": () => readPublishedWriting().map(postPath),
 } as const satisfies Record<DynamicRoutePath, () => string[]>;
 

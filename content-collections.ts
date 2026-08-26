@@ -3,11 +3,32 @@ import path from "node:path";
 
 import { defineCollection, defineConfig } from "@content-collections/core";
 
+import { projectFrontmatterSchema } from "./src/lib/project-schema.ts";
 import { readingMinutes } from "./src/lib/reading-time.ts";
 import { writingFrontmatterSchema } from "./src/lib/writing-schema.ts";
 
 const writingDirectory = "content/writing";
+const projectsDirectory = "content/projects";
 const mdxExtension = ".mdx";
+
+/**
+ * The slug is hand-authored and immutable, and it is also how every other
+ * surface finds the body module. A silent mismatch would produce a document
+ * that renders at one URL and 404s at the one the site advertises.
+ */
+function assertSlugMatchesFileName(
+  directory: string,
+  fileName: string,
+  slug: string
+): void {
+  const stem = path.basename(fileName, mdxExtension);
+
+  if (slug !== stem) {
+    throw new Error(
+      `${directory}/${fileName}: frontmatter slug "${slug}" must match the file name "${stem}${mdxExtension}".`
+    );
+  }
+}
 
 /**
  * The typed index of everything under `content/writing`, per ADR-0001. It
@@ -28,16 +49,8 @@ const writing = defineCollection({
   transform: (document) => {
     const { _meta, ...frontmatter } = document;
     const { fileName } = _meta;
-    const stem = path.basename(fileName, mdxExtension);
 
-    // The slug is hand-authored and immutable, and it is also how every other
-    // surface finds the body module. A silent mismatch would produce a Post
-    // that renders at one URL and 404s at the one the feed advertises.
-    if (frontmatter.slug !== stem) {
-      throw new Error(
-        `content/writing/${fileName}: frontmatter slug "${frontmatter.slug}" must match the file name "${stem}${mdxExtension}".`
-      );
-    }
+    assertSlugMatchesFileName(writingDirectory, fileName, frontmatter.slug);
 
     const source = readFileSync(
       path.join(writingDirectory, _meta.filePath),
@@ -53,4 +66,30 @@ const writing = defineCollection({
   typeName: "Post",
 });
 
-export default defineConfig({ content: [writing] });
+/**
+ * The typed index of every Project detail page. Same arrangement as `writing`
+ * and for the same reason: `@mdx-js/rollup` compiles each body into its own
+ * module, so the list page can ask whether a Project has a page without
+ * loading a word of the prose on it.
+ *
+ * Frontmatter is two fields, because `src/lib/projects.ts` is the single
+ * source of everything else a page shows about a Project.
+ */
+const projectPage = defineCollection({
+  directory: projectsDirectory,
+  include: `*${mdxExtension}`,
+  name: "projectPage",
+  parser: "frontmatter-only",
+  schema: projectFrontmatterSchema,
+  transform: (document) => {
+    const { _meta, ...frontmatter } = document;
+    const { fileName } = _meta;
+
+    assertSlugMatchesFileName(projectsDirectory, fileName, frontmatter.slug);
+
+    return { ...frontmatter, fileName };
+  },
+  typeName: "ProjectPage",
+});
+
+export default defineConfig({ content: [writing, projectPage] });

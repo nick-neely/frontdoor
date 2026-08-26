@@ -12,27 +12,39 @@ import type { Connect, Plugin } from "vite";
 import { imagetools } from "vite-imagetools";
 
 import { mdxOptions } from "./src/lib/mdx-options.ts";
+import type { OgCardContent } from "./src/lib/og-card-layout.ts";
 import { renderOgImage } from "./src/lib/og-image.ts";
+import { readProjectPages } from "./src/lib/projects-source.ts";
+import {
+  findProject,
+  projectOgCard,
+  projectOgImagePath,
+} from "./src/lib/projects.ts";
 import { publicPaths } from "./src/lib/public-routes.ts";
 import { renderRssFeed } from "./src/lib/rss.ts";
 import { siteConfig } from "./src/lib/site-config.ts";
 import { generatedSiteFiles } from "./src/lib/site-files.ts";
-import { postOgImagePath } from "./src/lib/writing-schema.ts";
-import type { WritingFrontmatter } from "./src/lib/writing-schema.ts";
+import { postOgCard, postOgImagePath } from "./src/lib/writing-schema.ts";
 import { isDraftBody, readPublishedWriting } from "./src/lib/writing-source.ts";
 
 const feedFileName = siteConfig.links.rss.replace(/^\//u, "");
 
+/** One card the build has to draw, and where it lands in the output. */
+interface GeneratedCard {
+  content: OgCardContent;
+  fileName: string;
+}
+
 /** Renders one card on demand in development, where no bundle is emitted. */
 async function serveOgImage(
-  post: WritingFrontmatter,
+  card: GeneratedCard,
   response: ServerResponse,
   next: Connect.NextFunction
 ): Promise<void> {
   let png: Uint8Array;
 
   try {
-    png = await renderOgImage(post);
+    png = await renderOgImage(card.content);
   } catch (error) {
     next(error);
     return;
@@ -85,28 +97,53 @@ function siteFiles(): Plugin {
   };
 }
 
-function cardFileName(post: WritingFrontmatter): string {
-  return postOgImagePath(post).replace(/^\//u, "");
-}
-
-/** Posts whose card the build has to draw, rather than one already in `public/`. */
-function generatedCards(): WritingFrontmatter[] {
-  return readPublishedWriting().filter((post) => post.ogImage === undefined);
+function cardFileName(cardPath: string): string {
+  return cardPath.replace(/^\//u, "");
 }
 
 /**
- * Emits the artefacts a Post owns but no route renders: the feed the footer
- * links, and one generated social card per Post.
+ * Every social card the build draws: one per published Post, one per Project
+ * detail page. A Post that names its own `ogImage` is skipped, because a
+ * hand-made card is already in `public/`.
  *
- * Both read the same published set as the prerender inventory, so a draft or a
- * renamed slug moves everywhere at once. Cards are only generated for Posts
- * that do not override `ogImage`, since a hand-made card is already in
- * `public/`.
+ * Both halves read the same sources as the prerender inventory, so a draft, a
+ * renamed slug, or a detail page that has not been written yet moves the card,
+ * the page, and the sitemap entry together.
+ */
+function generatedCards(): GeneratedCard[] {
+  const writingCards = readPublishedWriting()
+    .filter((post) => post.ogImage === undefined)
+    .map((post) => ({
+      content: postOgCard(post),
+      fileName: cardFileName(postOgImagePath(post)),
+    }));
+
+  const projectCards = readProjectPages().flatMap((page) => {
+    // The frontmatter contract already refuses a page whose slug names no
+    // Project, so this is exhaustiveness rather than a real branch.
+    const project = findProject(page.slug);
+
+    return project === undefined
+      ? []
+      : [
+          {
+            content: projectOgCard(project),
+            fileName: cardFileName(projectOgImagePath(project.slug)),
+          },
+        ];
+  });
+
+  return [...writingCards, ...projectCards];
+}
+
+/**
+ * Emits the artefacts the content owns but no route renders: the feed the
+ * footer links, and every generated social card.
  *
  * `enforce: "pre"` for the same reason as `siteFiles`: the development
  * middleware has to beat the application's catch-all handler.
  */
-function writingArtifacts(): Plugin {
+function contentArtifacts(): Plugin {
   return {
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
@@ -122,7 +159,7 @@ function writingArtifacts(): Plugin {
         }
 
         const card = generatedCards().find(
-          (post) => cardFileName(post) === name
+          (generated) => generated.fileName === name
         );
 
         if (card === undefined) {
@@ -146,9 +183,9 @@ function writingArtifacts(): Plugin {
       });
 
       const rendered = await Promise.all(
-        generatedCards().map(async (post) => ({
-          fileName: cardFileName(post),
-          source: await renderOgImage(post),
+        generatedCards().map(async (card) => ({
+          fileName: card.fileName,
+          source: await renderOgImage(card.content),
         }))
       );
 
@@ -156,7 +193,7 @@ function writingArtifacts(): Plugin {
         this.emitFile({ ...card, type: "asset" });
       }
     },
-    name: "writing-artifacts",
+    name: "content-artifacts",
   };
 }
 
@@ -215,7 +252,7 @@ const config = defineConfig({
     nitro(),
     viteReact(),
     siteFiles(),
-    writingArtifacts(),
+    contentArtifacts(),
   ],
   resolve: { tsconfigPaths: true },
 });

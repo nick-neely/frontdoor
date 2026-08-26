@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
 
 import { fitTitle, ogCardSize } from "./og-card-layout.ts";
-import { formatPostDate, pillarLabel } from "./writing-schema.ts";
-import type { WritingFrontmatter } from "./writing-schema.ts";
+import type { OgCardContent } from "./og-card-layout.ts";
 
 /**
  * The card's own palette. It is deliberately literal rather than tokenised:
@@ -34,8 +33,8 @@ const doorMark = `data:image/svg+xml;base64,${Buffer.from(
   ].join("")
 ).toString("base64")}`;
 
-export function OgCard(post: WritingFrontmatter): ReactElement {
-  const { fontSize, lines } = fitTitle(post.title);
+export function OgCard({ meta, title }: OgCardContent): ReactElement {
+  const { fontSize, lines } = fitTitle(title);
 
   return (
     <div
@@ -109,9 +108,15 @@ export function OgCard(post: WritingFrontmatter): ReactElement {
             width: 10,
           }}
         />
-        <div>{pillarLabel(post)}</div>
-        <div style={{ color: ink.separator }}>·</div>
-        <div>{formatPostDate(post.published)}</div>
+        {meta.map((part, index) => (
+          <div
+            key={part}
+            style={{ alignItems: "center", display: "flex", gap: 14 }}
+          >
+            {index === 0 ? null : <div style={{ color: ink.separator }}>·</div>}
+            <div>{part}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

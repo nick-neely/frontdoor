@@ -35,6 +35,21 @@ interface ArticleSchemaOptions {
   url: string;
 }
 
+interface ProjectSchemaOptions {
+  description: string;
+  imageUrl: string;
+  name: string;
+  /** The live site, and the source repository when one is public. */
+  sameAs: readonly string[];
+  /**
+   * A shipped piece of software is a `SoftwareApplication`; anything else this
+   * site calls a Project is a `CreativeWork`. Neither carries offers or
+   * ratings, because this site has none to state.
+   */
+  type: "CreativeWork" | "SoftwareApplication";
+  url: string;
+}
+
 interface WebPageSchemaOptions {
   description: string;
   name: string;
@@ -174,6 +189,43 @@ export function createArticleSchema({
   return dateModified === undefined
     ? article
     : ({ ...article, dateModified } satisfies StructuredData);
+}
+
+/**
+ * The thing a Project detail page is about. Deliberately thin: name, what it
+ * does, who made it, where else it lives, and the page itself. A
+ * `SoftwareApplication` can also carry price and rating, and Google wants both
+ * before it will draw a rich result - but this site has neither a price it
+ * charges nor a rating anyone gave, and inventing either to win a search
+ * feature is the exact trade `AGENTS.md` forbids.
+ */
+export function createProjectSchema({
+  description,
+  imageUrl,
+  name,
+  sameAs,
+  type,
+  url,
+}: ProjectSchemaOptions) {
+  const author = {
+    "@type": "Person",
+    name: siteConfig.name,
+    url: `${siteConfig.origin}/`,
+  } satisfies StructuredData;
+
+  return {
+    "@id": `${url}#project`,
+    "@type": type,
+    author,
+    description,
+    image: imageUrl,
+    inLanguage: siteConfig.language,
+    isPartOf: { "@id": `${siteConfig.origin}/#website` },
+    mainEntityOfPage: url,
+    name,
+    sameAs,
+    url,
+  } satisfies StructuredData;
 }
 
 export function createGraph(items: readonly StructuredData[]) {

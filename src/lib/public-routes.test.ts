@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { projectPages } from "./project-pages.ts";
+import { projectPath } from "./projects.ts";
 import { publicPaths } from "./public-routes.ts";
 import { postPath, posts } from "./writing.ts";
 
@@ -20,6 +22,18 @@ describe("public route inventory", () => {
     for (const routePath of publicPaths) {
       expect(routePath).not.toContain("$");
     }
+  });
+
+  it("lists exactly the authored detail pages under /projects", () => {
+    // Only a Project with a page gets a URL. The rest are rows that link
+    // straight out, and a path for one of them would prerender a 404.
+    const listed = publicPaths.filter((routePath) =>
+      routePath.startsWith("/projects/")
+    );
+
+    expect(listed.toSorted()).toStrictEqual(
+      projectPages.map((page) => projectPath(page.slug)).toSorted()
+    );
   });
 
   it("lists exactly the published Posts under /writing", () => {

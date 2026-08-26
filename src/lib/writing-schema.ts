@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import type { OgCardContent } from "./og-card-layout.ts";
 import { siteConfig } from "./site-config.ts";
 
 /**
@@ -133,4 +134,12 @@ export function pillarLabel(post: WritingFrontmatter): string {
 /** `2026-08-25` as `August 25, 2026`. */
 export function formatPostDate(date: string): string {
   return dateFormatter.format(new Date(`${date}T00:00:00Z`));
+}
+
+/** What a Post's generated social card says: the title, the Pillar, the date. */
+export function postOgCard(post: WritingFrontmatter): OgCardContent {
+  return {
+    meta: [pillarLabel(post), formatPostDate(post.published)],
+    title: post.title,
+  };
 }

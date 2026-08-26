@@ -1,11 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { ProjectMeta } from "@/components/project-meta.tsx";
+import { hasProjectPage } from "@/lib/project-pages.ts";
 import type { Project, ProjectFeature } from "@/lib/projects.ts";
-import {
-  projectKindLabels,
-  projects,
-  projectStatusLabels,
-} from "@/lib/projects.ts";
+import { projects, projectTitleTransitionName } from "@/lib/projects.ts";
 import {
   createGraph,
   createSeoHead,
@@ -46,7 +44,7 @@ function ProjectsPage() {
         </p>
         <ul className="mt-14 border-t">
           {projects.map((project) => (
-            <ProjectRow key={project.url} project={project} />
+            <ProjectRow key={project.slug} project={project} />
           ))}
         </ul>
       </section>
@@ -54,66 +52,59 @@ function ProjectsPage() {
   );
 }
 
+/**
+ * The name, and where it goes.
+ *
+ * A Project with a detail page sends the reader inward, and the name carries
+ * the shared-element transition into the heading it becomes. A Project without
+ * one has exactly one address worth having, so its name goes straight there.
+ * Either way the live site is reachable: rows that link inward carry it in the
+ * metadata cluster below instead.
+ */
+function ProjectName({ project }: { project: Project }) {
+  if (!hasProjectPage(project.slug)) {
+    return (
+      <a
+        className="link-underline hover:text-foreground"
+        href={project.url}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {project.name}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      className="link-underline hover:text-foreground"
+      params={{ slug: project.slug }}
+      style={{ viewTransitionName: projectTitleTransitionName(project.slug) }}
+      to="/projects/$slug"
+    >
+      {project.name}
+    </Link>
+  );
+}
+
 function ProjectRow({ project }: { project: Project }) {
   return (
     <li className="border-b py-8 sm:py-10">
       <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-        <a
-          className="link-underline hover:text-foreground"
-          href={project.url}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {project.name}
-        </a>
+        <ProjectName project={project} />
       </h2>
       <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">
         {project.description}
       </p>
-      <ProjectMeta project={project} />
+      <ProjectMeta
+        className="mt-5"
+        links={hasProjectPage(project.slug)}
+        project={project}
+      />
       {project.featured === undefined ? null : (
         <FeaturedDetail feature={project.featured} name={project.name} />
       )}
     </li>
-  );
-}
-
-/**
- * The metadata cluster. A description list rather than a row of spans, so a
- * screen reader hears "Status, Active, Kind, Product, Year, 2026" instead of
- * three unlabelled fragments. The dot is decorative: the status it signals is
- * spelled out beside it.
- */
-function ProjectMeta({ project }: { project: Project }) {
-  // Amber marks the one status that means work is happening right now. Every
-  // other status takes the muted dot, which is what keeps the accent readable
-  // as a signal rather than as decoration.
-  const dotClass =
-    project.status === "active" ? "bg-signal" : "bg-muted-foreground/60";
-
-  return (
-    <dl className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs text-muted-foreground">
-      <div className="flex items-center">
-        <dt className="sr-only">Status</dt>
-        <dd className="flex items-center gap-2">
-          <span
-            aria-hidden="true"
-            className={`size-1.5 shrink-0 rounded-full ${dotClass}`}
-          />
-          {projectStatusLabels[project.status]}
-        </dd>
-      </div>
-      <div>
-        <dt className="sr-only">Kind</dt>
-        <dd>{projectKindLabels[project.kind]}</dd>
-      </div>
-      {project.year === null ? null : (
-        <div>
-          <dt className="sr-only">Year</dt>
-          <dd>{project.year}</dd>
-        </div>
-      )}
-    </dl>
   );
 }
 
@@ -150,6 +141,8 @@ function FeaturedDetail({
         <img
           alt={feature.screenshot.alt}
           className="aspect-[16/10] w-full rounded-lg border object-cover"
+          decoding="async"
+          loading="lazy"
           src={feature.screenshot.src}
         />
       )}

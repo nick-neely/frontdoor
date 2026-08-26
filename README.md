@@ -27,7 +27,7 @@ Open `http://localhost:3000`. Copy `.env.example` to `.env` when working on the 
 ## Commands
 
 ```bash
-pnpm content    # Rebuild the typed writing index (also runs on install, and inside check, dev, and build)
+pnpm content    # Rebuild the typed writing and project-page indexes (also runs on install, and inside check, dev, and build)
 pnpm dev        # Start the development server
 pnpm email      # Preview the newsletter templates at http://localhost:3001
 pnpm broadcast  # Draft a broadcast in Resend from a Post slug; it never sends
@@ -44,17 +44,19 @@ pnpm validate   # Run every CI and pre-push gate
 ## Project shape
 
 - `content/writing` holds authored MDX. Frontmatter is the source of truth for a Post's slug, Pillar, and publication date. A Post's pictures live in the sibling directory `content/writing/<slug>/` and are written as ordinary relative Markdown images: `![alt](./shot.png "Optional caption")`.
-- `content-collections.ts` builds the typed frontmatter index into `.content-collections/generated`. Post bodies stay out of it; see `docs/adr/0001-mdx-compiled-as-modules.md`.
+- `content/projects` holds one MDX detail page per Project that has the material for one. Its frontmatter is two fields, `slug` and `dek`: `src/lib/projects.ts` stays the single source of a Project's kind, status, year, live URL, and repository, so a page carries prose and pictures and nothing else. Pictures are colocated in `content/projects/<slug>/` and written as the same relative Markdown images. A Project with no page keeps linking straight out from the list.
+- `content-collections.ts` builds the typed frontmatter index of both collections into `.content-collections/generated`. Bodies stay out of it; see `docs/adr/0001-mdx-compiled-as-modules.md`.
 - `src/lib/mdx-options.ts` is the whole compile pipeline: frontmatter, GFM, heading slugs, Shiki, and the two authoring conveniences below. `src/lib/remark-post-images.ts` rewrites colocated images into imports that `vite-imagetools` resizes and re-encodes through sharp, so every picture ships hashed, in a modern format, with intrinsic dimensions. `src/lib/mdx-code-meta.ts` owns the one fence-meta vocabulary: ` ```ts title="src/lib/x.ts" {2,5-7} `.
 - `src/components/mdx-components.tsx` is what a Post's prose renders through. `figure.tsx`, `code-block.tsx`, and `copy-button.tsx` are the three components in it; everything else is typography in the `.prose` block of `src/styles.css`.
 - `content/writing/writing-surface-fixture.mdx` is a permanent draft that exercises every one of those affordances on one page. It is excluded from the list, the feed, the sitemap, and the build; a draft opens at its own URL in development, which is how it is reviewed.
 - `src/lib/writing-schema.ts` holds the frontmatter contract and everything derived from it. `src/lib/writing.ts` is what pages read; `src/lib/writing-source.ts` is what the build reads. They share the schema and are asserted to agree.
+- Project detail pages repeat that arrangement: `src/lib/project-schema.ts` is the contract, `src/lib/project-pages.ts` is what pages read, `src/lib/projects-source.ts` is what the build reads, and a test asserts the two readers agree.
 - `src/routes` owns file-based routes and route-level metadata.
 - `src/lib/site-config.ts` is the single seam for public identity and canonical origin.
 - `src/lib/seo.ts` builds page metadata and JSON-LD from that config.
 - `src/lib/site-files.ts` generates `robots.txt` and `manifest.json`, so nothing under `public/` restates identity.
-- `src/lib/public-routes.ts` classifies every route as `public` or `private` and expands `/writing/$slug` into real paths. It is the prerender and sitemap inventory, checked against the generated route tree at compile time.
-- `src/lib/rss.ts` and `src/lib/og-image.ts` produce `/rss.xml` and one social card per Post; `vite.config.ts` emits both into the build output and serves them in development.
+- `src/lib/public-routes.ts` classifies every route as `public` or `private` and expands `/writing/$slug` and `/projects/$slug` into real paths. It is the prerender and sitemap inventory, checked against the generated route tree at compile time.
+- `src/lib/rss.ts` and `src/lib/og-image.ts` produce `/rss.xml` and one social card per Post and per Project detail page; `vite.config.ts` emits both into the build output and serves them in development.
 - `src/lib/updates.ts` merges Posts and Project milestones into the one Update feed the home page renders.
 - `src/lib/github-activity.ts` sanitizes GitHub events into the label the home page may show; `src/lib/github-activity.server.ts` does the authenticated read. A private repository name never leaves the second file.
 - `src/lib/env.server.ts` validates server environment variables and never reaches the client bundle.

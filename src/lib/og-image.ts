@@ -5,8 +5,8 @@ import satori from "satori";
 import type { SatoriOptions } from "satori";
 
 import { ogCardSize } from "./og-card-layout.ts";
+import type { OgCardContent } from "./og-card-layout.ts";
 import { OgCard } from "./og-card.tsx";
-import type { WritingFrontmatter } from "./writing-schema.ts";
 
 function fontFile(name: string): Buffer {
   return readFileSync(new URL(`../../assets/fonts/${name}`, import.meta.url));
@@ -32,11 +32,11 @@ const fonts: SatoriOptions["fonts"] = [
   },
 ];
 
-/** Renders one Post's social card to PNG bytes. Build time only. */
+/** Renders one social card to PNG bytes. Build time only. */
 export async function renderOgImage(
-  post: WritingFrontmatter
+  content: OgCardContent
 ): Promise<Uint8Array> {
-  const svg = await satori(OgCard(post), {
+  const svg = await satori(OgCard(content), {
     fonts,
     height: ogCardSize.height,
     width: ogCardSize.width,

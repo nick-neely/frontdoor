@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { projects } from "./projects.ts";
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/u;
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
 describe("project inventory", () => {
   it("links every row to an absolute https destination", () => {
@@ -11,6 +12,29 @@ describe("project inventory", () => {
     // relative or protocol-less values that would never leave the site.
     for (const project of projects) {
       expect(new URL(project.url).protocol).toBe("https:");
+    }
+  });
+
+  it("gives every Project a unique slug that survives being a URL segment", () => {
+    // The slug addresses the detail page, names the social card file, and is
+    // interpolated into a CSS identifier for the shared-element transition.
+    // Anything outside this shape breaks at least one of the three.
+    for (const project of projects) {
+      expect(project.slug).toMatch(slugPattern);
+    }
+
+    expect(new Set(projects.map((project) => project.slug)).size).toBe(
+      projects.length
+    );
+  });
+
+  it("points every repository at a GitHub URL, since that is what it claims", () => {
+    for (const project of projects) {
+      if (project.repo === undefined) {
+        continue;
+      }
+
+      expect(new URL(project.repo).host).toBe("github.com");
     }
   });
 

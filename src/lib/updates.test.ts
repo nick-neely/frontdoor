@@ -32,6 +32,7 @@ function project(name: string, updatedAt?: string): Project {
     description: `${name} description`,
     kind: "product",
     name,
+    slug: name,
     status: "active",
     updatedAt,
     url: `https://${name}.example`,

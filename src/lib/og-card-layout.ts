@@ -8,6 +8,18 @@
  */
 export const ogCardSize = { height: 630, padding: 80, width: 1200 } as const;
 
+/**
+ * Everything a card says. One layout serves every kind of page on the site,
+ * so what varies is the headline and the mono line under it: a Pillar and a
+ * date for a Post, a kind and a year for a Project. The card itself never
+ * learns which it was handed.
+ */
+export interface OgCardContent {
+  /** The bottom-left mono line, printed with a separator between parts. */
+  meta: readonly string[];
+  title: string;
+}
+
 const contentWidth = ogCardSize.width - ogCardSize.padding * 2;
 
 const titleSizes = [76, 66, 58, 50] as const;

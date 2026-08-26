@@ -2,6 +2,13 @@
 // than through an alias so that Vite and Vitest resolve it the same way. This
 // is the only module allowed to touch the generated output; every rendering
 // surface reads writing through the exports below.
+//
+// It is a barrel now that there are two collections, and react-doctor is right
+// about barrels in general. It stays because it is the only entry point
+// content-collections emits types for: the per-collection files beside it have
+// no declarations, so importing one directly trades a handful of bytes for an
+// untyped index.
+// oxlint-disable-next-line react-doctor/no-barrel-import
 import { allWritings } from "../../.content-collections/generated/index.js";
 import { comparePosts } from "./writing-schema.ts";
 
