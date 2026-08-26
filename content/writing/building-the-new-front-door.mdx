@@ -7,7 +7,7 @@ pillar: "building-in-public"
 tags: ["redesign", "tanstack-start", "personal-site"]
 ---
 
-{/* DRAFT FOR NICK'S EDIT: written from documented decisions in this repo and in the template repository. Adjust voice and personal detail before launch, and give the new "The template underneath" section the same voice pass as the rest; every factual claim below is sourced from PRODUCT.md, DESIGN.md, docs/adr/, or tanstack-start-template. */}
+{/* DRAFT FOR NICK'S EDIT: written from documented decisions in this repo and in the template repository. Adjust voice and personal detail before launch, and give the new "The template underneath" section the same voice pass as the rest; every factual claim below is sourced from PRODUCT.md, DESIGN.md, docs/adr/, or tanstack-start-template. A structural pass has since broken the long runs with two code excerpts and one callout; no sentence was rewritten, so the voice pass still applies to the same prose. The two excerpts are verbatim from tanstack-start-template at commit 22e0f85 (src/lib/public-routes.ts lines 16-23, scripts/verify-seo-output.mjs lines 29-38) - re-copy them if that repository moves. */}
 
 For a few years, nickneely.dev has been an interactive terminal emulator. You typed `help`, poked around some commands, and eventually found a résumé. People liked it. It was also a gimmick standing where a front door should be: it showed cleverness, but it hid the work.
 
@@ -33,9 +33,37 @@ Almost none of that foundation was built here. It was built first in [a TanStack
 
 What makes it worth talking about isn't the dependency list, it's the handful of places where it refuses to let you get something wrong. Every route in the application is classified exactly once, `public` or `private`, in a single file typed against the route tree TanStack Router generates. Public means the route is prerendered, listed in `sitemap.xml`, and inspected after the build. Because that classification has to be exhaustive, adding a route and forgetting to classify it doesn't quietly ship a page missing from the sitemap. It fails `pnpm typecheck`. A decision you forgot to make becomes a compiler error instead of a hole in your search presence.
 
-This site takes that one step further: `/writing/$slug` is a placeholder rather than a URL, so the inventory here also carries the function that expands it into every published post before the prerenderer ever sees it.
+```ts title="src/lib/public-routes.ts" {8}
+const routeVisibility = {
+  "/": "public",
+  "/about": "public",
+  // A server route renders no document, so there is nothing to prerender,
+  // list in the sitemap, or verify with `pnpm seo:verify`.
+  "/api/health": "private",
+  "/runtime": "public",
+} as const satisfies Record<RoutePath, "private" | "public">;
+```
+
+<Callout label="On this site">
+  This site takes that one step further: `/writing/$slug` is a placeholder
+  rather than a URL, so the inventory here also carries the function that
+  expands it into every published post before the prerenderer ever sees it.
+</Callout>
 
 The SEO check has the same temperament. It doesn't read the configuration and agree with itself. It opens the HTML the build actually wrote to disk and asserts against that: one title, one description, one canonical URL pointing where it should point, Open Graph tags, JSON-LD, an `<h1>` that exists before hydration, and no two pages sharing a title. Configuration that is correct and output that is correct are two different claims, and only the second one is visible to a crawler. Public identity works the same way - name, origin, social card, theme colour live in one config module, and `robots.txt` and `manifest.json` are generated from it at build time instead of sitting in `public/` going stale.
+
+```js title="scripts/verify-seo-output.mjs" {2}
+for (const routePath of publicPaths) {
+  const html = readFileSync(htmlOutputPath(routePath), "utf-8");
+  const canonical = `${siteConfig.origin}${routePath}`;
+
+  assert.equal(countMatches(html, /<title>/gu), 1, `${routePath}: title count`);
+  assert.equal(
+    countMatches(html, /<meta\b(?=[^>]*\bname="description")[^>]*>/gu),
+    1,
+    `${routePath}: description count`
+  );
+```
 
 All of it is one command. `pnpm validate` runs lint, types, tests, the Nitro build, the prerender, and the rendered SEO check, and finishes in about five seconds. The same command runs before every push and again in CI, so there's one gate and one answer rather than a local ritual that disagrees with the pipeline. Five seconds is short enough that I run it out of habit instead of stopping to guess which stage a change could have broken.
 

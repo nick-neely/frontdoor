@@ -3,7 +3,7 @@ slug: "pilog"
 dek: "A local-first developer journal: catch the thought on a global hotkey, then turn rough notes into repo-aware GitHub issue drafts you review before publishing."
 ---
 
-{/* DRAFT FOR NICK'S EDIT. This file is the editable surface for the pilog detail page: composed from docs/drafts/projects/pilog.md, which stays in the repository as provenance and carries the facts register mapping every claim below to the code or document it came from. The prose here is pre-voice-pass. Two decisions the draft holds in reserve - the exact Pi version pin and the static release manifest - were deliberately left off the page; they are still in the draft if a fifth is ever wanted. Pictures were captured 2026-08-25 from a live build against a throwaway profile and are colocated in content/projects/pilog/; the onboarding shot is cropped from its 1440x900 original, which framed the card in dead margin. */}
+{/* DRAFT FOR NICK'S EDIT. This file is the editable surface for the pilog detail page: composed from docs/drafts/projects/pilog.md, which stays in the repository as provenance and carries the facts register mapping every claim below to the code or document it came from. The prose here is pre-voice-pass. Two decisions the draft holds in reserve - the exact Pi version pin and the static release manifest - were deliberately left off the page; they are still in the draft if a fifth is ever wanted. Pictures were captured 2026-08-25 from a live build against a throwaway profile and are colocated in content/projects/pilog/; the onboarding shot is cropped from its 1440x900 original, which framed the card in dead margin. A structural pass has since re-shaped the presentation without rewriting a sentence: the two long "What it is" paragraphs were split at their own seams, the hotkey is rendered as keys, the command-palette and onboarding pictures swapped places so each sits beside the paragraph its caption describes, three verbatim code excerpts were added, and the out-of-process trade-off moved into a disclosure. The excerpts are byte-identical to pilog at commit 63efd6b - src/preload/index.ts lines 34-43, src/main/pi/tools/repo-tools.ts lines 88-102, and src/main/pi/tools/sandbox.ts lines 57-67 - so re-copy them if that repository moves. One thing to check before launch: the "How it's built" claim that `submit_issue_drafts` has "the issue-draft shape itself" as its parameter schema, "the same schema applied once". At HEAD the tool's declared parameters are a TypeBox mirror (`SubmitIssueDraftsParameters` in src/shared/types.ts), and the Zod `GeneratedIssueDraftsSchema` is re-parsed inside the tool's execute body - two schemas kept in step rather than one. The sentence was left exactly as you wrote it and no excerpt was added there; it is yours to adjust or leave. */}
 
 ## What it is
 
@@ -11,11 +11,19 @@ You are three files deep in a change and you notice something unrelated. The sav
 
 ![pilog's scratchpad in dark theme: a frameless window holding two lines of monospaced text about an auth redirect bug, with the cursor at the end and no toolbar or fields anywhere.](./pilog-scratchpad-03-dark.png "The frameless global-hotkey overlay, mid-capture. No toolbar, no required fields, no repo picker. Just the thought.")
 
-Pilog splits that into two moments that have nothing to do with each other. Capture is a markdown scratchpad on a global hotkey, `Cmd/Ctrl+Shift+Space` by default and rebindable. It is a frameless, always-on-top window with no chrome, no required fields, no repo picker, no label selector. You type the thought and it is gone from your attention. The window is kept alive and hidden rather than destroyed, so reopening it is a show, not a cold start. Triage happens later, on your schedule, in an inbox that has accumulated the pile. You select notes that belong to the same linked repository, hit Generate Drafts, and a local agent reads those notes alongside the actual repo before writing GitHub issue drafts: title, body, suggested labels drawn from that repo's real label vocabulary, acceptance criteria, affected files, a confidence level, and a short reason for why it grouped what it grouped. A pile of rough notes can become a single issue or several. Each draft stays visibly anchored to the notes it came from. When a note is too vague to act on, the agent is allowed to say so and produce a clarification draft with questions instead of guessing; you answer and regenerate.
+Pilog splits that into two moments that have nothing to do with each other.
+
+Capture is a markdown scratchpad on a global hotkey, <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd> by default and rebindable. It is a frameless, always-on-top window with no chrome, no required fields, no repo picker, no label selector. You type the thought and it is gone from your attention. The window is kept alive and hidden rather than destroyed, so reopening it is a show, not a cold start.
+
+Triage happens later, on your schedule, in an inbox that has accumulated the pile. You select notes that belong to the same linked repository, hit Generate Drafts, and a local agent reads those notes alongside the actual repo before writing GitHub issue drafts: title, body, suggested labels drawn from that repo's real label vocabulary, acceptance criteria, affected files, a confidence level, and a short reason for why it grouped what it grouped. A pile of rough notes can become a single issue or several. Each draft stays visibly anchored to the notes it came from. When a note is too vague to act on, the agent is allowed to say so and produce a clarification draft with questions instead of guessing; you answer and regenerate.
 
 ![pilog's inbox: status counts for unprocessed, drafted, published and dismissed notes, three captured notes in the list, one of them selected and open in the editor, and a Generate Drafts button below a footer reading no repos linked.](./pilog-inbox-02-note-selected.png "Triage, later and on your schedule: the pile, the status counts, the multi-select bar, and the honest empty state where a linked repository would be.")
 
-Nothing publishes itself by accident. Review-and-publish is the default path. Auto-publish exists, but it is per repository, off by default, and every gate on it is conservative out of the box: confirmation required, high confidence required, known affected files required, at most five issues per run, and every publish written to a local publish log. Pilog is MIT licensed and free, and its own site leads with "free and open-source, local-first developer journal." Local-first is the posture, not a limitation I am apologizing for: notes, drafts, repository metadata, and full agent run history live in a SQLite file on your machine, and credentials live in the OS keychain. The one boundary the product refuses to blur is the model call itself, and which side of it you end up on is a configuration choice rather than a product limit. Point Pi at a local model - Ollama on your own machine - and pilog runs completely locally: nothing about a generation leaves the box. Point it at a cloud provider instead and you are trading that for better processing, and that provider sees what you send when you press Generate. Both are supported, pilog does not choose for you, and it does not pretend the second case is the first. The site says exactly that rather than selling "private" and hoping nobody asks.
+Nothing publishes itself by accident. Review-and-publish is the default path. Auto-publish exists, but it is per repository, off by default, and every gate on it is conservative out of the box: confirmation required, high confidence required, known affected files required, at most five issues per run, and every publish written to a local publish log.
+
+Pilog is MIT licensed and free, and its own site leads with "free and open-source, local-first developer journal." Local-first is the posture, not a limitation I am apologizing for: notes, drafts, repository metadata, and full agent run history live in a SQLite file on your machine, and credentials live in the OS keychain.
+
+The one boundary the product refuses to blur is the model call itself, and which side of it you end up on is a configuration choice rather than a product limit. Point Pi at a local model - Ollama on your own machine - and pilog runs completely locally: nothing about a generation leaves the box. Point it at a cloud provider instead and you are trading that for better processing, and that provider sees what you send when you press Generate. Both are supported, pilog does not choose for you, and it does not pretend the second case is the first. The site says exactly that rather than selling "private" and hoping nobody asks.
 
 ![pilog's settings, with a banner reading that notes, drafts, repo metadata, run history and publish logs stay in local SQLite, and an open note explaining that generating sends selected notes and bounded repository context to the configured provider.](./pilog-settings-04-data-sharing.png "The product says out loud what leaves the machine, and what does not, at the point where you choose a provider.")
 
@@ -23,11 +31,26 @@ Nothing publishes itself by accident. Review-and-publish is the default path. Au
 
 Pilog is an Electron desktop app: TypeScript throughout, React 19 in the renderer, electron-vite for the build, Tailwind CSS 4 with shadcn-style components over Base UI and Radix primitives, and CodeMirror 6 for the markdown editor. The window model is deliberate rather than incidental. The inbox and the scratchpad are two separate `BrowserWindow` instances, not one window with routing, because the scratchpad needs its own frame policy and its own always-on-top z-order independent of whatever the main window is doing. Both windows load their own React entry point through electron-vite's multi-page input and share a single preload script. The app boots into the system tray; the tray, the global hotkey, and the tray menu all call the same `openScratchpad()`.
 
+![pilog's command palette open over the inbox, listing commands for a new note, the inbox, drafts and run history, above a keyboard-shortcut reference including Open scratchpad on Ctrl Shift Space.](./pilog-command-palette.png "The same capture shortcut the tray and the global accelerator call, listed where the keyboard-first reader will look for it.")
+
+Persistence is better-sqlite3 with Drizzle ORM, one file at `userData/pilog.sqlite`, WAL enabled and foreign keys enforced. Seven tables carry the whole product: notes, repos, repo indices, issue drafts, agent runs, publish log, and a settings key-value table. All of it lives in the Electron main process; the renderer never touches the database.
+
 ![pilog's first onboarding step, headed Set your capture hotkey, showing the Ctrl Shift Space combination, a rebindable capture-hotkey field, and a note that notes, drafts and run history stay in local SQLite.](./pilog-onboarding-01-hotkey.png "Step 1 of 7 sets the capture hotkey and states the storage boundary before asking for anything.")
 
-Persistence is better-sqlite3 with Drizzle ORM, one file at `userData/pilog.sqlite`, WAL enabled and foreign keys enforced. Seven tables carry the whole product: notes, repos, repo indices, issue drafts, agent runs, publish log, and a settings key-value table. All of it lives in the Electron main process; the renderer never touches the database. The renderer never touches Electron either. Every request/response crossing that boundary goes through a single `IpcContract` type that maps channel names to request and response shapes, with the main-process handler registry and the preload bridge both typed against it, so adding a channel is a type error until you implement it. No raw `ipcRenderer` is exposed. The renderer sees one object, `window.pilog`.
+The renderer never touches Electron either. Every request/response crossing that boundary goes through a single `IpcContract` type that maps channel names to request and response shapes, with the main-process handler registry and the preload bridge both typed against it, so adding a channel is a type error until you implement it. No raw `ipcRenderer` is exposed. The renderer sees one object, `window.pilog`.
 
-![pilog's command palette open over the inbox, listing commands for a new note, the inbox, drafts and run history, above a keyboard-shortcut reference including Open scratchpad on Ctrl Shift Space.](./pilog-command-palette.png "The same capture shortcut the tray and the global accelerator call, listed where the keyboard-first reader will look for it.")
+```ts title="src/preload/index.ts" {2}
+const pilog = {
+  invoke: <C extends IpcChannel>(channel: C, request?: IpcRequest<C>): Promise<IpcResponse<C>> =>
+    ipcRenderer.invoke(channel, request),
+  on: (event: IpcEvent, callback: () => void): (() => void) => {
+    const listener = (): void => callback()
+    ipcRenderer.on(event, listener)
+    return () => {
+      ipcRenderer.removeListener(event, listener)
+    }
+  },
+```
 
 GitHub integration is Octokit behind OAuth Device Flow. Packaged builds carry a public client ID and no client secret, which is the point: a distributable Electron app cannot keep a secret, so the flow was chosen to not need one. The access token is encrypted with Electron's `safeStorage` (Keychain, DPAPI, or libsecret depending on platform) and written to a file in `userData`. It never enters `pilog.sqlite`, and there is a test in the repo whose entire job is to assert that.
 
@@ -41,9 +64,57 @@ Draft generation runs on Pi - `earendil-works/pi`, the minimal open-source codin
 
 ## Decisions worth defending
 
-**The agent is read-only by construction, not by prompt discipline.** I embedded Pi's low-level agent core rather than its coding-agent SDK, specifically because the coding-agent SDK ships `edit`, `write`, and `bash` and a system prompt that assumes they exist. Filtering those out afterward gives you "read-only by tool-filter," which is a policy. Never registering them gives you a property. On top of that, every path argument is resolved against the linked repo root, `realpath`-resolved to defeat symlink escapes, checked for containment, and denied against `.git/objects`, `node_modules`, and anything matching `.env*` - and that check runs inside each tool's execute body, not in the prompt. The input to this agent is arbitrary text a user typed while distracted; prompt injection is the expected case, not the exotic one. The honest cost, written into the ADR: models bench better with `bash` available, so I am trading some output quality for a security property I can actually state.
+**The agent is read-only by construction, not by prompt discipline.** I embedded Pi's low-level agent core rather than its coding-agent SDK, specifically because the coding-agent SDK ships `edit`, `write`, and `bash` and a system prompt that assumes they exist. Filtering those out afterward gives you "read-only by tool-filter," which is a policy. Never registering them gives you a property.
 
-**In-process, not a child process.** The reflexive answer for embedding an agent runtime is process isolation. I argued against it here because the usual reason does not apply: Pi is pure JavaScript over HTTP with no native dependencies, so there is no runtime boundary to bridge. Going through stdio JSON-RPC would add a serialize/parse layer for no behavioral gain, turn a synchronous `agent.abort()` into a round trip, and make BYOK credentials worse, since out-of-process means the API key has to travel through an environment variable, a config file, or a credential RPC instead of staying in main's heap. The accepted cost is no crash isolation, and I wrote down the specific conditions that would make me reverse this. There is also a runtime guard that snapshots `process.cwd`, `process.env`, `process.exit`, and signal-handler counts before a run and asserts they are unchanged after, because "it runs in my process" is a claim worth testing rather than assuming.
+```ts title="src/main/pi/tools/repo-tools.ts"
+export function createReadOnlyRepoTools(
+  accessInput: RepoToolAccess,
+  options: RepoToolOptions = {}
+): AgentTool[] {
+  return [
+    createReadFileTool(accessInput, options),
+    createListDirTool(accessInput, options),
+    createGlobTool(accessInput, options),
+    createGrepTool(accessInput, options),
+    createGitStatusTool(accessInput, options),
+    createGitDiffTool(accessInput, options),
+    createGitLogTool(accessInput, options),
+    createGitBlameTool(accessInput, options)
+  ]
+}
+```
+
+On top of that, every path argument is resolved against the linked repo root, `realpath`-resolved to defeat symlink escapes, checked for containment, and denied against `.git/objects`, `node_modules`, and anything matching `.env*` - and that check runs inside each tool's execute body, not in the prompt.
+
+```ts title="src/main/pi/tools/sandbox.ts" {8,9}
+      const candidate = path.resolve(root, inputPath)
+      const candidateRelative = path.relative(root, candidate)
+      if (isPathOutsideRoot(candidateRelative)) {
+        throw new Error('Tool path escapes the selected repository.')
+      }
+      assertRelativeAllowed(candidateRelative || '.')
+
+      const realPath = realpathSync(candidate)
+      const relativePath = assertContained(realPath)
+      assertRelativeAllowed(relativePath || '.')
+      return realPath
+```
+
+The input to this agent is arbitrary text a user typed while distracted; prompt injection is the expected case, not the exotic one. The honest cost, written into the ADR: models bench better with `bash` available, so I am trading some output quality for a security property I can actually state.
+
+**In-process, not a child process.** The reflexive answer for embedding an agent runtime is process isolation. I argued against it here because the usual reason does not apply: Pi is pure JavaScript over HTTP with no native dependencies, so there is no runtime boundary to bridge.
+
+<details>
+  <summary>What going out-of-process would have cost</summary>
+
+  Going through stdio JSON-RPC would add a serialize/parse layer for no
+  behavioral gain, turn a synchronous `agent.abort()` into a round trip, and
+  make BYOK credentials worse, since out-of-process means the API key has to
+  travel through an environment variable, a config file, or a credential RPC
+  instead of staying in main's heap.
+</details>
+
+The accepted cost is no crash isolation, and I wrote down the specific conditions that would make me reverse this. There is also a runtime guard that snapshots `process.cwd`, `process.env`, `process.exit`, and signal-handler counts before a run and asserts they are unchanged after, because "it runs in my process" is a claim worth testing rather than assuming.
 
 **Prompt quality gets a deterministic regression test.** The obvious failure mode for a feature like this is that a prompt edit silently degrades output and nobody notices for a month. So prompt changes are gated by a fixture-based loop: three fixture repos covering a focused bug, related notes that should stay grouped, and broad work that should split into a parent draft plus a clarification draft. Each fixture is copied into a temporary git repo, run through the real prompt builder, the real read-only tools, the real `submit_issue_drafts` validation, the real label matcher, and the real persistence path, then checked for draft count, source-note grouping, affected files, labels, acceptance criteria, template application, and clarification behavior. It makes no live model or GitHub calls, and it runs as part of `pnpm test`. The doc is explicit that this is a structural baseline and not a substitute for reading the generated issues yourself, which is the correct claim to make about it.
 

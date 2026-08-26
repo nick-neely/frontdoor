@@ -19,24 +19,27 @@ export type ProjectStatus = "active" | "archived" | "hiatus" | "shipped";
 export interface ProjectScreenshot {
   /** Describes the interface shown, not the fact that it is a screenshot. */
   alt: string;
+  /** Intrinsic pixel height, so the frame can reserve space without cropping. */
+  height: number;
   /** Site-absolute path under `public/`. */
   src: string;
+  /** Intrinsic pixel width, so the frame can reserve space without cropping. */
+  width: number;
 }
 
 /**
- * The extra weight a featured Project carries on the list: a short blurb and
- * one screenshot slot. `screenshot: null` is an honest "no asset yet" and the
- * page renders a marked placeholder for it rather than inventing an image.
+ * The extra weight a featured Project carries on the list: a short blurb
+ * pulled from the Project's own authored copy. Never invented here - a
+ * Project earns this only when there is real prose to quote.
  */
 export interface ProjectFeature {
   blurb: string;
-  screenshot: ProjectScreenshot | null;
 }
 
 export interface Project {
   /** One line, in the words the Project's own site uses. */
   description: string;
-  /** Present only on Projects the list gives extra room to. */
+  /** Present only on Projects the list gives extra room to: a blurb. */
   featured?: ProjectFeature;
   kind: ProjectKind;
   name: string;
@@ -46,6 +49,13 @@ export interface Project {
    * a page the reader would be refused.
    */
   repo?: string;
+  /**
+   * The card image the list shows beside this row: the Project's own social
+   * card when it ships one, or another honestly-labelled illustration when it
+   * does not. Independent of `featured` - a plain row can carry one too.
+   * Absent is an honest "not illustrated yet" rather than a placeholder image.
+   */
+  screenshot?: ProjectScreenshot;
   /**
    * Immutable identifier, and the only thing that ties a Project to the rest
    * of the site: the detail page's URL segment, its social card's file name,
@@ -85,7 +95,7 @@ export const projectStatusLabels = {
 } satisfies Record<ProjectStatus, string>;
 
 /**
- * Listed in the order the reader should meet them: the two featured Products
+ * Listed in the order the reader should meet them: the featured Products
  * first, then the rest. Not sorted at render time, because the order is an
  * editorial decision rather than a property of the data.
  */
@@ -96,14 +106,23 @@ export const projects: readonly Project[] = [
     featured: {
       blurb:
         "A notebook for the things you would otherwise forget about people: who you talked to, what is going on with them, or something to follow up on. Notes are saved privately and reviewed before they become memory.",
-      screenshot: {
-        alt: "tendnote's review queue: four extracted facts about two people, each labelled Suggested with Dismiss and Save beside it.",
-        src: "/screenshots/tendnote-review-queue.webp",
-      },
     },
     kind: "product",
     name: "tendnote",
     repo: "https://github.com/nick-neely/tendnote",
+    // Interim: tendnote ships no og:image of its own yet, so the row borrows
+    // this site's own generated card rather than an app screenshot cropped
+    // for a purpose it wasn't shot for. Swap for the product's real card when
+    // one exists.
+    screenshot: {
+      alt: "tendnote social card: the name in display type with kind and year.",
+      height: 630,
+      // Matches `projectOgImagePath("tendnote")` below; written literally
+      // because that helper is declared after this literal and the row order
+      // groups the slug-derived helpers together on purpose.
+      src: "/og/projects/tendnote.png",
+      width: 1200,
+    },
     slug: "tendnote",
     status: "active",
     url: "https://tendnote.com",
@@ -115,15 +134,17 @@ export const projects: readonly Project[] = [
     featured: {
       blurb:
         "Pick a repository and a date range, review the line items diffbill rewrites from developer shorthand into descriptions a client can read, then create the draft in your own Stripe account. It reads pull request metadata and short excerpts of the changed lines, and never your full source files or repository contents.",
-      screenshot: {
-        alt: 'diffbill\'s home page, headed "Your commits. Your invoice." over a dark green field.',
-        src: "/screenshots/diffbill-product-thesis.webp",
-      },
     },
     kind: "product",
     name: "diffbill",
     // No `repo`: the repository is private by decision, and a portfolio row
     // owes no explanation for a product whose source is not published.
+    screenshot: {
+      alt: 'diffbill\'s own social card: the name over a dark field beside a preview turning a commit message into an invoice line item, ending "Ready to send via Stripe."',
+      height: 507,
+      src: "/screenshots/diffbill-og-card.webp",
+      width: 960,
+    },
     slug: "diffbill",
     status: "active",
     url: "https://diffbill.com",
@@ -134,9 +155,24 @@ export const projects: readonly Project[] = [
   {
     description:
       "A local-first developer journal: capture rough notes in a global-hotkey scratchpad, then triage them into repo-aware GitHub issue drafts.",
+    featured: {
+      // Verbatim from `content/projects/pilog.mdx`'s `dek` frontmatter field:
+      // authored content, not written here.
+      // Two sentences from the detail page's own prose: the row description
+      // already says what pilog is, so the blurb carries how it feels instead
+      // of restating it.
+      blurb:
+        "You type the thought and it is gone from your attention. Triage happens later, on your schedule, in an inbox that has accumulated the pile.",
+    },
     kind: "product",
     name: "pilog",
     repo: "https://github.com/nick-neely/pilog",
+    screenshot: {
+      alt: "pilog's inbox: status counts for unprocessed, drafted, published and dismissed notes, a captured note selected in the list beside its editor, and a Generate Drafts button above the linked repository.",
+      height: 540,
+      src: "/screenshots/pilog-app-screenshot.webp",
+      width: 960,
+    },
     slug: "pilog",
     status: "shipped",
     url: "https://pilog.dev",
@@ -147,6 +183,12 @@ export const projects: readonly Project[] = [
       "A headless Shopify storefront for zero-sugar electrolytes, designed by first responders for anyone who demands peak performance on duty or in the gym.",
     kind: "client-work",
     name: "Frontline Fuel",
+    screenshot: {
+      alt: 'Frontline Fuel\'s own social card: "Two flavors. Ready for duty." beside citrus and strawberry kiwi bottles over dark, wet turnout gear.',
+      height: 504,
+      src: "/screenshots/frontline-fuel-og-card.webp",
+      width: 960,
+    },
     slug: "frontline-fuel",
     status: "shipped",
     url: "https://drinkfrontlinefuel.com",
@@ -159,6 +201,12 @@ export const projects: readonly Project[] = [
       "The separate brand for local and small-business work: professional web development for businesses in Dubuque, Iowa and beyond.",
     kind: "client-work",
     name: "Neely Solutions",
+    screenshot: {
+      alt: 'Neely Solutions\' own social card: "Stop losing leads." beside a portrait, over a dark grid background.',
+      height: 504,
+      src: "/screenshots/neely-solutions-og-card.webp",
+      width: 960,
+    },
     slug: "neely-solutions",
     status: "active",
     url: "https://neelysolutions.com",

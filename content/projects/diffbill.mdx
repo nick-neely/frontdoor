@@ -3,7 +3,7 @@ slug: "diffbill"
 dek: "Merged pull requests in, client-ready invoice drafts out: a GitHub-to-Stripe billing pipeline for freelance developers and small dev agencies."
 ---
 
-{/* DRAFT FOR NICK'S EDIT. This file is the editable surface for the diffbill detail page: composed from docs/drafts/projects/diffbill.md, which stays in the repository as provenance and carries the facts register mapping every claim below to the merged code it was verified against. The prose here is pre-voice-pass. Two figures from the capture README's recommended narrative are held back pending your clearance of the client labels in them; both slots are marked in place. Pictures were captured 2026-08-25 from the locally running apps and are colocated in content/projects/diffbill/. */}
+{/* DRAFT FOR NICK'S EDIT. This file is the editable surface for the diffbill detail page: composed from docs/drafts/projects/diffbill.md, which stays in the repository as provenance and carries the facts register mapping every claim below to the merged code it was verified against. The prose here is pre-voice-pass. Pictures were captured 2026-08-25 from the locally running apps and are colocated in content/projects/diffbill/. The two previously held figures - 07-core-ai-translation-review.png and 10-core-stripe-finalization.png - are now in place; you cleared them on 2026-08-25/26 and neither names a real client, so no sign-off is outstanding. A structural pass has since re-shaped the presentation without rewriting a sentence: the stack and data-flow paragraphs were split at their own seams, the PR-selection picture moved up beside the filtering sentence it illustrates, the measurement and its provenance became a callout, and two verbatim code excerpts were added. The excerpts are byte-identical to diffbill at commit 6fed8995 - apps/core-app/lib/github/translation-context.ts lines 215-219 and apps/core-app/lib/ai/evidence-resolver.ts lines 88-100 - so re-copy them if that repository moves. Both were checked for secret-shaped content: they carry no keys, environment names, internal URLs, or client names. */}
 
 ## What it is
 
@@ -17,15 +17,34 @@ It is built for the people who both ship the work and own the billing - independ
 
 ![diffbill's recurring planner: a three-step explanation reading choose the scope, draft created automatically, you review and send - drafts only, nothing auto-sends - above one weekly schedule with its next scheduled draft and billing period.](./11-core-recurring-planner.png "Even the scheduled path stops at a draft. A recurring schedule chooses the scope once and still hands the result back for review.")
 
-In my own use the whole path - merged pull requests to a Stripe draft - runs about five minutes, against roughly three hours a month I used to lose reconstructing an invoice by hand. Those are my own measurements from my own billing, not a customer average and not a benchmark.
+<Callout>
+  In my own use the whole path - merged pull requests to a Stripe draft - runs
+  about five minutes, against roughly three hours a month I used to lose
+  reconstructing an invoice by hand. Those are my own measurements from my own
+  billing, not a customer average and not a benchmark.
+</Callout>
 
 ## How it's built
 
-It is a pnpm + Turborepo monorepo with two Next.js App Router apps and seven shared packages. `apps/marketing` is the public site; `apps/core-app` is the product. The shared packages carry the design system (`ui`, Tailwind v4 CSS-first with shadcn-style Radix components), feature flags (`flags`, on Vercel Flags), cross-app URL resolution (`urls`), observability (`observability`), transactional email, blob storage, and a Remotion package that renders the marketing hero video programmatically. The product app is Next 16.2.1 on React 19, TypeScript throughout, Postgres through Drizzle ORM, Redis for rate limiting and caching, better-auth for identity, and Stripe for both diffbill's own subscriptions and the invoices it creates on the user's behalf. It currently runs to 73 API routes and 78 test files, with Biome for lint and format and Vitest in CI.
+It is a pnpm + Turborepo monorepo with two Next.js App Router apps and seven shared packages. `apps/marketing` is the public site; `apps/core-app` is the product. The shared packages carry the design system (`ui`, Tailwind v4 CSS-first with shadcn-style Radix components), feature flags (`flags`, on Vercel Flags), cross-app URL resolution (`urls`), observability (`observability`), transactional email, blob storage, and a Remotion package that renders the marketing hero video programmatically.
 
-**The data flow.** A user connects GitHub through better-auth OAuth. Selecting a repo and a date range hits the sources endpoint, which queries merged PRs and applies label-based filters for internal and chore work before the user ever sees the list. When the user picks the PRs they want billed, each one is enriched in parallel: the PR detail endpoint for body, commit count, and churn totals; the commits endpoint for up to thirty first-line commit messages; the files endpoint, paged up to four times, for the changed files; and any issues referenced by a `Fixes #123`-style phrase in the PR body. Changed files are scored by churn and category - product code weighted up, generated files and lockfiles weighted down - and the top 200 are kept as evidence. That enriched payload is what the model sees. It is metadata, commit messages, filenames, per-file line counts, and a short trimmed excerpt of the changed lines in each file; the repository is never cloned and full file contents are never fetched, because no `/contents/` or `/git/blobs/` endpoint is called anywhere in the GitHub layer. Everything in that payload a client could eventually read - the PR body excerpt, the commit messages, and the diff excerpts - passes through the same redactor first, which strips GitHub token prefixes, long hex strings, email addresses, and screaming-snake constants. A secret is at least as likely to show up in a diff hunk as in a PR description, so the redactor runs on the whole payload rather than the one field it started on.
+The product app is Next 16.2.1 on React 19, TypeScript throughout, Postgres through Drizzle ORM, Redis for rate limiting and caching, better-auth for identity, and Stripe for both diffbill's own subscriptions and the invoices it creates on the user's behalf. It currently runs to 73 API routes and 78 test files, with Biome for lint and format and Vitest in CI.
+
+**The data flow.** A user connects GitHub through better-auth OAuth. Selecting a repo and a date range hits the sources endpoint, which queries merged PRs and applies label-based filters for internal and chore work before the user ever sees the list. When the user picks the PRs they want billed, each one is enriched in parallel: the PR detail endpoint for body, commit count, and churn totals; the commits endpoint for up to thirty first-line commit messages; the files endpoint, paged up to four times, for the changed files; and any issues referenced by a `Fixes #123`-style phrase in the PR body. Changed files are scored by churn and category - product code weighted up, generated files and lockfiles weighted down - and the top 200 are kept as evidence.
 
 ![diffbill's pull request selection: merged pull requests from a private repository, each with its number, title, author, merge date and size label, one of them selected.](./06-core-private-github-pr-selection.png "Selection reads real merged pull requests from a connected private repository, with internal and chore work filtered out before the list is drawn.")
+
+That enriched payload is what the model sees. It is metadata, commit messages, filenames, per-file line counts, and a short trimmed excerpt of the changed lines in each file; the repository is never cloned and full file contents are never fetched, because no `/contents/` or `/git/blobs/` endpoint is called anywhere in the GitHub layer.
+
+Everything in that payload a client could eventually read - the PR body excerpt, the commit messages, and the diff excerpts - passes through the same redactor first, which strips GitHub token prefixes, long hex strings, email addresses, and screaming-snake constants. A secret is at least as likely to show up in a diff hunk as in a PR description, so the redactor runs on the whole payload rather than the one field it started on.
+
+```ts title="apps/core-app/lib/github/translation-context.ts" {3,4}
+function trimPatch(patch: string | undefined, redactSensitive: boolean) {
+  if (!patch) return ''
+  const safePatch = redactSensitive ? redactSensitiveText(patch) : patch
+  return safePatch.replace(/\s+/g, ' ').trim().slice(0, 400)
+}
+```
 
 That evidence is not transient. The shaped source - body excerpt, labels, commit summaries, and the per-file evidence array including each file's trimmed change excerpt - is persisted as JSONB on both the invoice's sources and its line items, and it is what the client sees: the anonymous client portal renders the evidence behind each billed row so the person paying can check the work against the files it came from. Storing it is the point. An invoice whose provenance disappears the moment it is generated is not an audit trail.
 
@@ -43,15 +62,31 @@ The system prompt is twenty numbered grounding rules - never invent work, use on
 
 What happens _after_ generation is where most of the engineering is. Output passes a deterministic quality gate that scores duplicate-description ratio, low-confidence ratio, and hits against a regex for known filler phrasing. On paid plans, a source that fails the gate is retried - with repair instructions naming the specific defect, a compacted context budget, and on the final attempt an escalation to the larger model - and a source that still yields nothing gets a conservative fallback row derived arithmetically from churn, marked low confidence and excluded by default. Inclusion is then decided in code, not by the model: low-confidence rows are excluded, `sensitive` rows are always excluded, and internal, chore, and documentation rows are excluded according to the user's settings and label configuration.
 
-{/* PICTURE SLOT, HELD: 07-core-ai-translation-review.png from the capture set belongs here - the human-in-the-loop review step showing confidence, exclusions, redactions and evidence side by side. It is the shot that carries this whole section. Held back until Nick clears the client labels visible in it; AGENTS.md requires written sign-off before a client is named. The file is at /home/neely/dev/diffbill/artifacts/portfolio-screenshots/2026-08-25/final/. */}
+![diffbill's review step before an invoice is created: an AI-filtered banner counting one documentation and two internal rows excluded, an editable invoice title, and a table of line items with per-row include toggles, hours, rate, confidence and the pull request each row came from, one row expandable into four evidence files.](./07-core-ai-translation-review.png "Step 4 of 4, where a person decides. Confidence, exclusions, editable wording and the evidence behind each row are all on one screen before anything becomes an invoice.")
 
 The evidence trail gets the same treatment. The model returns a list of filenames it claims support each row, and rather than trusting that list, a resolver re-scores it against the real changed files - tokenizing the description and the filename, weighting by churn and file category - and drops any requested file that does not actually match. A citation the model invented cannot attach itself to a line item.
+
+```ts title="apps/core-app/lib/ai/evidence-resolver.ts" {3,10}
+  const requestedRanked = requestedFileNames
+    .map((name) => scoredByFilename.get(name))
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .filter(
+      (entry, index, entries) =>
+        entries.findIndex((candidate) => candidate.file.filename === entry.file.filename) === index,
+    )
+    .filter(
+      (entry) =>
+        requested.has(normalizeFilename(entry.file.filename)) && entry.directMatchScore > 0,
+    )
+    .slice(0, maxFiles)
+    .map((entry) => entry.file)
+```
 
 Cost and quality are both instrumented. Every model call is wrapped so PostHog receives the route, operation, plan, model tier, quality mode, and prompt name, and token usage is converted to a dollar estimate against a pricing catalog fetched from the gateway and cached for a day, with a hardcoded fallback table when the catalog is unavailable. Paid usage is metered into Stripe, and an AI-credit system with grants, consumption allocations, and optional auto-replenish sits on top of it.
 
 **Invoicing** is Stripe Connect. The draft is created in the user's own connected account, so diffbill is never in the payment path.
 
-{/* PICTURE SLOT, HELD: 10-core-stripe-finalization.png belongs here - client review state, delivery checks, totals, and Stripe draft finalization in one workspace. Held back on the same client-label clearance as the review shot above. */}
+![diffbill's finalize step: a final send preview naming the recipient, the billing email and a 350 dollar total over six included line items, a ready check listing client review, delivery and Stripe preview, a checklist reading Stripe connected, all edits saved, billing email set and six line items included, and a collapsed panel offering to open the Stripe draft.](./10-core-stripe-finalization.png "The last screen before sending, and it still stops at a draft in the user's own Stripe account.")
 
 ## Decisions worth defending
 

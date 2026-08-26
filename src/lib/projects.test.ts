@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projects } from "./projects.ts";
+import { findProject, projectOgImagePath, projects } from "./projects.ts";
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/u;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
@@ -52,16 +52,37 @@ describe("project inventory", () => {
     }
   });
 
-  it("gives every featured Project a blurb and every screenshot alt text", () => {
-    // A screenshot that arrives without alt text is the one accessibility
-    // regression the types cannot catch.
+  it("gives every featured Project a blurb", () => {
     for (const project of projects) {
       if (project.featured === undefined) {
         continue;
       }
 
       expect(project.featured.blurb.length).toBeGreaterThan(0);
-      expect(project.featured.screenshot?.alt ?? "pending").not.toBe("");
     }
+  });
+
+  it("gives every screenshot alt text and honest intrinsic dimensions", () => {
+    // A screenshot that arrives without alt text is the one accessibility
+    // regression the types cannot catch. Zero or negative dimensions would
+    // reserve no space, or negative space, and reintroduce the layout shift
+    // the intrinsic width/height exist to prevent.
+    for (const project of projects) {
+      if (project.screenshot === undefined) {
+        continue;
+      }
+
+      expect(project.screenshot.alt).not.toBe("");
+      expect(project.screenshot.width).toBeGreaterThan(0);
+      expect(project.screenshot.height).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps tendnote's interim card in sync with the generated card path", () => {
+    // Written as a literal in the data (see the comment on that entry) so it
+    // cannot drift silently from what `projectOgImagePath` would produce.
+    const tendnote = findProject("tendnote");
+
+    expect(tendnote?.screenshot?.src).toBe(projectOgImagePath("tendnote"));
   });
 });
