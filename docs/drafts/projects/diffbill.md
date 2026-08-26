@@ -2,19 +2,17 @@
 
 Content draft for `/projects/diffbill`. Not site code. Voice is first person as Nick, written for a technical hiring manager. Every claim in sections 2-4 has a row in the Facts register; anything without a row was cut.
 
-**Source repo:** `/home/neely/dev/diffbill` @ `85c024e5` (pulled clean, `Already up to date`). Nothing in that repo was modified.
+**Source repo:** `/home/neely/dev/diffbill` @ `7fe66b33` (`origin/main`, the merge of PR #159). Nothing in that repo was modified.
 
-> **PRE-PUBLISH GATE - DO NOT SKIP.**
+> **Gate resolved 2026-08-25. This draft is ready for build.**
 >
-> **Page copy assumes diffbill #156-#158 are fixed; verify before this page ships.**
+> The three issues this page's copy depended on were fixed in diffbill PR #159 ("fix(github): align redaction and trust claims", merged 2026-08-25 as `7fe66b33`) and each was confirmed against the merged code on 2026-08-25:
 >
-> Nick's direction (2026-08-25) is to write this page as though all three are in their ideal state, so sections 3 and 4 now describe the fixed behavior rather than the gap:
+> - **#156** - secret redaction now runs on patch excerpts and commit messages, not only the PR body excerpt, and it runs inside the enrichment step so redacted text is what gets persisted. Covered by a regression test.
+> - **#157** - resolved by **correcting the claim, not by adding a deletion path.** Removing a repository still soft-archives it; the site no longer promises immediate deletion and now says what actually happens: future syncs stop, existing invoice records are retained.
+> - **#158** - the trust section's headline, list, and pillars now state one consistent boundary (short changed-line excerpts yes, full files and clones no), matching the FAQ and features pages. The stale comment block is gone.
 >
-> - **#156** - the GitHub trust section corrected: short diff excerpts are read and stored, and diffbill _never writes_ rather than _cannot_ write.
-> - **#157** - the redactor applied to patch excerpts and commit messages, not only to the PR body excerpt.
-> - **#158** - the revoke-access claim made true: disconnecting GitHub actually purges the synced data.
->
-> Until each is confirmed shipped, **none of the affected sentences may go live.** The affected sentences are marked in section 3 (end-of-section note) and section 4 (permissions decision).
+> Sections 3 and 4 describe verified behavior. The one place the earlier draft copy overstated reality was the deletion claim, which is corrected in the Facts register and in "Resolved" below.
 
 ---
 
@@ -68,7 +66,7 @@ Cost and quality are both instrumented. Every model call is wrapped so PostHog r
 
 **Invoicing** is Stripe Connect. The draft is created in the user's own connected account, so diffbill is never in the payment path.
 
-_Gated sentence: the redaction claim in "The data flow" above describes the post-fix state of diffbill **#157**. See the pre-publish gate at the top of this draft._
+_The redaction claim in "The data flow" above was **verified fixed in diffbill PR #159 (merged 2026-08-25), confirmed against code 2026-08-25** - diffbill **#156**. `apps/core-app/lib/github/translation-context.ts` now takes a required `redactSensitive` flag and applies the redactor to `bodyExcerpt`, every `commitSummaries[].message`, and every `evidenceFiles[].patchExcerpt` before returning; `translation-context.test.ts` asserts `[REDACTED]` in all three. Clear to publish._
 
 ---
 
@@ -86,7 +84,7 @@ _Gated sentence: the redaction claim in "The data flow" above describes the post
 
 **GitHub permissions escalate only on request.** The default OAuth scopes are `read:user` and `user:email`, which cover public repositories. Private-repository access requires the broader `repo` scope, and rather than requesting it up front, the app reads the granted scopes back off GitHub's response headers, notices the gap, and offers a re-authorization prompt at the two points where it actually matters - the repositories page and the new-invoice flow. Someone billing public work never sees the prompt at all. Asking for the maximum permission on day one is the easy version and the one that loses signups. The precision that matters, and that the copy now carries: classic `repo` is a read _and_ write scope, so the defensible claim is that diffbill never writes - there is no write call to any repository endpoint anywhere in the codebase - rather than that it cannot. A self-imposed restriction stated accurately is worth more than a stronger-sounding one that the token does not support.
 
-_Gated sentence: the paragraph above describes the post-fix state of diffbill **#156**. See the pre-publish gate at the top of this draft._
+_The paragraph above was **verified fixed in diffbill PR #159 (merged 2026-08-25), confirmed against code 2026-08-25** - diffbill **#158**. The default scopes are still `['read:user', 'user:email']` (`apps/core-app/lib/auth.ts:213`), no GitHub call site sets a write method, and `apps/marketing/components/github-trust-section.tsx` now says "Read-only GitHub usage - diffbill only sends read requests to GitHub. It does not push code, create branches, or modify your repositories," which is the never-writes framing rather than the cannot-write one. Clear to publish._
 
 ---
 
@@ -277,16 +275,16 @@ Every claim in sections 2-4 maps to a row. Paths are relative to `/home/neely/de
 
 ### Answers from Nick (2026-08-25)
 
-Claims that entered this draft from Nick directly rather than from the repo. Everything here carries the same provenance line: **Nick, direct answer, 2026-08-25.**
+Claims that entered this draft from Nick directly rather than from the repo, dated **2026-08-25**. The three issue-fix rows below started here as Nick's direct answers and have since been re-sourced to merged code in diffbill PR #159; their evidence column now cites that code rather than the conversation.
 
 | Claim | Evidence / caveat |
 | --- | --- |
 | Merged PRs to a Stripe draft takes about 5 minutes in Nick's own use | Nick, direct answer, 2026-08-25 - firsthand measurement. Same figure as `apps/marketing/components/social-proof.tsx:52-55` |
 | About 3 hours a month saved versus reconstructing invoices by hand | Nick, direct answer, 2026-08-25 - firsthand measurement. Same figure as `social-proof.tsx:75-78` |
 | Pro is $9.99 and Team is $14.99, both currently carrying the founder's 30% discount; a lifetime deal also exists | Nick, direct answer, 2026-08-25. **Conflicts with both in-repo sources** - `README.md` lists Pro at $19.99/$14.99 and `docs/product-marketing-context.md` (2026-04-01) lists Pro at $12.99/$9.99, and neither names a Team tier at $14.99 or a lifetime deal. Nick's figures are the current ones; the repo docs are stale. Not quoted in sections 2-4 |
-| Patch excerpts and commit messages are run through the redactor | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #157.** Verify before publish |
-| Trust-section copy corrected: short diff excerpts read and stored; diffbill never writes rather than cannot | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #156.** Verify before publish |
-| Revoking GitHub access actually purges synced data | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #158.** Verify before publish. Not claimed in sections 2-4 |
+| Patch excerpts and commit messages are run through the redactor | diffbill **#156** - **verified fixed in diffbill PR #159 (merged 2026-08-25), confirmed against code 2026-08-25.** `apps/core-app/lib/github/translation-context.ts` L41, L64, L68, L73-76, L82-85; all three callers pass the flag; `translation-context.test.ts` covers it |
+| Trust-section copy corrected: short diff excerpts read and stored; diffbill never writes rather than cannot | diffbill **#158** - **verified fixed in diffbill PR #159 (merged 2026-08-25), confirmed against code 2026-08-25.** `apps/marketing/components/github-trust-section.tsx` L138, L141-142, L184-185; stale comment block removed |
+| Removing a repository stops future syncs; existing invoice records are retained | diffbill **#157** - **verified fixed in diffbill PR #159 (merged 2026-08-25), confirmed against code 2026-08-25**, by correcting the site claim rather than adding a deletion path. `apps/core-app/lib/services/repositories.ts:161` still soft-archives (`archivedAt`); the "deleted immediately" promise is gone from `github-trust-section.tsx` L241-247. **Supersedes the earlier "revoking GitHub access purges synced data" claim, which was never true.** Not claimed in sections 2-4 |
 | The repo stays private by decision, for now | Nick, direct answer, 2026-08-25 |
 | The portfolio captures are cleared: repo names are Nick's own, all rates and invoice amounts are development data | Nick, direct answer, 2026-08-25. Supersedes the redaction gate in the capture README |
 
@@ -300,19 +298,21 @@ Claims that entered this draft from Nick directly rather than from the repo. Eve
 
 ## Resolved (Nick, 2026-08-25)
 
-**Assume-fixed set - read the pre-publish gate at the top before shipping this page.** Nick's direction is that questions 1, 2, 3 and 5b are all fixed in their ideal state, filed as diffbill issues **#156, #157 and #158**. This draft is written to the fixed state. It is not verified.
+**Verified-fixed set.** Questions 1, 2, 3 and 5b map to diffbill issues **#156, #157 and #158**, all closed as completed by PR #159 (merged 2026-08-25 as `7fe66b33`) and each **confirmed against the merged code on 2026-08-25**. This draft is written to the verified state, not an assumed one. Note that the earlier revision of this draft paired these numbers with the wrong descriptions; the mapping below is the real one - **#156** is redaction, **#157** is the deletion claim, **#158** is the trust section.
 
-**1. The "commit diffs are never accessed" claim.** Fixed as diffbill **#156**: the trust section now describes what the code actually does - PR and issue metadata plus short excerpts of the changed lines, read and stored deliberately so every billed row has checkable provenance. The draft already used that framing; section 4's permissions decision now states the corrected version rather than flagging the gap. The frontdoor row blurb in `src/lib/projects.ts` still carries the old sentence and is owned by someone else - it needs the same correction and is outside this file's scope.
+**1. The "commit diffs are never accessed" claim.** Verified fixed as diffbill **#158** (PR #159, merged 2026-08-25, confirmed against code 2026-08-25): the trust section now describes what the code actually does - PR and issue metadata plus short excerpts of the changed lines, read and stored deliberately so every billed row has checkable provenance. The draft already used that framing; section 4's permissions decision now states the corrected version rather than flagging the gap. The frontdoor row blurb in `src/lib/projects.ts` (owned by someone else, outside this file's scope) has since been corrected to match - it now reads "It reads pull request metadata and short excerpts of the changed lines, and never your full source files or repository contents," which agrees with both this draft and the diffbill trust section. Nothing further is owed there.
 
-**2. Patch excerpts and commit messages are not redacted.** Fixed as diffbill **#157**: the redactor now runs over the whole enriched payload - body excerpt, commit messages, and diff excerpts - not only `bodyExcerpt`. Section 3's data-flow paragraph now says so, with a gated-sentence note at the end of the section.
+**2. Patch excerpts and commit messages are not redacted.** Verified fixed as diffbill **#156** (PR #159, merged 2026-08-25, confirmed against code 2026-08-25): the redactor now runs over the whole enriched payload - body excerpt, commit messages, and diff excerpts - not only `bodyExcerpt`. It runs inside `enrichSourcesForTranslation` itself, so the redacted text is what reaches persistence; the `redactSensitive` option is required rather than optional, which is what forces all three call sites (the sources route, the translate-work route, and the recurring-schedule fetch) to pass it. A regression test feeds a token-shaped secret through all three excerpt types and asserts `[REDACTED]`. Section 3's data-flow paragraph says so, with a verified note at the end of the section.
 
-**3. "Read-only permissions" is imprecise once `repo` is granted.** Fixed as diffbill **#156**: the copy now says diffbill never writes rather than that it cannot. Section 4's permissions decision carries that wording. The related suggestion in the original question - a test asserting the allowed set of GitHub paths, which would turn endpoint discipline from convention into architecture - was not part of Nick's answer and is not claimed anywhere on this page.
+**3. "Read-only permissions" is imprecise once `repo` is granted.** Verified fixed as diffbill **#158** (PR #159, merged 2026-08-25, confirmed against code 2026-08-25): the pillar is retitled "Read-only GitHub usage" and the copy now says diffbill never writes rather than that it cannot. Section 4's permissions decision carries that wording. The related suggestion in the original question - a test asserting the allowed set of GitHub paths, which would turn endpoint discipline from convention into architecture - was not part of Nick's answer and is not claimed anywhere on this page.
 
 **4. Pricing.** Confirmed by Nick: **Pro $9.99, Team $14.99**, each currently carrying the founder's 30% discount, and a lifetime deal also exists. Recorded in the Facts register under "Answers from Nick" with its provenance. Not quoted in sections 2-4; the page still does not need prices. **Conflict worth knowing:** neither in-repo source matches - `README.md` says Pro $19.99/$14.99 and `docs/product-marketing-context.md` says Pro $12.99/$9.99, and no source names a Team tier or a lifetime deal. Nick's figures are current; the repo docs are stale and should be updated in diffbill.
 
 **5. The two homepage numbers.** Un-excluded. "~5 min" and "3+ hrs saved per month" are real firsthand measurements Nick took in his own use, which satisfies "numbers are real or absent". They are now in section 2 with the attribution attached, and the attribution travels with them: if the figures ship, "measured by Nick in his own use" ships next to them.
 
-**5b. The revoke-access deletion claim.** Fixed as diffbill **#158**: disconnecting GitHub now purges the synced data rather than soft-deleting the repository row. No page copy depends on this claim, so nothing in sections 2-4 changed; it is recorded because the gate covers all three issues together.
+**5b. The revoke-access deletion claim.** Verified resolved as diffbill **#157** (PR #159, merged 2026-08-25, confirmed against code 2026-08-25) - but **resolved the other way from what this draft previously assumed.** No hard-delete path was added. Removing a repository still soft-archives it by stamping `archivedAt` (`apps/core-app/lib/services/repositories.ts:161`), and invoice records and their persisted evidence are deliberately retained. What changed is the promise: the marketing pillar that read "Revoke in seconds - all synced data is deleted immediately" now reads "Stop future syncs in seconds - remove a repository from your workspace to stop future syncs. Existing invoice records remain available for your billing history." The gap is closed because the claim came down to meet the code, not because the code came up to meet the claim.
+
+That resolution is the defensible one and it is consistent with the rest of this page: section 3 already argues that persisted evidence is the point, since "an invoice whose provenance disappears the moment it is generated is not an audit trail." A page that made that argument and also claimed everything is deleted on disconnect would have been contradicting itself. Still nothing in sections 2-4 depends on the claim, so no body copy changed - **but if a future revision reaches for a deletion or "revoke and it's gone" line, there is no code behind it.** The accurate line is: stop future syncs, keep the billing history.
 
 **6. Repo visibility.** Private, deliberately, for now. No GitHub link on the page, and section 6 records it as a decision rather than a gap.
 
