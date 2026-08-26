@@ -10,7 +10,7 @@ Source repo: `/home/neely/dev/tendnote` @ `eac6af13` (main, 2026-08-23). Row thi
 
 > A private, consent-first memory for the people you care about — where nothing an assistant infers becomes a durable fact until you approve it.
 
-Alternates, if the page wants the row's narrower framing verbatim:
+Alternates, if the page wants the row's original, narrower framing verbatim - see section 2 for why that framing is now the origin story rather than the scope:
 
 - _A private relationship memory and follow-up assistant, built so the model can only ever propose._
 - _Relationship memory with a review step in the database, not just the prompt._
@@ -20,6 +20,8 @@ Alternates, if the page wants the row's narrower framing verbatim:
 ## 2. What it is
 
 I kept losing the part of a relationship that isn't in any calendar: that Priya is shipping a launch on Monday, that Casey's birthday is in July, that I told Jordan I'd check in after his final interview. A CRM answers a different question — it tracks a pipeline, and people are not rows in a funnel. A notes app holds the detail but can't tell me which of the four hundred notes matters this morning. tendnote is the thing in between: a private notebook for people, plus a small, bounded shortlist of what's worth a thought today.
+
+That is where it started, and it is no longer the whole of it. Relationship memory was the first surface, not the ceiling. The same seam that files a fact about Priya files a chore, a thing you own, or a question you haven't answered yet - so the product grew outward along it. What ships today already spans that wider ground: person pages and follow-ups, but also Assets for the things you own, General Actions and Routines for the work that is yours rather than anyone else's, Saved Items for whatever doesn't fit a richer family yet, Household workspaces, and capture from Google, Gmail, Contacts and Discord. The direction it is being built toward is an all-inclusive personal memory OS: one reviewed store for the things you would otherwise have to hold in your head. Relationship memory is where it began, and it is still the sharpest single demonstration of the idea - the entry point to the arc, not a description of the ceiling.
 
 You capture from one composer — a note, a link, an open question, a reminder, a recurring chore — and tendnote files it into the right kind of record. A person page holds what you know about someone and where each fact came from. A daily shortlist pulls together due follow-ups, birthdays, overdue chores and review work. Eve, the built-in assistant, can read that context and talk about it, draft a message grounded in the memories that justify it, and propose things it noticed. What Eve cannot do is decide anything. There is no send path in the product at all: no email, no chat message, no post.
 
@@ -57,6 +59,10 @@ On Vercel, `/eve/v1/*` is routed to the Eve service _before_ Next filesystem rou
 
 **Publishing the prompt instead of treating it as a moat.** tendnote ships AGPL-3.0 with the full application source, the Eve instruction set, every tool and subagent definition, the ADR corpus and the eval suite. The instruction set is the most carefully authored artifact in the project and the most tempting to withhold — but it is extractable from any deployed instance by a determined user, so withholding it would forfeit a complete case study to protect something that was never actually keepable. Hosted differentiation is operational: a customer pays to avoid running Postgres, Redis, a queue, a scheduler and several OAuth apps. AGPL rather than BUSL because readers correctly decline to call source-available "open source", and the credibility was the entire reason to publish. A CLA is collected from the first external contribution, because reconstructing consent from forty contributors later is a project-halting event.
 
+**The failing eval run stays in the repo, and so does the reason it fails.** The suite's first Phase 9a evaluation is preserved verbatim rather than quietly rerun until it went green: `google/gemini-3.7-flash`, 52 passed, 8 failed, 0 skipped, 0 errored across 60 cases, exit code 1. What those numbers measure is worth being precise about, because the obvious reading is the wrong one. The same suite passes completely when run locally. The red result is the deterministic GitHub run, and almost all of its failures are defects in the eval harness rather than bad output from the model. Keeping a red gate in a public repo, and saying plainly what it does and does not measure, is the version I can defend - a green screenshot with nothing behind it proves less.
+
+**Built with agents, and willing to say by how much.** tendnote is a side project built with heavy agentic-assisted development, running Matt Pocock's skill set - `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review` - as the loop from spec through review. That is the honest explanation for the shape of the repo: 238 ADRs, 62 eval files and 650 test files are not decoration, they are the control surface that makes an agent-written codebase reviewable at all. It is also why the Canonical Case Study says I have personally read roughly 15% of the code, which I would rather state than have inferred. The claim this project makes is not that I typed all of it. It is that I chose where the constraints live, and they live in the schema and the query layer - the two places neither I nor a model can quietly route around.
+
 ---
 
 ## 5. Media inventory
@@ -93,7 +99,7 @@ Brand assets only — `apps/web/public/icons/`: `tendnote-mark-light.png`, `tend
 
 ## 6. Links
 
-- **Live:** https://tendnote.com — behind a private beta gate. Unadmitted visitors land on `/pending`; there is no free tier and hosted access is US-only at launch. A hiring manager clicking through will _not_ see the product. Flagged below.
+- **Live:** https://tendnote.com - access is gated today. Unadmitted visitors land on `/pending`; there is no free tier and hosted access is US-only at launch. **The link ships plain: do not invent a "private beta" label for it on the page** (Nick, 2026-08-25 - access opens soon, and a label the product doesn't use would date badly). The consequence stands regardless: a hiring manager clicking through will _not_ see the product, so this page has to be the demo.
 - **Source:** https://github.com/nick-neely/tendnote — **PUBLIC**, so the GitHub link may ship on the page. Verified via `gh repo view`: `"visibility":"PUBLIC"`, `"isPrivate":false`, licence AGPL-3.0, created 2026-06-24.
 - Optional deep link for technical readers: the Canonical Case Study, `docs/case-studies/tendnote-agent-built-privacy.md`.
 
@@ -157,6 +163,14 @@ Every factual claim in sections 2–4, mapped to what I read. Paths are relative
 | 50 | Repo is public, AGPL-3.0, created 2026-06-24 | `gh repo view nick-neely/tendnote --json visibility,url,licenseInfo,createdAt` |
 | 51 | Nine tracked brand PNGs; no screenshots in repo | `docs/phase-9a/publication-inventory.md` "Tracked binaries"; `git ls-files` image sweep |
 | 52 | "Juli" is a real person; current tree uses fixture "Mara" | `docs/phase-9a/publication-inventory.md` finding 1 |
+| 53 | The vision is an all-inclusive personal memory OS; relationship memory is the origin, not the ceiling | Nick, direct answer, 2026-08-25 |
+| 54 | Side project built with heavy agentic-assisted development, using Matt Pocock's `wayfinder` / `to-spec` / `to-tickets` / `implement` / `code-review` skills | Nick, direct answer, 2026-08-25 |
+| 55 | The Canonical Case Study is accurate as written, including the roughly-15%-read disclosure | Nick, direct answer, 2026-08-25, confirming `docs/case-studies/tendnote-agent-built-privacy.md` |
+| 56 | The 60-case suite passes completely on a local run; the deterministic GitHub run's 8 failures are almost entirely harness defects, not model output | Nick, direct answer, 2026-08-25 (interpretation is his; the run itself is `docs/case-studies/tendnote-agent-built-privacy.md`) |
+| 57 | The Neon pointer was `PREVIEW_DATABASE_URL`, not `DATABASE_URL`, and has since been removed | Nick, direct answer, 2026-08-25 |
+| 58 | No release date exists; a milestone within about a month at current pace is Nick's estimate, and the project stays active | Nick, direct answer, 2026-08-25 - estimate, not a commitment |
+| 59 | Access opens soon; the live link ships without a "private beta" label | Nick, direct answer, 2026-08-25 |
+| 60 | Surfaces beyond relationship memory that ship today: Assets, General Actions and Routines, Saved Items, Household workspaces, and Google / Gmail / Contacts / Discord capture | Rows 14, 21, 22 above; `docs/architecture.md` "Data model at a glance" and the integrations section. Enumerated in this draft's original question 2 and confirmed by Nick, 2026-08-25 |
 
 **Claims deliberately not made:** no user counts, no adoption or revenue figures, no performance benchmarks, no uptime. None are documented anywhere in the repo, and `PRODUCT.md` forbids inventing them.
 
@@ -164,16 +178,15 @@ Every factual claim in sections 2–4, mapped to what I read. Paths are relative
 
 ## Open questions for Nick
 
-1. **The live link doesn't demo the product.** `tendnote.com` is behind the private beta gate, so a hiring manager who clicks lands on `/pending`. Options: label the link "private beta" on the row, point the primary CTA at the public GitHub repo instead, or add a screenshot-led walkthrough on this page so the page _is_ the demo. My recommendation is the third plus an honest "private beta" label.
-
-2. **The row description is now narrower than the product.** `projects.ts` says "relationship memory and follow-up assistant". The product also ships Assets (things you own), General Actions and Routines, Household workspaces, and Google/Gmail/Contacts/Discord integrations. Do you want the row widened, or is relationship memory the deliberate headline with the rest as depth on this page?
-
-3. **Do you want the eval result on the page?** The Canonical Case Study preserves an exact deterministic run — `google/gemini-3.7-flash`, **52 passed, 8 failed, 0 skipped, 0 errored across 60 cases**, exit code 1 — explicitly classified as exploratory evidence rather than a clean qualification pass. Publishing a failing gate verbatim is unusual and, in the right frame, extremely credible. It is also easy to misread out of context. Your call; I left it out of the body.
-
-4. **Same question for the "~15% of the code" disclosure.** The case study states you have personally read roughly 15% of the code, and that this is the suite's first Phase 9a evaluation. It's the most striking honest thing in the repo. On a hiring page it could read as either unusual integrity or a liability, depending entirely on framing. Left out of the body pending your call.
-
 5. **Person-level screenshots are unblocked but still outstanding.** Juli's explicit sign-off (relayed by Nick, 2026-08-25) removes the consent problem that made me skip the People directory and person detail page, and that sign-off is recorded in the Media inventory above. The remaining obstacle is purely mechanical: the sandbox refused to relaunch the local dev server on the follow-up attempt, so the shots were not taken. Re-run in a session permitted to start `next dev` and the People directory, person detail, Eve chat, and Global Recall captures all follow quickly. Worth deciding then whether the person detail shot features Juli (richest real context) or a fixture person such as Priya Shah (cleaner for a public page); my inclination is a fixture person for the detail shot, with Juli's consent covering the People directory where her row is simply present.
 
-6. **Confirm the Neon pointer is intentional.** `apps/web/.env.local` sets `DATABASE_URL` to a Neon `neondb` instance, so a plain `pnpm dev` runs the local app against a _remote_ database. I overrode it to the local Docker Postgres for this work. If that Neon database holds real relationship data, running local dev unmodified points a development build at it — worth a second look independent of this page.
+---
 
-7. **Status wording.** The row says `active` / 2026. Given publication landed and commercial surfaces are explicitly deferred (ADR 0228), is there a milestone date worth setting `updatedAt` to so tendnote appears in the home Update feed?
+## Resolved (Nick, 2026-08-25)
+
+1. **The live link doesn't demo the product.** Leave the gate as it is and ship the link plain - no invented "private beta" label on the page, because access opens soon. Section 6 records the wording; the page still has to carry the demo itself.
+2. **The row description is narrower than the product.** Widen the framing. tendnote's vision is an all-inclusive personal memory OS; relationship memory is where it started and what it has grown out from. Section 2 now carries that arc while staying inside what the product currently ships.
+3. **The eval result on the page.** Yes, with the correct reading. The failing deterministic run stays preserved in the repo and is now a decision in section 4 - but the 52/8-of-60 numbers are not evidence of model quality: the suite passes completely locally, and almost all of the failures are eval-harness defects. Placement on the finished page is still the editor's call; the framing is not.
+4. **The "~15% of the code" disclosure.** Confirmed real, and the story behind it may be named: this is a side project built with heavy agentic-assisted development using Matt Pocock's `wayfinder`, `to-spec`, `to-tickets`, `implement` and `code-review` skills. Now a decision in section 4, with the disclosure attached to it rather than floating alone.
+6. **The Neon pointer.** Corrected: the variable was `PREVIEW_DATABASE_URL`, not `DATABASE_URL`, and Nick has removed it regardless. Nothing further to do. _(Not independently re-verified - the sandbox refused to read `apps/web/.env.local` on the follow-up pass, so this is recorded on Nick's word.)_
+7. **Status wording and a milestone date.** No date exists. Nick's estimate is a milestone within about the next month at the current pace, and the project is definitely active and staying that way. Record it as his estimate, never as a committed date; do not set `updatedAt` to a guessed value.

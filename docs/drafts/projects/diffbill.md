@@ -4,7 +4,17 @@ Content draft for `/projects/diffbill`. Not site code. Voice is first person as 
 
 **Source repo:** `/home/neely/dev/diffbill` @ `85c024e5` (pulled clean, `Already up to date`). Nothing in that repo was modified.
 
-> **Read the Open questions before publishing.** One claim in the existing frontdoor row blurb - that commit diffs are never accessed - is contradicted by the current code. It is deliberately absent from this draft and needs Nick's decision before the page ships.
+> **PRE-PUBLISH GATE - DO NOT SKIP.**
+>
+> **Page copy assumes diffbill #156-#158 are fixed; verify before this page ships.**
+>
+> Nick's direction (2026-08-25) is to write this page as though all three are in their ideal state, so sections 3 and 4 now describe the fixed behavior rather than the gap:
+>
+> - **#156** - the GitHub trust section corrected: short diff excerpts are read and stored, and diffbill *never writes* rather than *cannot* write.
+> - **#157** - the redactor applied to patch excerpts and commit messages, not only to the PR body excerpt.
+> - **#158** - the revoke-access claim made true: disconnecting GitHub actually purges the synced data.
+>
+> Until each is confirmed shipped, **none of the affected sentences may go live.** The affected sentences are marked in section 3 (end-of-section note) and section 4 (permissions decision).
 
 ---
 
@@ -26,13 +36,17 @@ diffbill closes that loop. You pick a repository and a date range, and it pulls 
 
 It is built for the people who both ship the work and own the billing - independent freelancers, solo consultants, and small dev agencies. The design constraint that follows from that audience is that nothing is auto-sent. Every AI-generated row lands in a review step, low-confidence rows are excluded by default rather than included by default, and the invoice is a Stripe _draft_ in the user's own connected account. diffbill never holds the money and never has the last word on what a client sees.
 
+In my own use the whole path - merged pull requests to a Stripe draft - runs about five minutes, against roughly three hours a month I used to lose reconstructing an invoice by hand. Those are my own measurements from my own billing, not a customer average and not a benchmark.
+
+_Provenance for the two figures above: measured by Nick in his own use (Nick, direct answer, 2026-08-25). They are the same two numbers on `apps/marketing/components/social-proof.tsx` L52-55 and L75-78, and they clear the "numbers are real or absent" rule only with that attribution attached - if the page carries them, it carries "measured by Nick in his own use" alongside them._
+
 ---
 
 ## 3. How it's built
 
 It is a pnpm + Turborepo monorepo with two Next.js App Router apps and seven shared packages. `apps/marketing` is the public site; `apps/core-app` is the product. The shared packages carry the design system (`ui`, Tailwind v4 CSS-first with shadcn-style Radix components), feature flags (`flags`, on Vercel Flags), cross-app URL resolution (`urls`), observability (`observability`), transactional email, blob storage, and a Remotion package that renders the marketing hero video programmatically. The product app is Next 16.2.1 on React 19, TypeScript throughout, Postgres through Drizzle ORM, Redis for rate limiting and caching, better-auth for identity, and Stripe for both diffbill's own subscriptions and the invoices it creates on the user's behalf. It currently runs to 73 API routes and 78 test files, with Biome for lint and format and Vitest in CI.
 
-**The data flow.** A user connects GitHub through better-auth OAuth. Selecting a repo and a date range hits the sources endpoint, which queries merged PRs and applies label-based filters for internal and chore work before the user ever sees the list. When the user picks the PRs they want billed, each one is enriched in parallel: the PR detail endpoint for body, commit count, and churn totals; the commits endpoint for up to thirty first-line commit messages; the files endpoint, paged up to four times, for the changed files; and any issues referenced by a `Fixes #123`-style phrase in the PR body. Changed files are scored by churn and category - product code weighted up, generated files and lockfiles weighted down - and the top 200 are kept as evidence. That enriched payload is what the model sees. It is metadata, commit messages, filenames, per-file line counts, and a short trimmed excerpt of the changed lines in each file; the repository is never cloned and full file contents are never fetched, because no `/contents/` or `/git/blobs/` endpoint is called anywhere in the GitHub layer.
+**The data flow.** A user connects GitHub through better-auth OAuth. Selecting a repo and a date range hits the sources endpoint, which queries merged PRs and applies label-based filters for internal and chore work before the user ever sees the list. When the user picks the PRs they want billed, each one is enriched in parallel: the PR detail endpoint for body, commit count, and churn totals; the commits endpoint for up to thirty first-line commit messages; the files endpoint, paged up to four times, for the changed files; and any issues referenced by a `Fixes #123`-style phrase in the PR body. Changed files are scored by churn and category - product code weighted up, generated files and lockfiles weighted down - and the top 200 are kept as evidence. That enriched payload is what the model sees. It is metadata, commit messages, filenames, per-file line counts, and a short trimmed excerpt of the changed lines in each file; the repository is never cloned and full file contents are never fetched, because no `/contents/` or `/git/blobs/` endpoint is called anywhere in the GitHub layer. Everything in that payload a client could eventually read - the PR body excerpt, the commit messages, and the diff excerpts - passes through the same redactor first, which strips GitHub token prefixes, long hex strings, email addresses, and screaming-snake constants. A secret is at least as likely to show up in a diff hunk as in a PR description, so the redactor runs on the whole payload rather than the one field it started on.
 
 That evidence is not transient. The shaped source - body excerpt, labels, commit summaries, and the per-file evidence array including each file's trimmed change excerpt - is persisted as JSONB on both the invoice's sources and its line items, and it is what the client sees: the anonymous client portal renders the evidence behind each billed row so the person paying can check the work against the files it came from. Storing it is the point. An invoice whose provenance disappears the moment it is generated is not an audit trail.
 
@@ -54,6 +68,8 @@ Cost and quality are both instrumented. Every model call is wrapped so PostHog r
 
 **Invoicing** is Stripe Connect. The draft is created in the user's own connected account, so diffbill is never in the payment path.
 
+_Gated sentence: the redaction claim in "The data flow" above describes the post-fix state of diffbill **#157**. See the pre-publish gate at the top of this draft._
+
 ---
 
 ## 4. Decisions worth defending
@@ -68,7 +84,9 @@ Cost and quality are both instrumented. Every model call is wrapped so PostHog r
 
 **Row-level security in Postgres, and money that never touches diffbill.** Every authenticated query runs inside a transaction that sets `app.current_user_id`, with RLS policies keyed to it, so a future query that forgets to filter by user returns zero rows instead of someone else's invoices. The anonymous client portal gets its own context keyed to a hashed token rather than a user. On the payment side, invoices are created through Stripe Connect in the user's own account - diffbill is not a payment intermediary, holds no client funds, and inherits none of the compliance surface that would come with being one.
 
-**GitHub permissions escalate only on request.** The default OAuth scopes are `read:user` and `user:email`, which cover public repositories. Private-repository access requires the broader `repo` scope, and rather than requesting it up front, the app reads the granted scopes back off GitHub's response headers, notices the gap, and offers a re-authorization prompt at the two points where it actually matters - the repositories page and the new-invoice flow. Someone billing public work never sees the prompt at all. Asking for the maximum permission on day one is the easy version and the one that loses signups. (See Open questions - classic `repo` is a read/write scope, so the marketing copy describing permissions as read-only needs a look.)
+**GitHub permissions escalate only on request.** The default OAuth scopes are `read:user` and `user:email`, which cover public repositories. Private-repository access requires the broader `repo` scope, and rather than requesting it up front, the app reads the granted scopes back off GitHub's response headers, notices the gap, and offers a re-authorization prompt at the two points where it actually matters - the repositories page and the new-invoice flow. Someone billing public work never sees the prompt at all. Asking for the maximum permission on day one is the easy version and the one that loses signups. The precision that matters, and that the copy now carries: classic `repo` is a read _and_ write scope, so the defensible claim is that diffbill never writes - there is no write call to any repository endpoint anywhere in the codebase - rather than that it cannot. A self-imposed restriction stated accurately is worth more than a stronger-sounding one that the token does not support.
+
+_Gated sentence: the paragraph above describes the post-fix state of diffbill **#156**. See the pre-publish gate at the top of this draft._
 
 ---
 
@@ -107,7 +125,9 @@ Also present in that directory:
 - `recurring-repositories-review.png`.
 - `raw/` - 37 alternate and intermediate captures intentionally left out of the final sequence. Useful if a specific surface is needed that `final/` does not cover: notably `core-create-invoice-ai-streaming.png` (translation mid-stream), `core-clients.png`, `core-settings.png`, `core-client-portal-access.png`, `core-invoice-client-review.png`, and `marketing-pricing.png`.
 
-> **Blocking, per the capture README:** these are real authenticated captures. Several expose private repository names, client labels, invoice amounts or rates, usage counts, and existing client-review details. They must be reviewed and redacted before any of them goes on a public page. No auth token or cookie value appears in the curated set.
+> **Cleared by Nick, 2026-08-25.** The capture README still carries a redaction gate; it is superseded. These are real authenticated captures, but the private repository names visible in them are Nick's own and he does not mind them being shown, and every rate, invoice amount, and usage count in the set is made-up development data rather than a real client's. No auth token or cookie value appears in the curated set. They can go on a public page as captured.
+>
+> One residual check, which is not a redaction gate but is still a rule: `AGENTS.md` requires written sign-off before any client is named. If a genuine client name - as opposed to a dev-data label - appears in `07`, `10`, `raw/core-clients.png`, or `raw/core-invoice-client-review.png`, that row still needs blurring or the shot needs swapping. Nick's clearance covers repo names and fabricated figures; it does not by itself cover a third party's name.
 
 ### Video
 
@@ -149,7 +169,7 @@ There is **no real screenshot of the running app** anywhere in `apps/marketing/p
 
 - **Live:** https://diffbill.com
 - **Product app:** https://app.diffbill.com (referenced as the default app origin in the core app's AI Gateway attribution headers)
-- **Source:** **Private.** `gh repo view nick-neely/diffbill --json visibility,url` returns `{"url":"https://github.com/nick-neely/diffbill","visibility":"PRIVATE"}`. **No GitHub link goes on the page** unless Nick makes the repo public.
+- **Source:** **Private, deliberately.** `gh repo view nick-neely/diffbill --json visibility,url` returns `{"url":"https://github.com/nick-neely/diffbill","visibility":"PRIVATE"}`, and Nick is keeping it that way for now (2026-08-25). **No GitHub link goes on the page.** That is a decision rather than a gap, and the page should neither link out nor apologize for the absence - a private product repo needs no explanation on a portfolio page.
 
 ---
 
@@ -194,7 +214,7 @@ Every claim in sections 2-4 maps to a row. Paths are relative to `/home/neely/de
 | PR detail, commits, files, linked issues fetched in parallel | `apps/core-app/lib/github/translation-context.ts` `Promise.all` in `enrichSourcesForTranslation` |
 | Up to 30 first-line commit messages | `translation-context.ts` `fetchPullCommitSummaries` - `payload.slice(0, 30)`, `.split('\n')[0]` |
 | Files endpoint paged up to four times | `translation-context.ts` `fetchPullEvidenceFiles` - `for (let page = 1; page <= 4; ...)` |
-| Linked issues parsed from `Fixes #123`-style references | `translation-context.ts` `extractLinkedIssueNumbers` regex `close[sd]? | fix(e[sd])? | resolve[sd]?` |
+| Linked issues parsed from `Fixes #123`-style references | `translation-context.ts` `extractLinkedIssueNumbers` regex `close[sd]? \| fix(e[sd])? \| resolve[sd]?` |
 | Files scored by churn and category, top 200 kept | `translation-context.ts` `prioritizeEvidenceFiles` - log10 churn score, category weights, `.slice(0, 200)` |
 | Repository never cloned, full file contents never fetched | `apps/core-app/lib/github/` calls only `/repos/{o}/{r}/pulls/*`, `/repos/{o}/{r}/issues/{n}`, `/repos/{o}/{r}`, `/user/repos`; no `/contents/` or `/git/blobs/` call exists |
 | A short trimmed excerpt of changed lines is included | `translation-context.ts` `trimPatch` - `patch.slice(0, 400)`; `lib/ai/evidence-resolver.ts` `trimExcerpt` - `.slice(0, 300)` |
@@ -255,42 +275,45 @@ Every claim in sections 2-4 maps to a row. Paths are relative to `/home/neely/de
 | Private repos require opt-in `repo` scope re-authorization | `apps/core-app/app/(app)/repositories/page.tsx:536` and `app/(app)/invoices/new/page.tsx:1642` - `scopes: ['read:user', 'user:email', 'repo']` |
 | Missing scope detected from response headers | `apps/core-app/lib/github/sources.ts:48-51` and `:338-339` - `response.headers.get('x-oauth-scopes')` |
 
+### Answers from Nick (2026-08-25)
+
+Claims that entered this draft from Nick directly rather than from the repo. Everything here carries the same provenance line: **Nick, direct answer, 2026-08-25.**
+
+| Claim | Evidence / caveat |
+| --- | --- |
+| Merged PRs to a Stripe draft takes about 5 minutes in Nick's own use | Nick, direct answer, 2026-08-25 - firsthand measurement. Same figure as `apps/marketing/components/social-proof.tsx:52-55` |
+| About 3 hours a month saved versus reconstructing invoices by hand | Nick, direct answer, 2026-08-25 - firsthand measurement. Same figure as `social-proof.tsx:75-78` |
+| Pro is $9.99 and Team is $14.99, both currently carrying the founder's 30% discount; a lifetime deal also exists | Nick, direct answer, 2026-08-25. **Conflicts with both in-repo sources** - `README.md` lists Pro at $19.99/$14.99 and `docs/product-marketing-context.md` (2026-04-01) lists Pro at $12.99/$9.99, and neither names a Team tier at $14.99 or a lifetime deal. Nick's figures are the current ones; the repo docs are stale. Not quoted in sections 2-4 |
+| Patch excerpts and commit messages are run through the redactor | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #157.** Verify before publish |
+| Trust-section copy corrected: short diff excerpts read and stored; diffbill never writes rather than cannot | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #156.** Verify before publish |
+| Revoking GitHub access actually purges synced data | Nick, direct answer, 2026-08-25 - **assumed fixed as diffbill #158.** Verify before publish. Not claimed in sections 2-4 |
+| The repo stays private by decision, for now | Nick, direct answer, 2026-08-25 |
+| The portfolio captures are cleared: repo names are Nick's own, all rates and invoice amounts are development data | Nick, direct answer, 2026-08-25. Supersedes the redaction gate in the capture README |
+
 ---
 
 ## Open questions for Nick
 
-**1. The "commit diffs are never accessed" claim is not true of the current code, and it is in the frontdoor row blurb.** This is the one blocking item.
-
-`src/lib/projects.ts` in frontdoor says: _"It reads pull request metadata only: source files, commit diffs, and repository contents are never accessed."_ That sentence traces to `apps/marketing/components/github-trust-section.tsx` (L155-159 - "We never see your source code" / "Your source files, commit diffs, and repo contents are never accessed" and L43 - "We never call GitHub's file or blob APIs").
-
-The code does fetch diffs. `lib/github/translation-context.ts` calls `/repos/{owner}/{repo}/pulls/{n}/files`, and `trimPatch` (L204-207) keeps a 400-character excerpt of each file's `patch` - the actual diff hunk - as `patchExcerpt`. That field is in the validated translation schema (`lib/validators/translation.ts:19`) and is passed to the model, re-trimmed to 300 characters, by `buildEvidenceModelCandidates` (`lib/ai/evidence-resolver.ts`).
-
-The rest of the diffbill site already says this correctly and has for a while - `lib/homepage-faq.ts:20`, `lib/integration-pages.ts:68`, the support FAQ, the GitHub feature page, and several blog posts all describe "PR and issue metadata **plus short excerpts of the changed lines (diffs)**". Even the trust component's own "What we read" list includes "Short diff excerpts". It looks like the headline and the "never touched" list in that one component are stale relative to both the code and the rest of the copy.
-
-To be fair to the narrow version: no `/contents/` and no `/git/blobs/` endpoint is called anywhere in `lib/github/`, so "we never clone your repo or read full source files" is accurate. It is specifically "commit diffs are never accessed" and "we never call GitHub's file or blob APIs" that do not survive contact with `pulls/{n}/files`.
-
-The likely origin is visible in the file: a "technical truth" comment block at `github-trust-section.tsx:20-29` states that the only endpoint used is `/search/issues` and that fields are limited to title, 240-char body, author, labels, merge date, and linked issue numbers. That was probably true when it was written. It predates `translation-context.ts` entirely and mentions none of `pulls/{n}`, `pulls/{n}/commits`, or `pulls/{n}/files`. The headline and the "never touched" list were built on that comment and never revisited when enrichment landed.
-
-I have written this draft using the accurate framing ("a short trimmed excerpt of the changed lines"). **Two things need your call:** whether to correct `github-trust-section.tsx` on diffbill, and - since it is in the frontdoor row blurb - who fixes `src/lib/projects.ts`. I did not touch it; two other agents are working in that repo.
-
-One more thing sharpens it: those excerpts are not transient. `patchExcerpt` is persisted to Postgres in `invoice_sources.evidence_files` and `line_items.evidence_files` (`lib/db/schema/business.ts:401`, `:273`) and rendered to the paying client in the portal (`components/portal/client-portal-page.tsx:535`, `:983`). So alongside "commit diffs are never accessed", the adjacent "We do not store your code" needs the same look. I think the honest and frankly better story is the one your FAQ already tells - short excerpts of changed lines, kept deliberately so every billed line has checkable provenance - but that is your call to make, not mine.
-
-**2. Patch excerpts and commit messages are not run through the redactor.** Related to the above and worth knowing independently of the copy question. `redactSensitiveText` (which strips GitHub token prefixes, 32+ char hex strings, emails, and long screaming-snake constants) is applied only to `bodyExcerpt`, in `lib/github/sources.ts:160`, and only when the user's `redactSensitive` setting is on. `translation-context.ts` never imports it, so neither `trimPatch` output nor `commitSummaries[].message` is redacted - and both are persisted and shown in the client portal. Meanwhile `github-trust-section.tsx:61-63` advertises "Secrets, tokens, or env vars - Auto-redacted if they appear in PR text", and a leaked token is at least as likely to appear in a diff hunk as in a PR body. This looks like a genuine small bug with a one-line fix at the `trimPatch` call site. I did not make it - read-only brief.
-
-**3. "Read-only permissions" is imprecise once `repo` is granted.** `github-trust-section.tsx:202` describes the scopes as "read:user and user:email. We cannot push code, create branches, or modify anything in your repos." True by default. But private-repo users are prompted to re-authorize via `authClient.linkSocial` with GitHub's classic `repo` scope (`app/(app)/repositories/page.tsx:533-537`, `app/(app)/invoices/new/page.tsx:1639-1643`), which is read _and write_ over private repo code, statuses, and deployments. Classic OAuth has no narrower "read PR metadata only" scope, so this is not a design mistake - it is the only option short of shipping a GitHub App with fine-grained permissions. But the header "What we never touch - not possible with our permissions" is stronger than the token supports. The accurate version is that diffbill never writes (I found no write call to any repo endpoint), which is a self-imposed restriction rather than one GitHub enforces. Worth softening "cannot" to "never does".
-
-Related and worth knowing: there is no test, lint rule, or runtime guard anywhere that would fail if someone later added a `/contents/` or `/git/blobs/` call. The endpoint discipline is real but it is convention, not architecture. If the privacy stance is going to be a headline trust claim on diffbill's homepage, a single test asserting the set of GitHub paths the client is allowed to build would make it enforceable and cost about twenty lines. That would also make it something I could describe on the portfolio page as a guarantee rather than a habit.
-
-**4. Pricing is inconsistent between sources, so I quoted none of it.** `README.md` lists Pro at $19.99/$14.99; `docs/product-marketing-context.md` (dated April 1, 2026) lists Pro at $12.99/$9.99. I have no way to tell which matches the live site today, and the page does not need prices. Confirm if you want any pricing on it.
-
-**5. The two numbers on diffbill's homepage are deliberately not in this draft.** `apps/marketing/components/social-proof.tsx` shows "~5 min / PR to Stripe draft" (L52-55) and "3+ hrs / Saved per month" (L75-78). They are the only quantified performance claims on the site, and I could find nothing in the repo backing either - no benchmark, no instrumentation output, no doc deriving them. Under `PRODUCT.md`'s "numbers are real or absent" they cannot go on the page as written. If there is a documented source I did not find, send it and I will add them with the citation. Otherwise the page carries no outcome metrics, which also matches `PRODUCT.md`'s "No adoption metrics, revenue figures, or audience numbers are established."
-
-Separately: the only numbers currently in the draft are counts I derived from the repo myself (73 API routes, 78 test files) and configuration constants. If you would rather the page carry no counts at all, they are easy to drop - they are in section 3 paragraph 1 only.
-
-**5b. An unrelated site claim that does not survive the code, while you are in there.** `github-trust-section.tsx:260-261` says revoking GitHub access means "All synced data is deleted immediately - no support ticket required." The only deletion path I found is `archiveRepository` (`lib/services/repositories.ts:138-165`), which sets `archived_at` - a soft delete that leaves the repository row, and leaves every `invoice_sources` and `line_items` row already derived from it, fully intact. I found no code that purges synced data on GitHub disconnect. Not a portfolio-page issue, but it is the kind of claim that matters if anyone ever reads it as a data-protection commitment.
-
-**6. Repo is private, so there is no source link.** Confirm you want it kept that way; the page currently gets a live link only.
-
 **7. Two video decisions for you.** The wiring is now fully pinned in section 5, so nothing is blocked - but two judgment calls are yours. First, `client-portal.mp4` is 73 MB and `multi-repo.mp4` is 29.5 MB; if either goes on nickneely.dev they want re-encoding, and the changelog clips ship with no poster frame set, so one has to be chosen. Second - RESOLVED by Nick (2026-08-25): `hero.mp4` / `hero.webm` stay unused. The chosen video for the detail page is the marketing launch video (`diffbill-launch.mp4`, the homepage "How It Works" asset); it needs a poster frame and likely a re-encode for the page.
 
-**8. Screenshot redaction is a hard gate.** Repeating it because it is easy to lose: the capture README states these images expose private repo names, client labels, invoice amounts and rates, and usage counts. Nothing from `artifacts/portfolio-screenshots/2026-08-25/` should reach `public/` without a redaction pass.
+---
+
+## Resolved (Nick, 2026-08-25)
+
+**Assume-fixed set - read the pre-publish gate at the top before shipping this page.** Nick's direction is that questions 1, 2, 3 and 5b are all fixed in their ideal state, filed as diffbill issues **#156, #157 and #158**. This draft is written to the fixed state. It is not verified.
+
+**1. The "commit diffs are never accessed" claim.** Fixed as diffbill **#156**: the trust section now describes what the code actually does - PR and issue metadata plus short excerpts of the changed lines, read and stored deliberately so every billed row has checkable provenance. The draft already used that framing; section 4's permissions decision now states the corrected version rather than flagging the gap. The frontdoor row blurb in `src/lib/projects.ts` still carries the old sentence and is owned by someone else - it needs the same correction and is outside this file's scope.
+
+**2. Patch excerpts and commit messages are not redacted.** Fixed as diffbill **#157**: the redactor now runs over the whole enriched payload - body excerpt, commit messages, and diff excerpts - not only `bodyExcerpt`. Section 3's data-flow paragraph now says so, with a gated-sentence note at the end of the section.
+
+**3. "Read-only permissions" is imprecise once `repo` is granted.** Fixed as diffbill **#156**: the copy now says diffbill never writes rather than that it cannot. Section 4's permissions decision carries that wording. The related suggestion in the original question - a test asserting the allowed set of GitHub paths, which would turn endpoint discipline from convention into architecture - was not part of Nick's answer and is not claimed anywhere on this page.
+
+**4. Pricing.** Confirmed by Nick: **Pro $9.99, Team $14.99**, each currently carrying the founder's 30% discount, and a lifetime deal also exists. Recorded in the Facts register under "Answers from Nick" with its provenance. Not quoted in sections 2-4; the page still does not need prices. **Conflict worth knowing:** neither in-repo source matches - `README.md` says Pro $19.99/$14.99 and `docs/product-marketing-context.md` says Pro $12.99/$9.99, and no source names a Team tier or a lifetime deal. Nick's figures are current; the repo docs are stale and should be updated in diffbill.
+
+**5. The two homepage numbers.** Un-excluded. "~5 min" and "3+ hrs saved per month" are real firsthand measurements Nick took in his own use, which satisfies "numbers are real or absent". They are now in section 2 with the attribution attached, and the attribution travels with them: if the figures ship, "measured by Nick in his own use" ships next to them.
+
+**5b. The revoke-access deletion claim.** Fixed as diffbill **#158**: disconnecting GitHub now purges the synced data rather than soft-deleting the repository row. No page copy depends on this claim, so nothing in sections 2-4 changed; it is recorded because the gate covers all three issues together.
+
+**6. Repo visibility.** Private, deliberately, for now. No GitHub link on the page, and section 6 records it as a decision rather than a gap.
+
+**8. Screenshot redaction.** Gate lifted. The private repository names visible in the captures are Nick's own and he does not mind them shown; all rates and invoice amounts in the set are made-up development data. Section 5's blocking note is replaced with a dev-data clearance dated 2026-08-25. One rule survives it: `AGENTS.md` still requires written sign-off before naming a client, so a genuine client name in any capture needs blurring regardless of this clearance.
