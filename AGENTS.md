@@ -18,6 +18,7 @@
 
 - `src/lib/public-routes.ts` is exhaustive over route paths, so a dynamic route appears as the literal `/writing/$slug`. `vite.config.ts` prerenders with `failOnError: true`, which means those placeholders must be expanded into real paths before they reach the prerenderer
 - TanStack Start's import protection denies any `**/*.server.*` module to the client module graph, and it walks the whole graph rather than stopping at the server-function boundary. A `createServerFn` whose module also exports something server-only therefore fails the build: the export keeps the server import alive through tree-shaking. Keep the RPC and the server-only body in separate files, and verify with `grep` over `.output/public` rather than by reasoning about it.
+- Installing a dependency while `vite dev` is running can half-invalidate the dep optimizer and surface as "Invalid hook call / more than one copy of React". Delete `node_modules/.vite` and restart the dev server; production builds are unaffected.
 - Neely Solutions is a separate maintained brand. This site links to it and never co-headlines with it.
 
 ## Decisions worth reading before proposing an alternative

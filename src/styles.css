@@ -142,6 +142,13 @@
   --sidebar-accent-foreground: oklch(0.19 0.012 60);
   --sidebar-border: oklch(0.895 0.008 85);
   --sidebar-ring: var(--signal);
+  --selection: var(--signal);
+  --selection-foreground: var(--background);
+  /*
+   * Scrollbar thumb fill. Kept quieter than `--signal` so the amber hinge
+   * can read, and dark enough on this ground to clear 3:1 against the track.
+   */
+  --scrollbar-thumb: oklch(0.58 0.016 70);
 
   /*
    * Syntax highlighting. Shiki resolves every token to one of these at build
@@ -201,6 +208,9 @@
   --sidebar-accent-foreground: oklch(0.96 0.006 85);
   --sidebar-border: oklch(0.272 0.009 75);
   --sidebar-ring: var(--signal);
+  --selection: var(--signal);
+  --selection-foreground: var(--background);
+  --scrollbar-thumb: oklch(0.52 0.016 75);
 
   --code-background: var(--card);
   --code-foreground: oklch(0.9 0.006 85);
@@ -224,6 +234,13 @@
   }
   html {
     @apply scroll-smooth font-sans;
+    accent-color: var(--signal);
+    scrollbar-gutter: stable;
+    -webkit-tap-highlight-color: color-mix(
+      in oklab,
+      var(--signal) 35%,
+      transparent
+    );
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -237,6 +254,114 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  /*
+   * Text selection and form accents share `--signal`, so the OS blue never
+   * shows up as a second brand colour. Selected text inverts to the page
+   * ground: amber-on-amber would vanish on links already painted in signal.
+   */
+  ::selection {
+    background-color: var(--selection);
+    color: var(--selection-foreground);
+  }
+
+  /*
+   * The page scrollbar is a square thumb, like the block cursor, with the
+   * door's amber hinge leaking along the inner edge. Firefox cannot draw
+   * that hinge, so it gets a thin coloured bar from the same tokens.
+   */
+  @supports (-moz-appearance: none) {
+    html {
+      scrollbar-color: var(--scrollbar-thumb) var(--background);
+      scrollbar-width: thin;
+    }
+  }
+}
+
+@media (forced-colors: none) {
+  ::-webkit-scrollbar {
+    height: 14px;
+    width: 14px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: var(--background);
+  }
+
+  ::-webkit-scrollbar-track:vertical {
+    border-inline-start: 1px solid var(--border);
+  }
+
+  ::-webkit-scrollbar-track:horizontal {
+    border-block-start: 1px solid var(--border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    background-repeat: no-repeat;
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb:vertical {
+    background-image: linear-gradient(
+      to right,
+      var(--signal) 0 2px,
+      color-mix(in oklab, var(--signal) 42%, transparent) 2px,
+      transparent 8px
+    );
+  }
+
+  ::-webkit-scrollbar-thumb:horizontal {
+    background-image: linear-gradient(
+      to bottom,
+      var(--signal) 0 2px,
+      color-mix(in oklab, var(--signal) 42%, transparent) 2px,
+      transparent 8px
+    );
+  }
+
+  @media (hover: hover) {
+    ::-webkit-scrollbar-thumb:vertical:hover {
+      background-image: linear-gradient(
+        to right,
+        var(--signal) 0 2px,
+        color-mix(in oklab, var(--signal) 42%, transparent) 2px,
+        color-mix(in oklab, var(--signal) 18%, transparent)
+      );
+    }
+
+    ::-webkit-scrollbar-thumb:horizontal:hover {
+      background-image: linear-gradient(
+        to bottom,
+        var(--signal) 0 2px,
+        color-mix(in oklab, var(--signal) 42%, transparent) 2px,
+        color-mix(in oklab, var(--signal) 18%, transparent)
+      );
+    }
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: var(--background);
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  html {
+    accent-color: Highlight;
+    scrollbar-color: CanvasText Canvas;
+    scrollbar-width: auto;
+  }
+
+  ::selection {
+    background-color: Highlight;
+    color: HighlightText;
   }
 }
 
@@ -327,7 +452,18 @@
      */
     --front-door-room: oklch(0.26 0.014 70);
     display: inline-flex;
-    /* What makes this the containing block for the reveal below. */
+    /*
+     * A stacking context of its own, so the portal can be ordered behind the
+     * button without `z-index: -1` sending it behind the page ground. The
+     * button carries the `perspective` that makes its own children a sealed
+     * 3D scene, which is why the portal cannot simply live inside it.
+     */
+    isolation: isolate;
+    /*
+     * What makes this the containing block for the portal and the caption. The
+     * portal takes the door's exact footprint from it; the caption takes the
+     * door's right edge.
+     */
     position: relative;
   }
 
@@ -355,6 +491,20 @@
     perspective: 1.4em;
     position: relative;
     width: 0.5em;
+    /* Above the portal, because an open door stands in front of its doorway. */
+    z-index: 1;
+  }
+
+  /*
+   * While the door is open the button no longer owns its whole footprint: the
+   * portal underneath it is a link, and a reader has to be able to reach it.
+   * Only the leaf stays clickable, which leaves exactly the affordance the
+   * metaphor asks for - click the door to shut it, click through the doorway
+   * to go where it leads. Keyboard focus is untouched by `pointer-events`, so
+   * the button remains its own tab stop either way.
+   */
+  .front-door-button[aria-expanded="true"] {
+    pointer-events: none;
   }
 
   /*
@@ -379,10 +529,23 @@
     position: absolute;
   }
 
+  /*
+   * With the portal mounted the room's dark ground moves onto the portal,
+   * which sits under the button and is where the dither has to be drawn. What
+   * is left here is the jamb: the hard amber rim and the soft falloff, still
+   * painted over the dither because they are the light on the frame rather
+   * than something inside the room.
+   */
+  .front-door:has(.front-door-portal) .front-door-aperture {
+    background-color: transparent;
+  }
+
   .front-door-leaf {
     background-color: var(--signal);
     display: block;
     height: 100%;
+    /* The exception to the rule above: the leaf is the door's own hit area. */
+    pointer-events: auto;
     /* Its own containing block, for the shading and the knob it carries. */
     position: relative;
     /* The hinge. The door swings from its left edge, like the mark's does. */
@@ -545,43 +708,108 @@
   }
 
   /*
-   * Absolutely positioned against the door itself, so opening it cannot move a
-   * single letter of the poster line. The glow is the light through the
-   * doorway: static, quiet, and never animated.
+   * The portal: the room behind the door, and the link through it. Pinned to
+   * the door's exact footprint and out of flow, so mounting it cannot move a
+   * letter of the poster. It carries the room's dark ground, which is what the
+   * reader sees while the shader chunk is still in flight, on a browser that
+   * refused a WebGL context, and in the unlit cells of the dither itself - the
+   * shader draws amber ink on transparency rather than on a background.
    */
-  .front-door-reveal {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    inset-inline-start: 0;
-    /*
-     * `em` so the gap clears the open door's near edge, which overhangs the
-     * closed footprint in proportion to the type scale rather than by a fixed
-     * number of pixels. The `rem` floor keeps the small-screen spacing exactly
-     * where it was.
-     */
-    margin-top: max(0.6rem, 0.11em);
-    max-width: min(20rem, 70vw);
+  .front-door-portal {
+    background-color: var(--front-door-room);
+    inset: 0;
+    overflow: hidden;
     position: absolute;
-    text-shadow: 0 0 22px color-mix(in oklab, var(--signal) 35%, transparent);
-    top: 100%;
-    width: max-content;
+    /* Under the button, which is the door standing in front of the doorway. */
+    z-index: 0;
   }
 
-  /*
-   * On a narrow viewport the cursor sits close enough to the right edge that a
-   * line starting there would overflow, so the reveal hangs from the door's
-   * right edge instead and grows leftwards under the poster.
-   */
-  @media (width < 40rem) {
-    .front-door-reveal {
-      inset-inline-end: 0;
-      inset-inline-start: auto;
+  /* Paper's mount absolutely positions its own canvas inside this. */
+  .front-door-portal-shader {
+    height: 100%;
+    width: 100%;
+  }
+
+  @keyframes front-door-portal-open {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 
-  .front-door-reveal[hidden] {
-    display: none;
+  /*
+   * The portal is mounted by the click rather than revealed by it, so it has
+   * no resting state to transition from and needs an animation to arrive with
+   * the swing instead of ahead of it. Same 280ms as the leaf. Under reduced
+   * motion the open door simply is open, portal and all.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .front-door-portal {
+      animation: front-door-portal-open 280ms ease-out;
+    }
+  }
+
+  /*
+   * The caption names the destination while the reader is pointing at the
+   * portal, and it hangs below the entire poster line rather than below the
+   * door. The open leaf swings towards the reader and so overhangs the closed
+   * footprint; the poster's own descender space is deeper than that overhang
+   * at every type size, which is what makes clearing the line the one offset
+   * that cannot be reached at any viewport.
+   *
+   * `0.18em` is that descender: the poster line's bottom edge sits a hair over
+   * 0.17em below the door's, constant in `em` because both are set by the same
+   * font at the same size. The `rem` on top of it is the caption's own gap,
+   * which belongs to the caption's type rather than the poster's.
+   *
+   * The rail carries the offset rather than the caption, because `top`
+   * resolves `em` against the element it is declared on and the caption
+   * restates its type at 12px - where `0.18em` is two pixels rather than the
+   * sixty-six the poster needs. The rail sets no type, so it is still reading
+   * the display size. `max-content` because the door is half an em wide and
+   * anything shrink-to-fit inside it would be shredded.
+   *
+   * Absolutely positioned, so appearing costs no layout anywhere.
+   */
+  .front-door-caption-rail {
+    /*
+     * Flex rather than inline flow: the rail is still reading the poster's
+     * font size, so an inline formatting context here would lay the caption
+     * out on the baseline of a 368px strut and drop it most of a line further
+     * down the page. A flex item has no strut to sit on.
+     */
+    display: flex;
+    inset-inline-end: 0;
+    position: absolute;
+    top: calc(100% + 0.18em + 0.5rem);
+    width: max-content;
+  }
+
+  .front-door-caption {
+    opacity: 0;
+    text-shadow: 0 0 22px color-mix(in oklab, var(--signal) 35%, transparent);
+  }
+
+  /*
+   * `.link-underline` draws itself on its own hover, and this is drawn on
+   * another element's, so the rule it would have applied is restated here. It
+   * is the same gradient, the same 1.5px, and the same 120ms.
+   */
+  .front-door-portal:focus-visible
+    ~ .front-door-caption-rail
+    .front-door-caption {
+    background-size: 100% 1.5px;
+    opacity: 1;
+  }
+
+  /* Gated on a real pointer for the same reason `.link-underline` is. */
+  @media (hover: hover) {
+    .front-door-portal:hover ~ .front-door-caption-rail .front-door-caption {
+      background-size: 100% 1.5px;
+      opacity: 1;
+    }
   }
 
   /*
@@ -668,7 +896,8 @@
 
   .prose blockquote {
     /* The rule stays in the neutral border colour: DESIGN.md's amber list is
-       underlines, status dots, hover/focus, and code highlighting only. */
+       underlines, status dots, hover/focus, code highlighting, selection,
+       and the scrollbar hinge only. */
     border-left: 2px solid var(--border);
     color: var(--muted-foreground);
     padding-left: 1.2em;
@@ -747,6 +976,18 @@
       color 120ms ease-out;
   }
 
+  /*
+   * After `.link-underline` rather than beside it, because the front door's
+   * caption wears that class and needs its own `transition` to win: these
+   * blocks are outside `@layer components`, so a layered rule on the caption
+   * would lose to the unlayered one above no matter how specific it was.
+   */
+  .front-door-caption {
+    transition:
+      background-size 120ms ease-out,
+      opacity 120ms ease-out;
+  }
+
   /* Route changes, and only route changes. Nothing animates on arrival. */
   ::view-transition-old(root),
   ::view-transition-new(root) {
@@ -773,7 +1014,8 @@
   }
 
   .link-underline,
-  .link-underline-resting {
+  .link-underline-resting,
+  .front-door-caption {
     transition: none;
   }
 
