@@ -9,6 +9,7 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import type { Connect, Plugin } from "vite";
+import { imagetools } from "vite-imagetools";
 
 import { mdxOptions } from "./src/lib/mdx-options.ts";
 import { renderOgImage } from "./src/lib/og-image.ts";
@@ -18,7 +19,7 @@ import { siteConfig } from "./src/lib/site-config.ts";
 import { generatedSiteFiles } from "./src/lib/site-files.ts";
 import { postOgImagePath } from "./src/lib/writing-schema.ts";
 import type { WritingFrontmatter } from "./src/lib/writing-schema.ts";
-import { readPublishedWriting } from "./src/lib/writing-source.ts";
+import { isDraftBody, readPublishedWriting } from "./src/lib/writing-source.ts";
 
 const feedFileName = siteConfig.links.rss.replace(/^\//u, "");
 
@@ -159,6 +160,30 @@ function writingArtifacts(): Plugin {
   };
 }
 
+/**
+ * Empties a draft's prose out of the production bundle.
+ *
+ * The compiled bodies reach the route through an exhaustive glob over
+ * `content/writing`, which cannot tell a draft from a Post; a draft therefore
+ * has no page while its prose, and every picture it imports, still ships inside
+ * the chunk every published Post shares. Returning an empty source is enough:
+ * `@mdx-js/rollup` still compiles a real module, so the glob's shape is
+ * unchanged, and the module has no content and no imports left in it.
+ *
+ * `apply: "build"` is the whole point of the plugin being conditional. In
+ * development a draft still renders, which is how one is previewed.
+ */
+function draftBodies(): Plugin {
+  return {
+    apply: "build",
+    enforce: "pre",
+    load(id) {
+      return isDraftBody(id) ? "" : null;
+    },
+    name: "writing-draft-bodies",
+  };
+}
+
 const config = defineConfig({
   plugins: [
     devtools(),
@@ -166,6 +191,14 @@ const config = defineConfig({
     // Ahead of `viteReact`, so MDX is already JavaScript by the time React's
     // transform and Fast Refresh see it.
     { enforce: "pre", ...mdx(mdxOptions) },
+    // Resizes and re-encodes the pictures `remarkPostImages` turned into
+    // imports, through sharp, at build time. It sees only the import
+    // specifiers that plugin wrote, so it never reads the collection and this
+    // config stays clear of the generated index per ADR-0001. Output is cached
+    // under `node_modules/.cache`, which is what keeps `pnpm validate` fast on
+    // the second run.
+    imagetools(),
+    draftBodies(),
     tailwindcss(),
     tanstackStart({
       pages: publicPaths.map((path) => ({ path })),

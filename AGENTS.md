@@ -5,7 +5,7 @@
 ## Project-specific guidance
 
 - Ultracite is the quality entry point; Oxlint and Oxfmt own mechanical linting and formatting. Run `pnpm fix` after edits.
-- `pnpm validate` is the whole gate (lint, types, tests, Nitro build, prerender, rendered SEO) and takes about five seconds. Run it freely rather than guessing which stage a change affects; there is no faster subset worth substituting.
+- `pnpm validate` is the whole gate (lint, types, tests, Nitro build, prerender, rendered SEO) and takes about twelve seconds, most of it the Nitro build. Run it freely rather than guessing which stage a change affects; there is no faster subset worth substituting.
 
 ## Hard constraints
 
@@ -13,12 +13,15 @@
 - **Client names need written sign-off.** Without it, describe the work and leave the client unnamed.
 - **`DESIGN.md`'s motion doctrine is law.** Motion confirms an action the reader took. Anything that animates on scroll into view belongs to a different site.
 - **Use `CONTEXT.md`'s words.** A shipped thing is a Project, not a product; a dated piece of writing is a Post, not an article. The glossary is opinionated on purpose.
+- **There is one fence-meta vocabulary and one line-highlight syntax.** ` ```ts title="src/lib/x.ts" {2,5-7} `. Do not add Shiki's comment-notation transformers beside it; a block that can be highlighted two ways is a block nobody can read.
 
 ## Gotchas the configuration will not confess
 
 - `src/lib/public-routes.ts` is exhaustive over route paths, so a dynamic route appears as the literal `/writing/$slug`. `vite.config.ts` prerenders with `failOnError: true`, which means those placeholders must be expanded into real paths before they reach the prerenderer
 - TanStack Start's import protection denies any `**/*.server.*` module to the client module graph, and it walks the whole graph rather than stopping at the server-function boundary. A `createServerFn` whose module also exports something server-only therefore fails the build: the export keeps the server import alive through tree-shaking. Keep the RPC and the server-only body in separate files, and verify with `grep` over `.output/public` rather than by reasoning about it.
 - Installing a dependency while `vite dev` is running can half-invalidate the dep optimizer and surface as "Invalid hook call / more than one copy of React". Delete `node_modules/.vite` and restart the dev server; production builds are unaffected.
+- Shiki writes its theme's _name_ onto every `<pre>` as a class. The theme was called `front-door`, which is also the door mark's component class in `src/styles.css`, so every code block silently inherited `display: inline-flex` and shrank to the width of its longest line. It is `front-door-code` now, and `mdx-options.test.ts` asserts it. Any theme name you pick has to be checked against the stylesheet.
+- A draft's body is emptied out of the production bundle by the `writing-draft-bodies` plugin in `vite.config.ts`, because the body glob is exhaustive over `content/writing` and cannot read frontmatter. Development keeps it, and `findReadablePost` opens a draft at its own URL there, which is the only way to preview one. `content/writing/writing-surface-fixture.mdx` is a permanent draft that renders every writing-surface affordance; open it in `pnpm dev` after changing anything about the reading surface.
 - Neely Solutions is a separate maintained brand. This site links to it and never co-headlines with it.
 
 ## Decisions worth reading before proposing an alternative

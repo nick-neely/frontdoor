@@ -219,8 +219,18 @@ const serverOnlyStrings = [
   "api.github.com/users",
 ];
 
-// Shiki runs during the build. Any of it reaching a client chunk would mean a
-// megabyte of grammars shipped to highlight code that is already highlighted.
+// Everything that turns authored content into shipped content runs during the
+// build and belongs nowhere near a browser: Shiki's grammars, and the sharp
+// binary `vite-imagetools` drives. A transform directive surviving into a chunk
+// would mean an image import stopped being resolved while the bundle was
+// written, which is the failure that ships an unoptimized original.
+const buildOnlyStrings = [
+  "createHighlighter",
+  "imagetools",
+  "libvips",
+  "as=picture",
+];
+
 const clientScripts = readdirSync(path.resolve(".output/public/assets")).filter(
   (fileName) => fileName.endsWith(".js")
 );
@@ -232,10 +242,12 @@ for (const fileName of clientScripts) {
     "utf-8"
   );
 
-  assert.ok(
-    !source.includes("createHighlighter"),
-    `${fileName} must not contain a syntax highlighter`
-  );
+  for (const buildOnly of buildOnlyStrings) {
+    assert.ok(
+      !source.includes(buildOnly),
+      `${fileName} must not contain the build-time-only ${buildOnly}`
+    );
+  }
 
   for (const serverOnly of serverOnlyStrings) {
     assert.ok(

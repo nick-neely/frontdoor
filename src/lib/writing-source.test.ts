@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { readPublishedWriting } from "./writing-source.ts";
+import { isDraftBody, readPublishedWriting } from "./writing-source.ts";
 
 const fixtureSlug = "writing-source-fixture";
 
@@ -53,6 +53,31 @@ describe("what the build reads off disk", () => {
       expect(
         readPublishedWriting(fixtureDirectory).map((post) => post.slug)
       ).toContain(fixtureSlug);
+    });
+  });
+
+  // A draft has no page, so its prose has no reason to be in the bundle every
+  // published Post shares. This is what `vite.config.ts` asks before it decides
+  // whether to compile a body at all.
+  it("recognises a draft body by the file the build is about to compile", () => {
+    withFixture(`${published}\ndraft: true`, () => {
+      expect(
+        isDraftBody(
+          path.join(fixtureDirectory, `${fixtureSlug}.mdx`),
+          fixtureDirectory
+        )
+      ).toBeTruthy();
+    });
+  });
+
+  it.each([
+    ["a published Post", published, `${fixtureSlug}.mdx`],
+    ["a file that is not writing at all", published, "notes.txt"],
+  ])("does not call %s a draft body", (_case, frontmatter, fileName) => {
+    withFixture(frontmatter, () => {
+      expect(
+        isDraftBody(path.join(fixtureDirectory, fileName), fixtureDirectory)
+      ).toBeFalsy();
     });
   });
 

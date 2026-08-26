@@ -11,7 +11,7 @@ import {
   pageTitle,
 } from "@/lib/seo.ts";
 import {
-  findPost,
+  findReadablePost,
   formatPostDate,
   pillarLabel,
   postCanonicalPath,
@@ -43,11 +43,12 @@ const bodies = import.meta.glob<{ default: MDXContent }>(
 );
 
 export const Route = createFileRoute("/writing_/$slug")({
-  // Drafts and unknown slugs are the same thing to a reader: a wrong door.
-  // Deciding here rather than in the component settles the 404 before anything
-  // renders, and it keeps the body glob out of the eager route module.
+  // In production a draft and an unknown slug are the same thing to a reader: a
+  // wrong door. Deciding here rather than in the component settles the 404
+  // before anything renders, and it keeps the body glob out of the eager route
+  // module.
   loader: ({ params }) => {
-    if (findPost(params.slug) === undefined) {
+    if (findReadablePost(params.slug) === undefined) {
       // `notFound()` returns TanStack Router's control-flow signal rather
       // than an Error, which is exactly what the router expects to catch.
       // oxlint-disable-next-line typescript/only-throw-error
@@ -55,7 +56,7 @@ export const Route = createFileRoute("/writing_/$slug")({
     }
   },
   head: ({ params }) => {
-    const post = findPost(params.slug);
+    const post = findReadablePost(params.slug);
 
     if (post === undefined) {
       return {};
@@ -120,7 +121,7 @@ function PostMeta({ post }: { post: Post }) {
 
 function PostPage() {
   const { slug } = Route.useParams();
-  const post = findPost(slug);
+  const post = findReadablePost(slug);
   const body = post === undefined ? undefined : bodies[postModuleId(post)];
 
   if (post === undefined || body === undefined) {

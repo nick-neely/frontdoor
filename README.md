@@ -43,8 +43,11 @@ pnpm validate   # Run every CI and pre-push gate
 
 ## Project shape
 
-- `content/writing` holds authored MDX. Frontmatter is the source of truth for a Post's slug, Pillar, and publication date.
+- `content/writing` holds authored MDX. Frontmatter is the source of truth for a Post's slug, Pillar, and publication date. A Post's pictures live in the sibling directory `content/writing/<slug>/` and are written as ordinary relative Markdown images: `![alt](./shot.png "Optional caption")`.
 - `content-collections.ts` builds the typed frontmatter index into `.content-collections/generated`. Post bodies stay out of it; see `docs/adr/0001-mdx-compiled-as-modules.md`.
+- `src/lib/mdx-options.ts` is the whole compile pipeline: frontmatter, GFM, heading slugs, Shiki, and the two authoring conveniences below. `src/lib/remark-post-images.ts` rewrites colocated images into imports that `vite-imagetools` resizes and re-encodes through sharp, so every picture ships hashed, in a modern format, with intrinsic dimensions. `src/lib/mdx-code-meta.ts` owns the one fence-meta vocabulary: ` ```ts title="src/lib/x.ts" {2,5-7} `.
+- `src/components/mdx-components.tsx` is what a Post's prose renders through. `figure.tsx`, `code-block.tsx`, and `copy-button.tsx` are the three components in it; everything else is typography in the `.prose` block of `src/styles.css`.
+- `content/writing/writing-surface-fixture.mdx` is a permanent draft that exercises every one of those affordances on one page. It is excluded from the list, the feed, the sitemap, and the build; a draft opens at its own URL in development, which is how it is reviewed.
 - `src/lib/writing-schema.ts` holds the frontmatter contract and everything derived from it. `src/lib/writing.ts` is what pages read; `src/lib/writing-source.ts` is what the build reads. They share the schema and are asserted to agree.
 - `src/routes` owns file-based routes and route-level metadata.
 - `src/lib/site-config.ts` is the single seam for public identity and canonical origin.

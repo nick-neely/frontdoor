@@ -89,3 +89,37 @@ export function readPublishedWriting(
 ): WritingFrontmatter[] {
   return readWriting(directory).filter((entry) => !entry.draft);
 }
+
+/**
+ * Whether a Vite module id is the body of a Post marked `draft: true`.
+ *
+ * A draft has no page, so nothing renders its prose - but the body glob in
+ * `writing_.$slug.tsx` is exhaustive over the directory and has no way to read
+ * frontmatter, so without this a draft's prose, and every picture it imports,
+ * would still be compiled into the chunk that every published Post shares.
+ * `vite.config.ts` empties those bodies out of the production bundle; the
+ * development server keeps them, which is how a draft is previewed at all.
+ *
+ * Malformed frontmatter answers `false` rather than throwing. The same build
+ * calls `readPublishedWriting`, which names the file and stops; failing twice
+ * about one file, once without a name, would only make that message harder to
+ * find.
+ *
+ * `directory` is overridable for the same reason it is above: a test must not
+ * write fixtures into the tree the development server is watching.
+ */
+export function isDraftBody(id: string, directory = writingDirectory): boolean {
+  const [file] = id.split("?");
+
+  if (
+    file === undefined ||
+    !file.endsWith(".mdx") ||
+    path.resolve(path.dirname(file)) !== path.resolve(directory)
+  ) {
+    return false;
+  }
+
+  const result = tryParse(readFileSync(file, "utf-8"));
+
+  return result.success && result.data.draft;
+}

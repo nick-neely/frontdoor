@@ -168,6 +168,12 @@
   --code-token-punctuation: oklch(0.46 0.012 70);
   --code-token-string: oklch(0.42 0.1 130);
   --code-token-string-expression: oklch(0.42 0.1 130);
+  /*
+   * The ground under a line the author called out. Amber is sanctioned for code
+   * highlighting, and the mix is capped where the dimmest thing in the palette,
+   * a comment, still clears 4.5:1 on the tinted row: 12% here, 5.05:1.
+   */
+  --code-highlight: color-mix(in oklab, var(--signal) 12%, var(--card));
 }
 
 /*
@@ -223,6 +229,12 @@
   --code-token-punctuation: oklch(0.66 0.012 80);
   --code-token-string: oklch(0.8 0.09 130);
   --code-token-string-expression: oklch(0.8 0.09 130);
+  /*
+   * The same tint against a near-black card, where the same comment token is
+   * the binding constraint from the other direction: 7% holds 4.65:1, and 10%
+   * would already be under the line.
+   */
+  --code-highlight: color-mix(in oklab, var(--signal) 7%, var(--card));
 }
 
 @layer base {
@@ -945,11 +957,26 @@
     max-width: 100%;
   }
 
-  .prose table {
-    display: block;
+  /*
+   * The scroller `ProseTable` wraps every GFM table in. It is the table that
+   * gives, not the page: a table too wide for the measure scrolls inside this
+   * box, and the document still fits the viewport at any width.
+   */
+  .prose-scroll {
     overflow-x: auto;
+  }
+
+  /*
+   * `max-content` is what makes the scroller mean something: cells size to
+   * their content instead of compressing into a column of single words, and a
+   * table too wide for the measure overflows into the box above rather than
+   * shrinking to fit it. `min-width` keeps a narrow table filling the measure.
+   */
+  .prose table {
+    border-collapse: collapse;
+    min-width: 100%;
     text-align: left;
-    width: 100%;
+    width: max-content;
   }
 
   .prose td,
@@ -965,6 +992,263 @@
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  /*
+   * A picture in a Post. `Figure` writes sharp's measured `width` and `height`
+   * onto the image, so the box is reserved before the file arrives and the
+   * `height: auto` above is what lets it shrink with the measure. A picture
+   * inside a sentence stays inline; anywhere else it is its own block, and
+   * `line-height: 0` is what stops the inline baseline leaving a gap under it.
+   */
+  .prose picture {
+    display: block;
+    line-height: 0;
+  }
+
+  .prose p picture {
+    display: inline;
+    line-height: inherit;
+  }
+
+  /*
+   * The chrome around a fence. The `<pre>` inside is Shiki's output untouched;
+   * this is only where the filename bar and the copy control sit.
+   */
+  .code-block {
+    position: relative;
+  }
+
+  .code-block-title {
+    @apply rounded-t-md font-mono;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    /* Right padding is the copy control's berth, so a long filename truncates
+       against the button rather than running underneath it. */
+    overflow: hidden;
+    padding: 0.5rem 4.75rem 0.5rem 1.1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* One card, not two: the bar's bottom edge is the block's own top border. */
+  .code-block:has(.code-block-title) pre {
+    @apply rounded-t-none;
+  }
+
+  /*
+   * Quiet at rest, amber when the reader reaches it, amber while it is
+   * confirming. It carries the card fill so a long first line scrolls behind
+   * it rather than through it.
+   */
+  .code-copy {
+    @apply rounded-sm font-mono;
+    background-color: var(--card);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0.4rem 0.5rem;
+    position: absolute;
+    right: 0.5rem;
+    top: 0.45rem;
+  }
+
+  .code-copy:focus-visible,
+  .code-copy[data-copied] {
+    color: var(--signal);
+  }
+
+  @media (hover: hover) {
+    .code-copy:hover {
+      color: var(--signal);
+    }
+  }
+
+  /*
+   * A line the fence meta called out. The negative inline margin is what takes
+   * the tint out to the block's edges instead of stopping at the code padding.
+   */
+  .prose pre .line.highlighted {
+    background-color: var(--code-highlight);
+    display: inline-block;
+    margin-inline: -1.25em;
+    padding-inline: 1.25em;
+    width: calc(100% + 2.5em);
+  }
+
+  /*
+   * The affordance that makes a section shareable. It holds its space at all
+   * times and only becomes visible on hover or focus, so revealing it never
+   * moves a word of the heading it belongs to.
+   */
+  .heading-anchor {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.6em;
+    font-weight: 400;
+    margin-left: 0.45em;
+    opacity: 0;
+    vertical-align: middle;
+  }
+
+  .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+
+  @media (hover: hover) {
+    .prose h2:hover .heading-anchor,
+    .prose h3:hover .heading-anchor {
+      opacity: 1;
+    }
+  }
+
+  /*
+   * The one aside style. No severity, no icon, no colour variant: a callout
+   * says "this is beside the argument", and every further distinction is one
+   * the prose should have made instead.
+   */
+  .callout {
+    @apply rounded-md;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    font-size: 0.95em;
+    padding: 1.1em 1.25em;
+  }
+
+  .callout > * + * {
+    margin-top: 1em;
+  }
+
+  .callout-label {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
+  .callout-label + * {
+    margin-top: 0.5em;
+  }
+
+  /*
+   * A native disclosure, styled rather than rebuilt. The summary is metadata
+   * voice; the body is indented to the same rail as a list so an open aside
+   * reads as subordinate to the paragraph above it.
+   */
+  .prose details {
+    border-block: 1px solid var(--border);
+    padding-block: 0.9em;
+  }
+
+  .prose summary {
+    @apply font-mono;
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.8125rem;
+    gap: 0.6em;
+    list-style: none;
+  }
+
+  .prose summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /*
+   * The disclosure indicator, drawn rather than typed. The mono face is subset
+   * to latin, so a triangle character would silently fall back to another font.
+   */
+  .prose summary::before {
+    border-block: 0.28em solid transparent;
+    border-inline-start: 0.42em solid var(--muted-foreground);
+    content: "";
+    display: inline-block;
+    height: 0;
+    width: 0;
+  }
+
+  .prose details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .prose details > *:not(summary) {
+    margin-top: 0.9em;
+    padding-left: 1.4em;
+  }
+
+  /*
+   * A keyboard key. Vertical padding on an inline box does not grow the line
+   * box, which is why this stays inline: a paragraph full of shortcuts keeps
+   * the same rhythm as one without any.
+   */
+  .prose kbd {
+    @apply rounded-sm font-mono;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    font-size: 0.78em;
+    line-height: 1;
+    padding: 0.15em 0.4em;
+    white-space: nowrap;
+  }
+
+  /*
+   * GFM footnotes. The reference mark is lifted out of the line box so a
+   * footnote never changes the rhythm of the paragraph carrying it, and the
+   * section at the foot is separated by a rule and set one step smaller.
+   */
+  .prose sup {
+    font-size: 0.72em;
+    line-height: 0;
+    vertical-align: super;
+  }
+
+  .prose .footnotes {
+    border-top: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.9em;
+    margin-top: 3em;
+    padding-top: 1.5em;
+  }
+
+  .prose .footnotes li + li {
+    margin-top: 0.6em;
+  }
+
+  /*
+   * The return arrow is navigation, not a prose link. It keeps the amber it
+   * earns on hover and focus and drops the resting rule every other link wears.
+   */
+  .prose [data-footnote-backref] {
+    background-image: none;
+    color: var(--muted-foreground);
+    margin-left: 0.4em;
+  }
+
+  .prose [data-footnote-backref]:focus-visible {
+    color: var(--signal);
+  }
+
+  @media (hover: hover) {
+    .prose [data-footnote-backref]:hover {
+      color: var(--signal);
+    }
+  }
+
+  /*
+   * The copy control's confirmation. Reader-triggered, 120ms, and gone in
+   * `confirmationDuration`; under reduced motion the label simply changes.
+   */
+  @keyframes code-copy-swap {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -986,6 +1270,18 @@
     transition:
       background-size 120ms ease-out,
       opacity 120ms ease-out;
+  }
+
+  /*
+   * Both reader-triggered: a disclosure the reader opened, and the label on a
+   * control the reader clicked. Neither exists until an action causes it.
+   */
+  .prose summary::before {
+    transition: transform 120ms ease-out;
+  }
+
+  .code-copy-swap {
+    animation: code-copy-swap 120ms ease-out;
   }
 
   /* Route changes, and only route changes. Nothing animates on arrival. */
