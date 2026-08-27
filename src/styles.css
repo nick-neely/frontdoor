@@ -706,6 +706,15 @@
     opacity: 1;
   }
 
+  /*
+   * The open leaf's free edge lands at the doorway's midpoint. The wall and
+   * jamb occlude everything behind the projected leaf, so neither the portal
+   * nor its lit rim can leak through the perspective wedges around the hinge.
+   */
+  .front-door-button[aria-expanded="true"] .front-door-aperture {
+    clip-path: inset(0 0 0 50%);
+  }
+
   .front-door-button[aria-expanded="true"] .front-door-knob {
     opacity: 1;
     transform: translateY(-50%) scale(1);
@@ -729,6 +738,8 @@
    */
   .front-door-portal {
     background-color: var(--front-door-room);
+    /* The open leaf occupies the left half of the projected doorway. */
+    clip-path: inset(0 0 0 50%);
     inset: 0;
     overflow: hidden;
     position: absolute;
@@ -765,23 +776,21 @@
 
   /*
    * The caption names the destination while the reader is pointing at the
-   * portal, and it hangs below the entire poster line rather than below the
-   * door. The open leaf swings towards the reader and so overhangs the closed
-   * footprint; the poster's own descender space is deeper than that overhang
-   * at every type size, which is what makes clearing the line the one offset
-   * that cannot be reached at any viewport.
+   * portal. The open leaf swings towards the reader and overhangs the closed
+   * footprint, so the caption's offset scales with the poster type and stays
+   * just beyond that projected edge at every viewport.
    *
-   * `0.18em` is that descender: the poster line's bottom edge sits a hair over
-   * 0.17em below the door's, constant in `em` because both are set by the same
-   * font at the same size. The `rem` on top of it is the caption's own gap,
-   * which belongs to the caption's type rather than the poster's.
+   * `0.08em` clears the open leaf's small perspective overhang and keeps the
+   * caption optically tied to the door. The `rem` on top of it is the
+   * caption's own gap, which belongs to the caption's type rather than the
+   * poster's.
    *
    * The rail carries the offset rather than the caption, because `top`
    * resolves `em` against the element it is declared on and the caption
-   * restates its type at 12px - where `0.18em` is two pixels rather than the
-   * sixty-six the poster needs. The rail sets no type, so it is still reading
-   * the display size. `max-content` because the door is half an em wide and
-   * anything shrink-to-fit inside it would be shredded.
+   * restates its type at 12px - where `0.08em` is less than one pixel rather
+   * than the poster-scale clearance the door needs. The rail sets no type, so
+   * it is still reading the display size. `max-content` because the door is
+   * half an em wide and anything shrink-to-fit inside it would be shredded.
    *
    * Absolutely positioned, so appearing costs no layout anywhere.
    */
@@ -795,7 +804,7 @@
     display: flex;
     inset-inline-end: 0;
     position: absolute;
-    top: calc(100% + 0.18em + 0.5rem);
+    top: calc(100% + 0.08em + 0.25rem);
     width: max-content;
   }
 

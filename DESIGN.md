@@ -15,7 +15,7 @@ Monospace is a deliberate signal, not decoration. It carries the developer-tool 
 
 ## The front door
 
-The project codename is visible identity. The site mark is an ajar door leaking accent amber, and the hero's blinking block cursor doubles as that door: one amber rectangle that blinks at terminal cadence until the reader opens it. Opening it reveals a dithered amber portal, and the portal itself is the link to the terminal résumé, the old front door; a mono caption names the destination only when the reader hovers or focuses the portal. The metaphor also carries the copy voice where it fits naturally: the 404 page is a wrong door. The door never gates anything; every page reads completely without touching it.
+The project codename is visible identity. The site mark is an ajar door leaking accent amber, and the hero's blinking block cursor doubles as that door: one amber rectangle that blinks at terminal cadence until the reader opens it. Opening it reveals a dithered amber portal, and the portal itself links to the `frontdoor` source repository, closing the metaphorical loop; a mono caption says “View the source.” only when the reader hovers or focuses the portal. The metaphor also carries the copy voice where it fits naturally: the 404 page is a wrong door. The door never gates anything; every page reads completely without touching it.
 
 ## Motion doctrine
 

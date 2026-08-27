@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils.ts";
 /**
  * The site's signature detail: the hero's blinking block cursor, which is also
  * the door in the site mark. It blinks at a terminal cadence until the reader
- * opens it, and behind it is the portal - the one link to the terminal résumé
- * this site replaced.
+ * opens it, and behind it is the portal to this site's source repository.
  *
  * Every motion here is reader-triggered, which is the whole of `DESIGN.md`'s
  * doctrine: the blink, the hover crack, and the swing all live in
@@ -22,12 +21,11 @@ const portalId = "front-door-portal";
 
 /**
  * The portal is a picture, so its name has to say both where it goes and that
- * going there is the point of the door. The visible caption under the poster
- * says only the destination, because by then the reader is already pointing at
- * it.
+ * going there is the point of the door. The visible caption can stay concise,
+ * because by then the reader is already pointing at it.
  */
 const portalName =
-  "Through the front door: the old terminal résumé at terminal.nickneely.dev";
+  "View the source of nickneely.dev in the frontdoor repository on GitHub";
 
 /** The shader lives behind a dynamic import and takes no props. */
 type PortalComponent = ComponentType;
@@ -207,7 +205,7 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
       {open ? (
         <a
           className="front-door-portal"
-          href={siteConfig.links.terminal}
+          href={siteConfig.links.source}
           id={portalId}
           rel="noreferrer"
         >
@@ -232,7 +230,7 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
       {open ? (
         <span aria-hidden="true" className="front-door-caption-rail">
           <span className="front-door-caption link-underline font-mono text-[12px] leading-5 font-normal tracking-normal text-muted-foreground sm:text-[13px]">
-            terminal.nickneely.dev →
+            View the source.
           </span>
         </span>
       ) : null}

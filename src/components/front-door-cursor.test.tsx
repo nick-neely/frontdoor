@@ -9,8 +9,8 @@ import { FrontDoorCursor } from "./front-door-cursor.tsx";
 const openName = "Open the front door";
 const closeName = "Close the front door";
 const portalName =
-  "Through the front door: the old terminal résumé at terminal.nickneely.dev";
-const captionText = "terminal.nickneely.dev →";
+  "View the source of nickneely.dev in the frontdoor repository on GitHub";
+const captionText = "View the source.";
 
 /*
  * The dither is a WebGL shader, and jsdom has no WebGL. The component asks
@@ -53,16 +53,18 @@ describe(FrontDoorCursor, () => {
     expect(screen.queryByRole("link", { name: portalName })).toBeNull();
   });
 
-  it("sends the portal to the terminal résumé the way the footer does", () => {
+  it("sends the portal to this site's source repository", () => {
     render(<FrontDoorCursor />);
 
     fireEvent.click(screen.getByRole("button", { name: openName }));
 
     const portal = screen.getByRole("link", { name: portalName });
 
-    expect(portal.getAttribute("href")).toBe("https://terminal.nickneely.dev");
+    expect(portal.getAttribute("href")).toBe(
+      "https://github.com/nick-neely/frontdoor"
+    );
     expect(portal.getAttribute("id")).toBe("front-door-portal");
-    // Same tab and no referrer, exactly as the footer's link to it.
+    // Same tab keeps the portal feeling like a doorway rather than a launcher.
     expect(portal.getAttribute("rel")).toBe("noreferrer");
     expect(portal.getAttribute("target")).toBeNull();
   });

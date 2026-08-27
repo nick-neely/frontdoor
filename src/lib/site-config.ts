@@ -10,12 +10,13 @@ export const siteConfig = {
   /** SVG favicon. Replace the file, keep the shape. */
   icon: { path: "/mark.svg", type: "image/svg+xml" },
   language: "en-US",
-  /** Off-site destinations the footer offers, in the order it lists them. */
+  /** Canonical off-site destinations used throughout the site. */
   links: {
     contact: "mailto:contact@nickneely.dev",
     github: "https://github.com/nick-neely",
     linkedin: "https://www.linkedin.com/in/nick-neely/",
     rss: "/rss.xml",
+    source: "https://github.com/nick-neely/frontdoor",
     terminal: "https://terminal.nickneely.dev",
     x: "https://x.com/nickneely00",
   },
