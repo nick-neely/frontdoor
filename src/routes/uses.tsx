@@ -195,6 +195,15 @@ interface StackItem {
   href?: string;
   logo?: UseLogo;
   name: string;
+  /**
+   * A muted word after the name, for an entry that answers a different
+   * question than the rest of its row. Electron is tagged `desktop` because
+   * the framework row is otherwise a fork between two web tracks; eve is
+   * tagged `agents` because the AI row's other name is the model-call layer
+   * and eve is the layer above it. Both say "different axis, same row"
+   * without a second row or a sentence of prose.
+   */
+  qualifier?: string;
 }
 
 interface StackRow {
@@ -223,6 +232,11 @@ const stack = [
         href: "https://github.com/neely-labs/tanstack-start-template",
         logo: { src: "/logos/tanstack.svg" },
         name: "TanStack Start",
+      },
+      {
+        logo: { src: "/logos/electron.svg" },
+        name: "Electron",
+        qualifier: "desktop",
       },
     ],
     label: "Framework",
@@ -268,23 +282,73 @@ const stack = [
     label: "UI",
   },
   {
+    items: [
+      { name: "Zustand" },
+      { logo: { src: "/logos/tanstack.svg" }, name: "TanStack Query" },
+    ],
+    label: "State",
+  },
+  {
     items: [{ logo: { src: "/logos/zod.svg" }, name: "zod" }],
     label: "Validation",
   },
-  { items: [{ name: "AI SDK" }], label: "AI" },
+  {
+    items: [{ name: "AI SDK" }, { name: "eve", qualifier: "agents" }],
+    label: "AI",
+  },
+  {
+    items: [{ logo: { src: "/logos/stripe.svg" }, name: "Stripe" }],
+    label: "Payments",
+  },
+  {
+    items: [
+      {
+        logo: { dark: "/logos/resend-dark.svg", src: "/logos/resend.svg" },
+        name: "Resend",
+      },
+      { logo: { src: "/logos/react-email.svg" }, name: "React Email" },
+    ],
+    label: "Email",
+  },
+  { items: [{ name: "Vercel Blob" }], label: "Storage" },
+  { items: [{ name: "Vercel Queue" }], label: "Jobs" },
+  {
+    items: [{ logo: { src: "/logos/upstash.svg" }, name: "Upstash" }],
+    label: "Rate limiting",
+  },
   {
     items: [
       { logo: { src: "/logos/vitest.svg" }, name: "Vitest" },
       { name: "Testing Library" },
+      { logo: { src: "/logos/playwright.svg" }, name: "Playwright" },
     ],
     label: "Testing",
   },
   {
     items: [
+      {
+        logo: {
+          dark: "/logos/ultracite-dark.svg",
+          src: "/logos/ultracite.svg",
+        },
+        name: "Ultracite",
+      },
       { logo: { src: "/logos/oxc.svg" }, name: "Oxlint + Oxfmt" },
       { name: "Fallow" },
     ],
     label: "Quality",
+  },
+  {
+    items: [
+      {
+        logo: {
+          dark: "/logos/turborepo-dark.svg",
+          src: "/logos/turborepo.svg",
+        },
+        name: "Turborepo",
+      },
+    ],
+    label: "Monorepos",
   },
   {
     items: [{ logo: { src: "/logos/docker.svg" }, name: "Docker" }],
@@ -303,17 +367,12 @@ const stack = [
   { items: [{ name: "Flags SDK" }], label: "Flags" },
   {
     items: [
-      { name: "Zustand" },
-      { logo: { src: "/logos/tanstack.svg" }, name: "TanStack Query" },
       {
-        logo: {
-          dark: "/logos/turborepo-dark.svg",
-          src: "/logos/turborepo.svg",
-        },
-        name: "Turborepo",
+        logo: { dark: "/logos/posthog-dark.svg", src: "/logos/posthog.svg" },
+        name: "PostHog",
       },
     ],
-    label: "When needed",
+    label: "Analytics",
   },
 ] as const satisfies readonly StackRow[];
 
@@ -449,8 +508,8 @@ function UsesPage() {
             The default stack
           </h2>
           <p className="mt-5 max-w-2xl leading-7 text-muted-foreground">
-            Starting something new is one real decision, Next.js or TanStack
-            Start. Everything under it rides either track unchanged.
+            Starting something new on the web is one real decision, Next.js or
+            TanStack Start. Everything under it rides either track unchanged.
           </p>
           <dl className="mt-8 max-w-2xl divide-y rounded-2xl border bg-card px-6 py-1 sm:px-8 sm:py-2">
             {stack.map((row) => {
@@ -458,7 +517,7 @@ function UsesPage() {
 
               return (
                 <div
-                  className="grid gap-x-6 gap-y-2 py-5 sm:grid-cols-[8.5rem_1fr]"
+                  className="grid gap-x-6 gap-y-2 py-5 sm:grid-cols-[9rem_1fr]"
                   key={row.label}
                 >
                   <dt className="font-mono text-[13px] tracking-[0.18em] text-muted-foreground uppercase">
@@ -494,6 +553,7 @@ function UsesPage() {
 function StackName({ item }: { item: StackItem }) {
   const logo = "logo" in item ? item.logo : undefined;
   const href = "href" in item ? item.href : undefined;
+  const qualifier = "qualifier" in item ? item.qualifier : undefined;
 
   return (
     <span className="flex items-center gap-2 font-mono text-[13px]">
@@ -508,6 +568,9 @@ function StackName({ item }: { item: StackItem }) {
         >
           {item.name}
         </a>
+      )}
+      {qualifier === undefined ? null : (
+        <span className="text-muted-foreground">{qualifier}</span>
       )}
     </span>
   );
