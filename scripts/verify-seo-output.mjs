@@ -208,8 +208,11 @@ for (const entry of publishedWriting) {
   // A Note is revised rather than superseded, so it is a page and a card but
   // never a feed item. Asserting both directions here is what proves the rule
   // in the shipped output rather than in the function that renders the feed.
+  // The URL is matched inside its <link> element rather than as a bare
+  // substring, so a slug that prefixes another slug cannot count as evidence
+  // for it.
   assert.equal(
-    feed.includes(`${siteConfig.origin}${routePath}`),
+    feed.includes(`<link>${siteConfig.origin}${routePath}</link>`),
     entry.kind === "post",
     `${routePath}: feed item present for a Post and absent for a Note`
   );
