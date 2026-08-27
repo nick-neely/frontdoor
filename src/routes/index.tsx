@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FrontDoorCursor } from "@/components/front-door-cursor.tsx";
 import { readLatestPush } from "@/lib/github-activity.server.ts";
-import { relativePushLabel } from "@/lib/github-activity.ts";
+import { privateRepoLabel, relativePushLabel } from "@/lib/github-activity.ts";
 import { projects } from "@/lib/projects.ts";
 import {
   createGraph,
@@ -15,8 +15,8 @@ import {
   pageTitle,
 } from "@/lib/seo.ts";
 import { siteConfig } from "@/lib/site-config.ts";
-import { mergeUpdates } from "@/lib/updates.ts";
 import type { Update } from "@/lib/updates.ts";
+import { mergeUpdates } from "@/lib/updates.ts";
 import { formatPostDate, posts } from "@/lib/writing.ts";
 
 /**
@@ -129,12 +129,12 @@ function useHeroParallax(posterRef: RefObject<HTMLDivElement | null>): void {
 /**
  * The live half of the Now Line.
  *
- * The page is prerendered, so this arrives after hydration and is appended to
- * a line that already reads as finished. Every failure resolves to `null` and
- * the clause simply never appears: no loader, no Suspense boundary, no
- * reserved gap. The relative day is resolved here rather than in the markup,
- * because a clock read from JSX is a hydration mismatch waiting to happen and
- * this one only ever has to be read once.
+ * The page is prerendered, so this arrives after hydration and hangs on its
+ * own line under a Now Line that already reads as finished. Every failure
+ * resolves to `null` and the clause simply never appears: no loader, no
+ * Suspense boundary, no reserved gap. The relative day is resolved here
+ * rather than in the markup, because a clock read from JSX is a hydration
+ * mismatch waiting to happen and this one only ever has to be read once.
  */
 function useLatestActivity(): NowActivity | null {
   const [activity, setActivity] = useState<NowActivity | null>(null);
@@ -187,41 +187,54 @@ export const Route = createFileRoute("/")({
 });
 
 function Separator() {
-  return (
-    <span aria-hidden="true" className="text-border">
-      {" · "}
-    </span>
-  );
+  return <span aria-hidden="true"> · </span>;
 }
 
 function NowLine() {
   const activity = useLatestActivity();
   const { now } = siteConfig;
+  const repoHref =
+    activity !== null && activity.repoLabel !== privateRepoLabel
+      ? `https://github.com/${activity.repoLabel}`
+      : null;
 
   return (
-    <p className="mt-10 flex max-w-2xl items-baseline gap-2.5 font-mono text-[13px] leading-6 text-muted-foreground sm:mt-12">
+    <p className="mt-10 flex max-w-2xl items-start gap-2.5 font-mono text-[13px] leading-6 text-muted-foreground sm:mt-12">
       <span
         aria-hidden="true"
         className="mt-2 size-1.5 shrink-0 rounded-full bg-signal"
       />
-      <span>
-        Currently: building{" "}
-        <a
-          className="link-underline text-foreground"
-          href={now.buildingUrl}
-          rel="noreferrer"
-        >
-          {now.building}
-        </a>
-        <Separator />
-        consulting at {now.consulting}
-        <Separator />
-        {now.location}
+      <span className="min-w-0">
+        <span>
+          Currently: building{" "}
+          <a
+            className="link-underline text-foreground"
+            href={now.buildingUrl}
+            rel="noreferrer"
+          >
+            {now.building}
+          </a>
+          <Separator />
+          consulting at {now.consulting}
+          <Separator />
+          {now.location}
+        </span>
         {activity === null ? null : (
-          <>
-            <Separator />
-            pushed to {activity.repoLabel} {activity.when}
-          </>
+          <span className="block">
+            pushed to{" "}
+            {repoHref === null ? (
+              activity.repoLabel
+            ) : (
+              <a
+                className="link-underline text-foreground"
+                href={repoHref}
+                rel="noreferrer"
+              >
+                {activity.repoLabel}
+              </a>
+            )}{" "}
+            {activity.when}
+          </span>
         )}
       </span>
     </p>
