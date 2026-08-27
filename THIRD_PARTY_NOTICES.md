@@ -14,4 +14,13 @@ The repository's MIT license applies to the original TanStack Start Template cod
 
 - [`paper-design/shaders`](https://github.com/paper-design/shaders) supplies `@paper-design/shaders-react`, the WebGL dither rendered inside the home page's opened front door. Unlike everything above it is an npm dependency rather than vendored source, but its code is redistributed minified in the site's client bundle, so its Apache License 2.0 terms apply to that artifact: the license is preserved in `third_party/licenses/paper-shaders-LICENSE` and its required attribution in `third_party/licenses/paper-shaders-NOTICE`.
 
-- The TanStack logo at `public/tanstack.svg` is the TanStack project's trademark, retrieved from [`pheralb/svgl`](https://github.com/pheralb/svgl). svgl distributes logo files it does not own; each mark remains the property of its owner and is not covered by this repository's MIT license. It identifies the framework this template is built on and implies no affiliation with or endorsement by TanStack. Replace it with your own mark when adopting the template.
+- The tool logos in `public/logos/` were retrieved from [`pheralb/svgl`](https://github.com/pheralb/svgl). svgl distributes logo files it does not own; each mark remains the trademark of its owner and is not covered by this repository's MIT license. They appear only on `/uses`, where each one sits beside the name of the tool it belongs to, and they identify those tools rather than implying any affiliation with or endorsement by their owners.
+
+  - `zed.svg`, `zed-dark.svg` — Zed Industries
+  - `cursor.svg`, `cursor-dark.svg` — Anysphere
+  - `neovim.svg` — the Neovim project
+  - `codex.svg`, `codex-dark.svg` — OpenAI
+  - `anthropic.svg`, `anthropic-dark.svg` — Anthropic
+  - `ghostty.svg` — the Ghostty project
+
+  The pairs are svgl's own light and dark cuts of the same mark, swapped by theme. The files are otherwise unmodified, with one exception: svgl's light Zed file paints with `currentColor`, which has nothing to inherit from inside an `<img>`, so the vendored copy names svgl's intended black directly.
