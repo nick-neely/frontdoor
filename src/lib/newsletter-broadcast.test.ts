@@ -88,7 +88,7 @@ describe("the broadcast draft", () => {
   it("sends from the address ADR-0003 verified, and replies elsewhere", async () => {
     const draft = await buildBroadcastDraft(published);
 
-    expect(draft.from).toBe("Nick Neely <hello@nickneely.dev>");
+    expect(draft.from).toBe("Nick Neely <hello@send.nickneely.dev>");
     expect(draft.replyTo).toBe("contact@nickneely.dev");
   });
 

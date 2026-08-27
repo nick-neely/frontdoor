@@ -4,11 +4,11 @@
  *
  * The From and Reply-To pair is ADR-0003's whole point and is written once
  * here, so the confirm mail, the welcome mail, and `pnpm broadcast` cannot
- * drift apart or accidentally send as an address the apex has not verified.
+ * drift apart or accidentally send as an address Resend has not verified.
  */
 export const newsletterMail = {
-  /** The apex is the verified sending domain. See ADR-0003. */
-  from: "Nick Neely <hello@nickneely.dev>",
+  /** `send.nickneely.dev` is the domain verified in Resend. See ADR-0003. */
+  from: "Nick Neely <hello@send.nickneely.dev>",
   /**
    * Cloudflare Email Routing forwards this one. A reply to the newsletter
    * should reach a person, not a sending domain nobody reads.
