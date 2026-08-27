@@ -1,7 +1,7 @@
 ---
 title: "Writing surface fixture"
 slug: "writing-surface-fixture"
-description: "A permanent draft that exercises every part of the writing surface: images, code block chrome, callouts, disclosures, heading anchors, keys, wide tables, and footnotes."
+description: "A permanent draft that exercises every part of the writing surface: images, code block chrome, callouts, process diagrams, disclosures, heading anchors, keys, wide tables, and footnotes."
 published: "2026-08-25"
 pillar: "product-engineering"
 tags: ["fixture"]
@@ -127,6 +127,18 @@ reduced motion.
   The body is indented to the same rail as a list, so an open aside reads as
   subordinate to the paragraph above it.
 </details>
+
+## Process diagrams
+
+A short workflow stays an ordered list in the document. At wider measures it
+becomes a divided row, while narrow screens keep the linear reading order.
+
+<Process label="From source file to published Post">
+  <ProcessStep title="Author">Write the Post as MDX.</ProcessStep>
+  <ProcessStep title="Compile">Build the content collection.</ProcessStep>
+  <ProcessStep title="Verify">Inspect the rendered HTML.</ProcessStep>
+  <ProcessStep title="Publish">Deploy the verified output.</ProcessStep>
+</Process>
 
 ## Headings and anchors
 

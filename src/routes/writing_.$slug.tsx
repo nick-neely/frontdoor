@@ -144,6 +144,9 @@ function PostPage() {
             {post.title}
           </h1>
           <PostMeta post={post} />
+          <p className="mt-6 text-lg leading-8 text-muted-foreground">
+            {post.description}
+          </p>
         </header>
         <div className="prose mt-12">
           <Body components={mdxComponents} />

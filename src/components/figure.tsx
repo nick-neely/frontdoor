@@ -26,11 +26,11 @@ export interface PostImage {
 const sourceFormats = ["avif", "webp"] as const;
 
 /**
- * The prose measure is capped at 70ch, which lands near 40rem for the reading
- * face, and the picture never exceeds it. Below that the picture is as wide as
- * the column.
+ * Product screenshots can break out beyond the 70ch prose measure so labels
+ * and controls remain legible. The stylesheet caps that breakout at 56rem.
  */
-const imageSizes = "(min-width: 40rem) 40rem, 100vw";
+const imageSizes =
+  "(min-width: 64rem) 56rem, (min-width: 40rem) calc(100vw - 4rem), calc(100vw - 2.5rem)";
 
 interface FigureProps {
   alt: string;
@@ -91,7 +91,7 @@ export function Figure({
   }
 
   return (
-    <figure>
+    <figure className="post-figure">
       {picture}
       <figcaption className="mt-3 font-mono text-[13px] text-muted-foreground">
         {caption}

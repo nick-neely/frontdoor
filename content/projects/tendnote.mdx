@@ -3,52 +3,76 @@ slug: "tendnote"
 dek: "A private, consent-first memory for the people you care about - where nothing an assistant infers becomes a durable fact until you approve it."
 ---
 
-{/* DRAFT FOR NICK'S EDIT. This file is the editable surface for the tendnote detail page: composed from docs/drafts/projects/tendnote.md, which stays in the repository as provenance and carries the facts register mapping every claim below to the code or document it came from. The prose here is pre-voice-pass. Every factual claim is sourced; adjust voice and emphasis freely, but check the register before changing a fact. Pictures were captured 2026-08-25 from a local build at commit eac6af13 and are colocated in content/projects/tendnote/. A structural pass has since re-shaped the presentation without rewriting a sentence: two long paragraphs were split at their own seams, the "(1)(2)(3)(4)" run became an ordered list, the scale figures became a table, three verbatim code excerpts were added, and the tool-gate framework detail moved into a disclosure. The excerpts are byte-identical to tendnote at commit eac6af13 - packages/db/src/schema/app/memories.ts lines 29-34, packages/db/src/queries/memories/review.ts lines 62-75, and apps/agent/agent/subagents/privacy_guard/tools/bash.ts in full - so re-copy them if that repository moves. */}
 
 ## What it is
 
-I kept losing the part of a relationship that isn't in any calendar: that Priya is shipping a launch on Monday, that Casey's birthday is in July, that I told Jordan I'd check in after his final interview. A CRM answers a different question - it tracks a pipeline, and people are not rows in a funnel. A notes app holds the detail but can't tell me which of the four hundred notes matters this morning. tendnote is the thing in between: a private notebook for people, plus a small, bounded shortlist of what's worth a thought today.
+I kept losing the details that sit outside a calendar: Priya is shipping a launch on Monday, Casey's birthday is in July, and I told Jordan I'd check in after his final interview. A CRM tracks a pipeline. A notes app stores the details without telling me which note matters this morning. tendnote gives people their own private pages and turns due context into a small daily shortlist.
 
 ![tendnote's Today view: a capture composer on the left, and a Follow-ups rail listing overdue reminders for three people alongside one suggested follow-up awaiting a decision.](./01-today-followups.png "The daily surface: due reminders per person alongside one suggested follow-up awaiting accept-or-dismiss.")
 
-That is where it started, and it is no longer the whole of it. Relationship memory was the first surface, not the ceiling. The same seam that files a fact about Priya files a chore, a thing you own, or a question you haven't answered yet - so the product grew outward along it.
+Relationship memory was the first surface. The same reviewed store can hold a fact about Priya, a chore, something you own, or a question you have not answered, so the Product grew outward from that shared lifecycle.
 
-What ships today already spans that wider ground: person pages and follow-ups, but also Assets for the things you own, General Actions and Routines for the work that is yours rather than anyone else's, Saved Items for whatever doesn't fit a richer family yet, Household workspaces, and capture from Google, Gmail, Contacts and Discord. The direction it is being built toward is an all-inclusive personal memory OS: one reviewed store for the things you would otherwise have to hold in your head. Relationship memory is where it began, and it is still the sharpest single demonstration of the idea - the entry point to the arc, not a description of the ceiling.
+The current Product includes person pages and follow-ups, Assets for things you own, General Actions and Routines for your own work, Saved Items for material without a richer record family, Household workspaces, and capture from Google, Gmail, Contacts, and Discord. The direction is an all-inclusive personal memory OS: one reviewed store for details you would otherwise have to hold in your head. Relationship memory remains the clearest demonstration of that model.
 
 ![tendnote's Actions view: five household chores filed under Areas such as Home, Health and Finance, each with a due date and a Household tag.](./04-actions.png "Actions and Routines: personal and household to-dos, filed into Areas, separate from person follow-ups.")
 
-You capture from one composer - a note, a link, an open question, a reminder, a recurring chore - and tendnote files it into the right kind of record. A person page holds what you know about someone and where each fact came from. A daily shortlist pulls together due follow-ups, birthdays, overdue chores and review work. Eve, the built-in assistant, can read that context and talk about it, draft a message grounded in the memories that justify it, and propose things it noticed. What Eve cannot do is decide anything. There is no send path in the product at all: no email, no chat message, no post.
+One composer accepts a note, link, open question, reminder, or recurring chore, then files it into the appropriate record family. A person page shows what you know about someone and the source behind each fact. Today collects due follow-ups, birthdays, overdue chores, and review work into a bounded shortlist.
+
+Eve, the built-in assistant, can read approved context, discuss it, draft a message grounded in cited memories, and propose new records for review. The Product contains no path for sending email, chat messages, or social posts. Every decision remains with the person using it.
+
+<Process label="From capture to approved memory">
+  <ProcessStep title="Capture">Store the original note as a source record.</ProcessStep>
+  <ProcessStep title="Extract">Propose a typed record with inherited sensitivity.</ProcessStep>
+  <ProcessStep title="Review">Show the proposal beside the source sentence.</ProcessStep>
+  <ProcessStep title="Approve">Stamp the decision, write the audit entry, and schedule retrieval work.</ProcessStep>
+</Process>
 
 ![tendnote's Saved Items view: a form for a note, link or open question above one saved item carrying a source-grounding disclosure and a Make an action control.](./05-saved-items.png "Saved Items, the deliberate fallback for a note that doesn't belong to a richer record family yet, with source grounding and promote-to-action.")
 
-The privacy stance is the part I'd want inspected, because it's a database constraint rather than a promise in a system prompt. Every memory row is born `suggested` - that is the column default in the schema, not a convention. Approval is a status transition to `approved` that stamps `approvedAt` and writes an audit entry, and the code that performs it first reloads the row and refuses anything that isn't still a suggestion.
+### Review is a database lifecycle
 
-A memory also cannot exist without provenance: the `source_record_id` foreign key is `NOT NULL` with `ON DELETE RESTRICT`, so the note a fact was drawn from cannot be deleted out from under it, and the review card can always show you the sentence you actually wrote. Sensitivity is inherited from that source record rather than supplied by the model, so a delicate note can't be laundered into an ordinary fact by the wording of a proposal. That is what "reviewed before it becomes memory" means here - and it is the same seam whether the suggestion came from background extraction, from Eve in conversation, or from a message captured in Discord.
+The privacy stance is implemented in the database and query layer. Every memory row starts as `suggested` through the column default. Approval transitions the row to `approved`, stamps `approvedAt`, and writes an audit entry. The mutation reloads the row first and rejects any record whose status has already changed.
+
+A memory also requires provenance. The `source_record_id` foreign key is `NOT NULL` with `ON DELETE RESTRICT`, preserving the note behind each fact and letting the review card show the sentence the user wrote. Sensitivity is inherited from that source record, which prevents model wording from weakening the original classification. Background extraction, Eve, and Discord capture all submit suggestions through this lifecycle.
 
 ![tendnote's review queue: four suggested memories about two people, each labelled Suggested with Dismiss and Save beside it, and a suggested asset below them.](./02-review-queue.png "The review gate. Every extracted fact sits as Suggested with Save and Dismiss; nothing here is a stored memory yet.")
 
 ## How it's built
 
-**Shape.** A pnpm/Turborepo monorepo: two apps over five shared packages. `apps/web` is the Next.js 16.3 App Router UI on React 19.2, Tailwind 4 and shadcn/Radix. `apps/agent` is Eve - its instruction set, tools, subagents, skills, channels and scheduled-workflow dispatcher. `packages/db` owns the Drizzle schema, migrations and every owner-scoped query; `packages/domain` holds shared Zod schemas; `packages/auth` is one Better Auth baseline so the web app and Eve verify identical sessions; `packages/rate-limit` and `packages/config` round it out. `@tendnote/db` deliberately has no root barrel - consumers import explicit subpaths so Eve's bundle stays lean.
+### Repository shape
 
-**Storage.** Postgres with pgvector, via Drizzle. Redis backs sessions and rate-limit state. The durable spine is two tables: `source_records` (the evidence layer - a note, an interaction summary, a Discord capture) and `memories` (durable facts, each pointing back at the source record that grounds it). Follow-ups reconnect you with a _person_; General Actions are to-dos for _you_, with Routines as a General Action on a cadence; Saved Items are the honest fallback for things that don't fit a richer family yet; Assets are the things you own. Every record carries an owner, a visibility scope, and a sensitivity - and scope and sensitivity are kept as separate columns on purpose, because "how delicate is this" and "who may see it" are different questions.
+tendnote is a pnpm and Turborepo monorepo with two applications over five shared packages. `apps/web` is the Next.js 16.3 App Router UI on React 19.2, Tailwind 4, and shadcn/Radix. `apps/agent` contains Eve's instruction set, tools, subagents, skills, channels, and scheduled-workflow dispatcher.
 
-**How memory actually works.** Capture writes a source record and enqueues a job. Extraction runs as a Postgres-owned job - a real table with attempts, `run_after`, `claimed_at` and a unique idempotency key, so it is inspectable and re-runnable rather than hidden in a queue. Extraction produces `suggested` memories, which land in a review queue that interleaves five families (suggested memories, suggested actions, asset review groups, source records and self-context facts) so no one family starves the others. On approval, an embedding job is scheduled and the fact becomes retrievable.
+`packages/db` owns the Drizzle schema, migrations, and owner-scoped queries. `packages/domain` holds shared Zod schemas. `packages/auth` provides the Better Auth baseline used by both the web Product and Eve. `packages/rate-limit` and `packages/config` complete the shared layer. Consumers import explicit `@tendnote/db` subpaths to keep Eve's bundle lean.
+
+### Storage and record families
+
+Postgres with pgvector stores durable records through Drizzle. Redis backs sessions and rate-limit state. Two tables form the spine: `source_records` holds evidence such as notes, interaction summaries, and Discord captures; `memories` holds durable facts that point back to those sources.
+
+Follow-ups reconnect you with a _person_. General Actions are to-dos for _you_, and Routines add a cadence to General Actions. Saved Items hold material without a richer record family. Assets represent things you own. Every record carries an owner, visibility scope, and sensitivity. Scope and sensitivity stay separate because they answer separate questions: who may see this, and how delicate is it?
+
+### The memory pipeline
+
+Capture writes a source record and enqueues a Postgres-owned extraction job. The job table records attempts, `run_after`, `claimed_at`, and a unique idempotency key, making each job inspectable and safe to rerun.
+
+Extraction produces `suggested` memories. The review queue interleaves five families: suggested memories, suggested actions, asset review groups, source records, and self-context facts. Approval schedules an embedding job and makes the fact eligible for retrieval.
 
 ![The same review queue rendered in tendnote's dark theme, with the suggested memories and the suggested asset below them.](./03-review-queue-dark.png "The same review queue in dark theme - both themes are first-class.")
 
-Retrieval runs in layers: precomputed context snapshots (explicitly a cache, never truth), Postgres full-text search over a generated `tsvector` column, pgvector semantic search over _approved_ memories and eligible records, and a unified asset search. The rule that makes this safe is ordering: owner, scope, sensitivity and lifecycle filters are applied **in the query, before any ranking** - never as a post-filter over a ranked list.
+Retrieval combines rebuildable context snapshots, Postgres full-text search over a generated `tsvector`, pgvector semantic search over _approved_ memories and eligible records, and unified asset search. Owner, scope, sensitivity, and lifecycle filters run **inside the query before ranking**, so ineligible rows never enter the candidate set.
 
-**Where the AI actually is.** Four places, each bounded.
+### Four bounded uses of AI
 
-1. Extraction runs through a replaceable LLM adapter in production, with a deterministic adapter for tests and offline development - the lifecycle was built and proven before a model was allowed near it.
+1. Extraction uses a replaceable LLM adapter in production and a deterministic adapter in tests and offline development. The deterministic adapter exercised the lifecycle before the production model was connected.
 2. Embeddings, through the AI Gateway.
-3. Eve, the conversational agent, built on the `eve` framework and mounted same-origin into Next via `withEve()`, so the browser streams turns from `/eve/v1/*` with no separate agent URL and no CORS. Eve's subagents are narrow and proposal-only - `memory_curator` proposes cleanup, `relationship_strategist` proposes follow-ups, and `privacy_guard` reviews with no tools at all.
-4. A presentation-only summary line on generated briefs; the brief's _contents_ are selected deterministically from the relationship agenda, and the model never chooses what goes in.
+3. Eve, the conversational agent, uses the `eve` framework and mounts same-origin into Next through `withEve()`. The browser streams turns from `/eve/v1/*`, using the site origin with no separate agent URL or CORS configuration. `memory_curator` proposes cleanup, `relationship_strategist` proposes follow-ups, and `privacy_guard` reviews with no tools.
+4. Generated briefs use the model for one presentation summary. Deterministic selection from the relationship agenda decides the brief's contents.
 
-On Vercel, `/eve/v1/*` is routed to the Eve service _before_ Next filesystem routing, which means Next middleware never sees those requests. So Eve's own channel is the trust boundary: it verifies the Better Auth cookie itself, requires persisted beta access, charges the ingress rate-limit budget before any model work starts, and stamps only the verified user id onto the session principal.
+On Vercel, `/eve/v1/*` reaches the Eve service before Next filesystem routing. Eve's channel therefore verifies the Better Auth cookie, requires persisted beta access, charges the ingress rate-limit budget before model work, and stamps the verified user ID onto the session principal.
 
-**Scale, for calibration.**
+Precomputed context snapshots are rebuildable caches. Source records and approved memories remain the durable truth used to recreate them.
+
+### Repository scale at the verified commit
 
 | Measure | Count |
 | --- | --- |
@@ -61,7 +85,9 @@ On Vercel, `/eve/v1/*` is routed to the Eve service _before_ Next filesystem rou
 
 ## Decisions worth defending
 
-**A memory cannot exist without the note it came from.** `memories.source_record_id` is `NOT NULL` with `ON DELETE RESTRICT`. The shared mutation layer refuses provenance-free memories in normal product flows; only seeds and repair scripts may create controlled fallback source records. This started as a policy (ADR 0022) and was then pushed into the schema, because a policy that lives only in application code is one refactor from being optional. The payoff shows up in the UI: every review card can show the fact against the sentence that produced it, and no "remembered" fact is ever unattributable.
+### Provenance is required by the schema
+
+`memories.source_record_id` is `NOT NULL` with `ON DELETE RESTRICT`. The shared mutation layer rejects provenance-free memories in normal Product flows; seeds and repair scripts may create controlled fallback source records. ADR 0022 first recorded the policy, then the schema made it mandatory. Every review card can show a fact beside its source sentence.
 
 ```ts title="packages/db/src/schema/app/memories.ts" {2,3}
     sourceRecordId: uuid("source_record_id")
@@ -72,7 +98,9 @@ On Vercel, `/eve/v1/*` is routed to the Eve service _before_ Next filesystem rou
     status: memoryStatus("status").notNull().default("suggested"),
 ```
 
-**Suggested is the default state, and approval is a transition - not a copy.** Observations and memories share one table with a lifecycle status (`suggested → approved | dismissed | archived`) rather than a separate ingestion table. That avoided building an ingestion subsystem before there was anything to ingest, while keeping the option to split noisy provider-derived candidates out later. The approval path reloads the row, refuses anything not still `suggested`, stamps `approvedAt`, and writes an audit entry - so "who promoted this to a fact, and when" is answerable after the fact.
+### Approval is a state transition
+
+Observations and memories share a table with the lifecycle `suggested → approved | dismissed | archived`. This kept the first ingestion path small while leaving room to split noisy provider-derived candidates into another table later. Approval reloads the row, requires `suggested` status, stamps `approvedAt`, and writes an audit entry that records who promoted the fact and when.
 
 ```ts title="packages/db/src/queries/memories/review.ts" {3,9}
 /** Loads a memory and asserts it is still an actionable suggestion. */
@@ -91,7 +119,9 @@ async function requireSuggestedMemory(ctx: MemoryReviewContext, input: MemoryRev
 }
 ```
 
-**Deterministic enforcement beats a well-behaved model.** Scope is enforced in the query layer, so retrieval, search, Eve's tools and the UI all inherit it instead of each re-implementing it. The `privacy_guard` subagent exists - and holds no tools whatsoever. It can review phrasing for leakage; it cannot grant, widen or approve access. I'd defend this as the single most important structural choice in the project: the security boundary is a place in the code, not a paragraph in a prompt, and it was a precondition for adding household sharing at all (ADR 0137).
+### Scope is enforced in queries
+
+The query layer enforces scope for retrieval, search, Eve's tools, and the UI. The `privacy_guard` subagent can review phrasing for leakage and has no tools for granting, widening, or approving access. ADR 0137 made this enforcement a precondition for household sharing.
 
 ```ts title="apps/agent/agent/subagents/privacy_guard/tools/bash.ts" {7}
 import { disableTool } from "eve/tools";
@@ -103,25 +133,34 @@ import { disableTool } from "eve/tools";
 export default disableTool();
 ```
 
-**The tool gate fails closed, including when the gate itself fails.** Eve's modes narrow which tools a turn may use, resolved from the principal the channel's auth stamped - never from message text.
+### The tool gate contains its own failure mode
+
+Eve's modes narrow the tools available to a turn. The gate resolves the mode from the principal stamped by channel authentication and ignores message text when making that decision.
 
 <details>
   <summary>The sharp edge: how a framework can make a gate fail open</summary>
 
-  The implementation has a sharp edge worth naming: the framework lets a
-  dynamic resolver _override_ an authored tool but not delete one, so withheld
-  tools are rebound to a definition that runs nothing and explains why. Worse,
-  the framework _skips_ a resolver that throws and runs the turn on the full
-  authored tool set - so a crashing gate is a gate that fails open, on exactly
-  the session whose principal it couldn't parse. The resolver therefore reads
-  the principal defensively, catches its own resolution, and falls back to
-  `restricted` (nothing available). That is a bug class you only find by
-  reading the framework's behavior rather than trusting its API shape, and the
-  reasoning is written down in the file.
+  The framework lets a dynamic resolver override an authored tool but cannot
+  delete one, so the gate rebinds withheld tools to definitions that perform no
+  action and explain the restriction. The framework also skips a resolver that
+  throws and proceeds with the full authored tool set. The gate catches its own
+  resolution errors and falls back to `restricted`, where no tools are
+  available. The source file documents this framework behavior beside the
+  defensive code.
 </details>
 
-**Publishing the prompt instead of treating it as a moat.** tendnote ships AGPL-3.0 with the full application source, the Eve instruction set, every tool and subagent definition, the ADR corpus and the eval suite. The instruction set is the most carefully authored artifact in the project and the most tempting to withhold - but it is extractable from any deployed instance by a determined user, so withholding it would forfeit a complete case study to protect something that was never actually keepable. Hosted differentiation is operational: a customer pays to avoid running Postgres, Redis, a queue, a scheduler and several OAuth apps. AGPL rather than BUSL because readers correctly decline to call source-available "open source", and the credibility was the entire reason to publish. A CLA is collected from the first external contribution, because reconstructing consent from forty contributors later is a project-halting event.
+### The prompt ships with the source
 
-**The failing eval run stays in the repo, and so does the reason it fails.** The suite's first Phase 9a evaluation is preserved verbatim rather than quietly rerun until it went green: `google/gemini-3.7-flash`, 52 passed, 8 failed, 0 skipped, 0 errored across 60 cases, exit code 1. What those numbers measure is worth being precise about, because the obvious reading is the wrong one. The same suite passes completely when run locally. The red result is the deterministic GitHub run, and almost all of its failures are defects in the eval harness rather than bad output from the model. Keeping a red gate in a public repo, and saying plainly what it does and does not measure, is the version I can defend - a green screenshot with nothing behind it proves less.
+tendnote ships under AGPL-3.0 with the application source, Eve instruction set, tool and subagent definitions, ADR corpus, and eval suite. A determined user can extract the deployed instruction set, so publishing it preserves a complete, inspectable case study. Hosted customers pay to avoid operating Postgres, Redis, a queue, a scheduler, and several OAuth applications.
 
-**Built with agents, and willing to say by how much.** tendnote is a side project built with heavy agentic-assisted development, running Matt Pocock's skill set - `wayfinder`, `to-spec`, `to-tickets`, `implement`, `code-review` - as the loop from spec through review. That is the honest explanation for the shape of the repo: 238 ADRs, 62 eval files and 650 test files are not decoration, they are the control surface that makes an agent-written codebase reviewable at all. It is also why the canonical case study says I have personally read roughly 15% of the code, which I would rather state than have inferred. The claim this project makes is not that I typed all of it. It is that I chose where the constraints live, and they live in the schema and the query layer - the two places neither I nor a model can quietly route around.
+AGPL gives the Project an open-source license with network-use obligations. A CLA is collected from the first external contribution so consent is recorded while the contributor list is still small.
+
+### The first Phase 9a eval remains visible
+
+The repository preserves the first Phase 9a evaluation exactly as it ran: `google/gemini-3.7-flash`, 52 passed, 8 failed, 0 skipped, and 0 errored across 60 cases, with exit code 1. The same suite passes completely in Nick's local run. Almost all failures in the preserved deterministic GitHub run came from the eval harness. The case study classifies the bundle as exploratory evidence and links the raw reports and checksums so readers can inspect the result.
+
+### Agent-assisted development is disclosed
+
+tendnote uses heavy agent-assisted development with Matt Pocock's `wayfinder`, `to-spec`, `to-tickets`, `implement`, and `code-review` skills as the loop from specification through review. The repository's 238 ADRs, 62 eval files, and 650 test files form the review surface around that work. The canonical case study also states that I have personally read roughly 15% of the code.
+
+My role is choosing and reviewing the constraints that govern the Product. The most important constraints live in the schema and query layer, where both human-written and agent-written features inherit them.

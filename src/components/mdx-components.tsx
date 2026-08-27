@@ -109,6 +109,40 @@ export function Callout({ children, label }: CalloutProps) {
   );
 }
 
+interface ProcessProps {
+  children: ReactNode;
+  /** A visible caption that names the sequence for sighted readers and AT. */
+  label: string;
+}
+
+/**
+ * A compact four-step sequence for workflows that prose would otherwise make
+ * a reader reconstruct. The steps remain an ordinary list in the document,
+ * and CSS only changes their spatial arrangement when the measure can hold it.
+ */
+export function Process({ children, label }: ProcessProps) {
+  return (
+    <figure className="process">
+      <figcaption className="process-label">{label}</figcaption>
+      <ol>{children}</ol>
+    </figure>
+  );
+}
+
+interface ProcessStepProps {
+  children: ReactNode;
+  title: string;
+}
+
+export function ProcessStep({ children, title }: ProcessStepProps) {
+  return (
+    <li>
+      <p className="process-step-title">{title}</p>
+      <div className="process-step-body">{children}</div>
+    </li>
+  );
+}
+
 /**
  * What a Post's prose overrides. Everything not listed here is typography,
  * which `.prose` in `src/styles.css` handles - `details`, `kbd`, footnotes and
@@ -121,6 +155,8 @@ export function Callout({ children, label }: CalloutProps) {
 export const mdxComponents: MDXComponents = {
   Callout,
   Figure,
+  Process,
+  ProcessStep,
   a: ProseLink,
   h2: ProseH2,
   h3: ProseH3,

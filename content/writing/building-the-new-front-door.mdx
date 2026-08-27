@@ -7,31 +7,41 @@ pillar: "building-in-public"
 tags: ["redesign", "tanstack-start", "personal-site"]
 ---
 
-{/* DRAFT FOR NICK'S EDIT: written from documented decisions in this repo and in the template repository. Adjust voice and personal detail before launch, and give the new "The template underneath" section the same voice pass as the rest; every factual claim below is sourced from PRODUCT.md, DESIGN.md, docs/adr/, or tanstack-start-template. A structural pass has since broken the long runs with two code excerpts and one callout; no sentence was rewritten, so the voice pass still applies to the same prose. The two excerpts are verbatim from tanstack-start-template at commit 22e0f85 (src/lib/public-routes.ts lines 16-23, scripts/verify-seo-output.mjs lines 29-38) - re-copy them if that repository moves. */}
 
-For a few years, nickneely.dev has been an interactive terminal emulator. You typed `help`, poked around some commands, and eventually found a résumé. People liked it. It was also a gimmick standing where a front door should be: it showed cleverness, but it hid the work.
+For a few years, nickneely.dev was an interactive terminal emulator. You typed `help`, tried a few commands, and eventually found a résumé. People liked it. The interface made visitors work to find the work.
 
-The problem wasn't the terminal. The problem was fragmentation. My footprint was scattered across LinkedIn, X, GitHub, Neely Solutions, and a handful of product domains, and no single place tied the story together. Search engines and humans had to guess which Nick Neely they'd found, and the answer to "can this person solve my problem" was buried behind a `projects` command.
+My public work was also scattered across LinkedIn, X, GitHub, Neely Solutions, and several domains for individual Projects. No single place tied those threads together. Search engines and people had to guess which Nick Neely they had found, while the answer to "can this person solve my problem?" sat behind a `projects` command.
 
-So I rebuilt the site around one job: be the canonical front door. Consulting, shipped projects, and writing, all reachable within two clicks, under one identity.
+I rebuilt the site around one job: become the canonical front door. Consulting, shipped Projects, and writing now sit under one identity and remain reachable within two clicks.
 
 ## What stayed, what moved
 
-The terminal résumé isn't dead. It moved to [terminal.nickneely.dev](https://terminal.nickneely.dev) and lives on as an easter egg - there's exactly one small link to it in the footer, and one hidden somewhere better. Novelty is fine as a side door. It just doesn't get to be the front one.
+The terminal résumé moved to [terminal.nickneely.dev](https://terminal.nickneely.dev) and became an easter egg. One small footer link points to it, and another link is hidden somewhere better. The terminal now works as a side door.
 
-Neely Solutions stays its own brand for local and small-business work. This site links to it and never co-headlines with it; the two serve different buyers, and pretending otherwise was part of the identity mess.
+Neely Solutions stays its own brand for local and small-business work. This site links to it and never co-headlines with it. Each brand serves a different buyer and keeps its own identity.
 
 ## The stack
 
-The site is TanStack Start on React 19, built to a Nitro output and deployed on Vercel, styled with Tailwind CSS 4. Writing is MDX compiled at build time, indexed with content-collections, with RSS and per-post OG images generated during the build. The newsletter runs on Resend with a stateless double opt-in: the confirmation link carries an HMAC-signed payload, so nothing is stored anywhere until a person actually confirms. No database, no analytics beyond Vercel's, no tracking pixels - not even in the newsletter.
+The site runs TanStack Start on React 19, builds to Nitro, deploys on Vercel, and uses Tailwind CSS 4. Posts are MDX compiled at build time and indexed with content-collections. The same build generates RSS and a per-Post Open Graph image.
 
-Publishing a post is a deploy. That's deliberate: the deploy is cheap enough that it never becomes the bottleneck, and owning the distribution surface beats renting it.
+Resend handles the newsletter through stateless double opt-in. The confirmation link carries an HMAC-signed payload, and subscriber data is first stored after the person confirms. The site has no database, third-party analytics, or tracking pixels. Vercel Web Analytics is the only analytics system.
+
+Publishing a Post is a deploy. The deploy is short enough to stay out of the writing process, and the resulting page, feed item, and subscriber list remain on surfaces I control.
 
 ## The template underneath
 
-Almost none of that foundation was built here. It was built first in [a TanStack Start template](https://github.com/neely-labs/tanstack-start-template) that lives in its own public repository, and this site was started from it. The reasoning wasn't reuse for its own sake. The opening stretch of any new project is always the same stretch - routing, styling, linting, tests, a production build, SEO plumbing, CI - and that work is easy to do and easy to do slightly wrong. The slightly wrong version doesn't announce itself, it just sits there as a page no crawler ever saw. So I did it once, on purpose, in a repository whose only job is to be a starting point, and kept every product decision out of it.
+The foundation lives in [a public TanStack Start template](https://github.com/neely-labs/tanstack-start-template), and this site began from it. New Projects repeatedly need the same opening work: routing, styling, linting, tests, a production build, SEO plumbing, and CI. Small mistakes in that layer often ship quietly, such as a valid page that no crawler can find. I built those decisions once in a repository whose only job is to provide a reliable starting point, leaving Product-specific choices to each downstream Project.
 
-What makes it worth talking about isn't the dependency list, it's the handful of places where it refuses to let you get something wrong. Every route in the application is classified exactly once, `public` or `private`, in a single file typed against the route tree TanStack Router generates. Public means the route is prerendered, listed in `sitemap.xml`, and inspected after the build. Because that classification has to be exhaustive, adding a route and forgetting to classify it doesn't quietly ship a page missing from the sitemap. It fails `pnpm typecheck`. A decision you forgot to make becomes a compiler error instead of a hole in your search presence.
+<Process label="From route definition to verified public page">
+  <ProcessStep title="Classify">Mark every route public or private.</ProcessStep>
+  <ProcessStep title="Build">Compile MDX and generate Nitro output.</ProcessStep>
+  <ProcessStep title="Prerender">Expand dynamic paths and write public HTML.</ProcessStep>
+  <ProcessStep title="Inspect">Check the rendered metadata, heading, sitemap, and canonical URL.</ProcessStep>
+</Process>
+
+### Every route gets one visibility decision
+
+Every route is classified once as `public` or `private` in a file typed against TanStack Router's generated route tree. Public routes are prerendered, listed in `sitemap.xml`, and inspected after the build. The map is exhaustive, so adding a route without classifying it fails `pnpm typecheck`. A missing search decision becomes a compiler error before it can become a missing page.
 
 ```ts title="src/lib/public-routes.ts" {8}
 const routeVisibility = {
@@ -45,12 +55,16 @@ const routeVisibility = {
 ```
 
 <Callout label="On this site">
-  This site takes that one step further: `/writing/$slug` is a placeholder
-  rather than a URL, so the inventory here also carries the function that
-  expands it into every published post before the prerenderer ever sees it.
+  This site's inventory represents the dynamic route as the `/writing/$slug`
+  placeholder. Its expansion function resolves that placeholder to every
+  published Post before prerendering.
 </Callout>
 
-The SEO check has the same temperament. It doesn't read the configuration and agree with itself. It opens the HTML the build actually wrote to disk and asserts against that: one title, one description, one canonical URL pointing where it should point, Open Graph tags, JSON-LD, an `<h1>` that exists before hydration, and no two pages sharing a title. Configuration that is correct and output that is correct are two different claims, and only the second one is visible to a crawler. Public identity works the same way - name, origin, social card, theme colour live in one config module, and `robots.txt` and `manifest.json` are generated from it at build time instead of sitting in `public/` going stale.
+### The build checks the HTML a crawler receives
+
+The SEO check opens the HTML written to disk and asserts that each page has one title, one description, the expected canonical URL, Open Graph tags, JSON-LD, and an `<h1>` before hydration. It also rejects duplicate page titles. This verifies the output a crawler receives.
+
+Name, origin, social card, and theme color live in one configuration module. The build generates `robots.txt` and `manifest.json` from the same source, keeping those files aligned with the public identity.
 
 ```js title="scripts/verify-seo-output.mjs" {2}
 for (const routePath of publicPaths) {
@@ -65,16 +79,16 @@ for (const routePath of publicPaths) {
   );
 ```
 
-All of it is one command. `pnpm validate` runs lint, types, tests, the Nitro build, the prerender, and the rendered SEO check, and finishes in about five seconds. The same command runs before every push and again in CI, so there's one gate and one answer rather than a local ritual that disagrees with the pipeline. Five seconds is short enough that I run it out of habit instead of stopping to guess which stage a change could have broken.
+`pnpm validate` runs lint, types, tests, the Nitro build, prerendering, and the rendered SEO check in about twelve seconds. The same command runs before every push and in CI. Its short runtime makes the full gate the default check after every change.
 
-The payoff is that this repository started from a considered baseline instead of an empty directory. The template deliberately declines to pick a database, an auth provider, or an analytics vendor, which left me free to pick none of them here. The boring parts were solved before I opened the editor, so the work on nickneely.dev went into the parts that are actually mine: the door, and the pipeline that turns a Markdown file into a post, an OG image, an RSS item, and a prerendered page. The template is public and MIT licensed, in case any of that sounds like a week you'd rather not spend.
+The repository started from a considered baseline. The template leaves database, authentication, and analytics choices open, which let this site choose no database or authentication provider and only Vercel Web Analytics. My work here went into the parts specific to nickneely.dev: the door and the pipeline that turns one MDX file into a Post, Open Graph image, RSS item, and prerendered page. The template is public and MIT licensed.
 
 ## The design rule I actually care about
 
-The visual direction is typography-driven and dark by default: one display face for the big moments, one accent colour, and restraint everywhere else. But the rule doing the real work is about motion:
+The visual direction is typography-driven and dark by default: one display face for the large moments, one accent color, and restraint elsewhere. The motion rule shapes every interaction:
 
 > Motion only ever confirms an action the reader took. Nothing moves because it scrolled into view.
 
-Sites that animate on arrival read like an off-the-shelf theme. Sites that animate on interaction read as craft. Everything animated on this site - the underline that draws on hover, the blinking cursor in the hero, the route transitions - happens because you did something, and all of it respects `prefers-reduced-motion`.
+The site uses motion to explain a response: an underline draws after hover, the front door opens after interaction, and route transitions show where a page went. The hero cursor is the only ambient motion before a reader acts. Every animation respects `prefers-reduced-motion`.
 
 The one indulgence is the cursor itself. This project's codename was "front door," and the blinking block at the end of my name is exactly that: a door. Try opening it.

@@ -1006,6 +1006,17 @@
     line-height: 0;
   }
 
+  /* Dense UI screenshots earn more width than the prose that explains them. */
+  .prose > .post-figure {
+    width: min(56rem, calc(100vw - 2.5rem));
+  }
+
+  @media (min-width: 40rem) {
+    .prose > .post-figure {
+      width: min(56rem, calc(100vw - 4rem));
+    }
+  }
+
   .prose p picture {
     display: inline;
     line-height: inherit;
@@ -1131,6 +1142,105 @@
 
   .callout-label + * {
     margin-top: 0.5em;
+  }
+
+  /*
+   * A semantic ordered list for short workflows. The sequence is linear on a
+   * phone and becomes a divided row only when every step has room to breathe.
+   * It uses proximity and rules rather than a row of interchangeable cards.
+   */
+  .process {
+    border-block: 1px solid var(--border);
+    padding-block: 1.1em;
+  }
+
+  .process-label,
+  .process-step-title {
+    @apply font-mono;
+  }
+
+  .process-label {
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
+  .process ol {
+    counter-reset: process-step;
+    list-style: none;
+    margin-top: 1em;
+    padding-left: 0;
+  }
+
+  .process li {
+    counter-increment: process-step;
+    display: grid;
+    gap: 0.35em;
+    grid-template-columns: 2.1rem minmax(0, 1fr);
+    padding-block: 0.8em;
+  }
+
+  .process li + li {
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+
+  .process li::before {
+    color: var(--muted-foreground);
+    content: counter(process-step, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    grid-row: 1 / span 2;
+    padding-top: 0.15em;
+  }
+
+  .process-step-title {
+    font-size: 0.82em;
+    font-weight: 500;
+  }
+
+  .process-step-body {
+    color: var(--muted-foreground);
+    font-size: 0.88em;
+  }
+
+  .process-step-body > * + * {
+    margin-top: 0.6em;
+  }
+
+  @media (min-width: 48rem) {
+    .process ol {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .process li {
+      display: block;
+      padding: 0 1em;
+    }
+
+    .process li:first-child {
+      padding-left: 0;
+    }
+
+    .process li:last-child {
+      padding-right: 0;
+    }
+
+    .process li + li {
+      border-left: 1px solid var(--border);
+      border-top: 0;
+    }
+
+    .process li::before {
+      display: block;
+      margin-bottom: 0.65em;
+      padding-top: 0;
+    }
+
+    .process-step-body {
+      margin-top: 0.45em;
+    }
   }
 
   /*
