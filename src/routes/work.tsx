@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { track } from "@vercel/analytics";
 import { Fragment } from "react";
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { LeanTechniquesMark } from "@/components/lean-techniques-mark.tsx";
 import { buttonVariants } from "@/components/ui/button.tsx";
+import { VendoredMark } from "@/components/vendored-mark.tsx";
+import type { VendoredMarkSource } from "@/components/vendored-mark.tsx";
 import {
   createGraph,
   createSeoHead,
@@ -30,13 +32,11 @@ const contactAddress = siteConfig.links.contact.replace(/^mailto:/u, "");
 /**
  * An employer's mark, in one of the two forms it exists in here: an inline SVG
  * that follows the surrounding text colour, or a vendored file with a second
- * cut only where dark grounds need one. Same shape as `/uses`' `UseLogo`,
- * widened by the component case because Lean TECHniques' mark was already
- * vendored as a component for the home page's Now Line.
+ * cut only where dark grounds need one. The shared shape lives in
+ * `vendored-mark.tsx`; its component case exists because Lean TECHniques'
+ * mark was already vendored as a component for the home page's Now Line.
  */
-type EmployerMark =
-  | { component: ComponentType<{ className?: string }> }
-  | { dark?: string; src: string };
+type EmployerMark = VendoredMarkSource;
 
 /**
  * One Role on the timeline. `framing` exists for the one Role whose shape is
@@ -49,8 +49,8 @@ interface Role {
   framing?: string;
   location: string;
   mark: EmployerMark;
-  /** Proof Points, strongest first. */
-  outcomes: readonly string[];
+  /** Strongest first. */
+  proofPoints: readonly string[];
   title: string;
 }
 
@@ -71,7 +71,7 @@ const roles: readonly Role[] = [
     employer: "Lean TECHniques",
     location: "Johnston, IA",
     mark: { component: LeanTechniquesMark },
-    outcomes: [
+    proofPoints: [
       "Vermeer's Bill of Materials CSV upload workflow: a 10,000-part import went from about two hours to about two minutes, replacing manual item-by-item entry.",
       "ClaimDoc's secure multi-file uploads, modernized on Vue 3, .NET, Azure Blob Storage, and Bicep.",
       "Secured 12 internal platform endpoints end to end: authentication, admin authorization, and least-privilege DTO mapping.",
@@ -87,7 +87,7 @@ const roles: readonly Role[] = [
       dark: "/logos/neely-solutions-dark.svg",
       src: "/logos/neely-solutions.svg",
     },
-    outcomes: [
+    proofPoints: [
       "Built the freelance operations platform the business runs on (Next.js, TypeScript): lead intake, portfolio CMS, and secure admin tooling, with workflows saving up to 3 hours a day across billing, outreach, and pipeline.",
       "Delivered Frontline Fuel's CMS-managed marketing and commerce app (Next.js, Payload CMS, Shopify Storefront GraphQL, Klaviyo, Resend): 50+ waitlist signups and several thousand dollars in first-month revenue.",
     ],
@@ -100,7 +100,7 @@ const roles: readonly Role[] = [
       "My first job, worked through high school and the years after it: insurance claims and ordinary front-office duties. I also built the clinic's website and the Python, React, and Node tools the office ran on for insurance calculations, payroll and timecard generation, and patient tracking - I automated the office I was sitting in.",
     location: "Ottumwa, IA",
     mark: { src: "/logos/moore-hearing-clinic.webp" },
-    outcomes: [
+    proofPoints: [
       "Automating insurance calculations cut calculation time by about 50%.",
       "Generating payroll and timecards cut payroll errors by about 40%.",
       "Administrative overhead across the office fell by about 20%.",
@@ -116,7 +116,12 @@ const roles: readonly Role[] = [
  * reads forward in time, and each entry names what was earned before where it
  * was earned.
  */
-const credentials = [
+interface CredentialGroup {
+  entries: readonly string[];
+  label: string;
+}
+
+const credentials: readonly CredentialGroup[] = [
   {
     entries: [
       "Computer science coursework at Iowa State University (2019-2021)",
@@ -134,7 +139,12 @@ const credentials = [
  * Drawn from the résumé summary and from what this site already demonstrates.
  * Voice pass pending from Nick: the claims are his, the phrasing is mine.
  */
-const approach: readonly { label: string; note: ReactNode }[] = [
+interface ApproachRow {
+  label: string;
+  note: ReactNode;
+}
+
+const approach: readonly ApproachRow[] = [
   {
     label: "Product-minded",
     note: "I solve the business problem the ticket is pointing at. When the workflow underneath is the actual defect, I say so before I write the code around it.",
@@ -178,8 +188,6 @@ const sectionHeading =
   "font-display text-2xl font-semibold tracking-tight sm:text-3xl";
 
 /** The size `/uses` renders its marks at, reused so the two pages agree. */
-const markSize = 18;
-const markClass = "size-[18px] shrink-0 object-contain";
 
 export const Route = createFileRoute("/work")({
   component: WorkPage,
@@ -199,57 +207,6 @@ export const Route = createFileRoute("/work")({
 });
 
 /**
- * The employer's mark beside its name.
- *
- * Purely identifying: every Role reads completely without it, so the mark is
- * hidden from assistive technology in all three forms. The light/dark pair
- * swaps in CSS on the same `dark:` variant the theme toggle uses, so the
- * server and the first client paint agree and neither theme waits for
- * hydration to show the right file.
- */
-function RoleMark({ mark }: { mark: EmployerMark }) {
-  if ("component" in mark) {
-    const Mark = mark.component;
-
-    return <Mark className={markClass} />;
-  }
-
-  if (mark.dark === undefined) {
-    return (
-      <img
-        alt=""
-        className={markClass}
-        decoding="async"
-        height={markSize}
-        src={mark.src}
-        width={markSize}
-      />
-    );
-  }
-
-  return (
-    <>
-      <img
-        alt=""
-        className={`${markClass} dark:hidden`}
-        decoding="async"
-        height={markSize}
-        src={mark.src}
-        width={markSize}
-      />
-      <img
-        alt=""
-        className={`hidden ${markClass} dark:block`}
-        decoding="async"
-        height={markSize}
-        src={mark.dark}
-        width={markSize}
-      />
-    </>
-  );
-}
-
-/**
  * One entry on the timeline. The dates hold their own column on wide screens,
  * which is what makes the run of Roles scannable without a card around each
  * one; below `sm` they simply lead the entry, which is the order a timeline
@@ -263,7 +220,7 @@ function RoleEntry({ role }: { role: Role }) {
       </p>
       <div>
         <h3 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight sm:text-2xl">
-          <RoleMark mark={role.mark} />
+          <VendoredMark mark={role.mark} />
           {role.employer}
         </h3>
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[13px] text-muted-foreground">
@@ -277,15 +234,15 @@ function RoleEntry({ role }: { role: Role }) {
           <p className="mt-4 leading-7 text-muted-foreground">{role.framing}</p>
         )}
         <ul className="mt-5 space-y-3.5">
-          {role.outcomes.map((outcome) => (
-            <li className="relative pl-6 leading-7" key={outcome}>
+          {role.proofPoints.map((proofPoint) => (
+            <li className="relative pl-6 leading-7" key={proofPoint}>
               {/* Decorative: the row reads the same without it, and a screen
                   reader gets the list semantics instead. */}
               <span
                 aria-hidden="true"
                 className="absolute top-2.5 left-0 size-1.5 rounded-full bg-signal"
               />
-              {outcome}
+              {proofPoint}
             </li>
           ))}
         </ul>

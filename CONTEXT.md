@@ -10,7 +10,7 @@ The personal brand site for Nick Neely: one canonical hub that consolidates cons
 
 **Engagement**: A consulting arrangement between Nick and a client, contracted through Neely Solutions. _Avoid_: project, contract, gig
 
-**Proof Point**: A single quantified outcome from a Role or an Engagement, presented as one scannable row of context, result, and year. Its figure is verbatim from documented work or it is absent. _Avoid_: achievement, highlight, win, metric
+**Proof Point**: A single quantified outcome from a Role or an Engagement, presented as one scannable row of context and result, dated by its own year or by the Role that carries it. Its figure is verbatim from documented work or it is absent. _Avoid_: achievement, highlight, win, metric
 
 **Neely Solutions**: The separate business brand serving local and small-business clients. It is linked from this site and never co-headlined on it. _Avoid_: the agency, my company, NS
 
