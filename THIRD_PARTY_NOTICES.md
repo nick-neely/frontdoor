@@ -35,6 +35,7 @@ The repository's MIT license applies to the original TanStack Start Template cod
   - `zod.svg` — the Zod project
   - `vitest.svg` — the Vitest project
   - `docker.svg` — Docker
+  - `oxc.svg` — the Oxc project (fronts the shared Oxlint + Oxfmt entry; both are Oxc tools)
   - `turborepo.svg`, `turborepo-dark.svg` — Vercel
 
   The pairs are svgl's own light and dark cuts of the same mark, swapped by theme. Where svgl's own filenames disagree with that convention the routing in its `src/data/svgs.ts` decides: the T3 pair is stored there as `t3-dark.svg` for light grounds and `t3-light.svg` for dark ones, so the vendored copies carry this repository's naming instead. The files are otherwise unmodified, with two exceptions, both the same problem: svgl's light Zed file and its light shadcn/ui file paint with `currentColor`, which has nothing to inherit from inside an `<img>`, so each vendored copy names svgl's intended black directly.

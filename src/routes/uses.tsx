@@ -211,9 +211,9 @@ interface StackRow {
  * the same on either track, which is the point the layout is making.
  *
  * A name here gets a mark on the same terms as the rows above: a real logo for
- * that exact tool, or nothing. Oxlint and Oxfmt are unmarked on purpose. svgl
- * carries an Oxc mark and both are Oxc tools, but a mark for the umbrella
- * project is not a mark for the tool, and this page does not do stand-ins.
+ * that exact tool, or nothing. Oxlint and Oxfmt share one entry under the Oxc
+ * mark by Nick's call: both are Oxc tools, the mark is the family's, and one
+ * glyph for the pair says that without printing it twice.
  */
 const stack = [
   {
@@ -280,7 +280,10 @@ const stack = [
     label: "Testing",
   },
   {
-    items: [{ name: "Oxlint" }, { name: "Oxfmt" }, { name: "Fallow" }],
+    items: [
+      { logo: { src: "/logos/oxc.svg" }, name: "Oxlint + Oxfmt" },
+      { name: "Fallow" },
+    ],
     label: "Quality",
   },
   {
@@ -302,9 +305,6 @@ const stack = [
     items: [
       { name: "Zustand" },
       { logo: { src: "/logos/tanstack.svg" }, name: "TanStack Query" },
-      // Nick said "Turbopack for monorepos". Turborepo is the monorepo tool
-      // and Turbopack is Next.js's bundler, so this reads as the former
-      // pending his confirmation.
       {
         logo: {
           dark: "/logos/turborepo-dark.svg",
