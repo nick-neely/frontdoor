@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { DoorMark } from "@/components/door-mark.tsx";
+import { SiteMark } from "@/components/site-mark.tsx";
 import { ThemeToggle } from "@/components/theme-toggle.tsx";
 import { siteConfig } from "@/lib/site-config.ts";
 
@@ -10,11 +10,11 @@ export function SiteHeader() {
       <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-6 px-5 sm:px-8">
         <Link
           aria-label={`${siteConfig.name} home`}
-          className="inline-flex items-center gap-2.5"
+          className="inline-flex items-center gap-2"
           to="/"
         >
-          <DoorMark className="size-6 shrink-0" />
-          <span className="hidden font-display text-base font-semibold tracking-tight sm:inline">
+          <SiteMark className="h-7 w-4" />
+          <span className="hidden font-display text-base leading-none font-semibold tracking-tight sm:inline">
             {siteConfig.name}
           </span>
         </Link>

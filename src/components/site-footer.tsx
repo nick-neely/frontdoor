@@ -1,3 +1,4 @@
+import { SiteMark } from "@/components/site-mark.tsx";
 import { siteConfig } from "@/lib/site-config.ts";
 
 const footerLinks = [
@@ -25,11 +26,16 @@ export function SiteFooter() {
   return (
     <footer className="border-t">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-12 sm:px-8">
-        <div className="flex flex-col gap-1.5">
-          <p className="font-display text-lg font-semibold tracking-tight text-foreground">
-            {siteConfig.name}
-          </p>
-          <p className="text-sm text-muted-foreground">{siteConfig.tagline}</p>
+        <div className="flex items-start gap-3">
+          <SiteMark className="mt-0.5 size-8" />
+          <div className="flex flex-col gap-1.5">
+            <p className="font-display text-lg font-semibold tracking-tight text-foreground">
+              {siteConfig.name}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {siteConfig.tagline}
+            </p>
+          </div>
         </div>
         <ul className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[13px] text-muted-foreground">
           {footerLinks.map((link, index) => (

@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import type { ReactElement } from "react";
 
 import { fitTitle, ogCardSize } from "./og-card-layout.ts";
 import type { OgCardContent } from "./og-card-layout.ts";
+import { siteConfig } from "./site-config.ts";
 
 /**
  * The card's own palette. It is deliberately literal rather than tokenised:
@@ -17,20 +21,9 @@ const ink = {
   text: "#f4f1ed",
 } as const;
 
-/**
- * The site mark, recreated from `src/components/door-mark.tsx` with the frame
- * and leaf resolved to the card's foreground instead of `currentColor`. Satori
- * renders SVG through `img`, so it travels as a data URI.
- */
-const doorMark = `data:image/svg+xml;base64,${Buffer.from(
-  [
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">',
-    `<rect x="5.5" y="2.5" width="21" height="27" rx="2" stroke="${ink.text}" stroke-width="3"/>`,
-    `<rect x="19.5" y="5.5" width="5.5" height="21" fill="${ink.amber}"/>`,
-    `<path d="M8.5 6.5 L19.5 4.5 V27.5 L8.5 25.5 Z" fill="${ink.text}"/>`,
-    `<circle cx="16" cy="16" r="1.3" fill="${ink.amber}"/>`,
-    "</svg>",
-  ].join("")
+/** The dark-ground production mark, embedded because Satori needs a data URI. */
+const siteMark = `data:image/png;base64,${readFileSync(
+  path.join(process.cwd(), "public", siteConfig.icon.manifest[0].path)
 ).toString("base64")}`;
 
 export function OgCard({ meta, title }: OgCardContent): ReactElement {
@@ -50,7 +43,7 @@ export function OgCard({ meta, title }: OgCardContent): ReactElement {
       }}
     >
       <div style={{ alignItems: "center", display: "flex", gap: 20 }}>
-        <img alt="" height={56} src={doorMark} width={56} />
+        <img alt="" height={56} src={siteMark} width={56} />
         <div style={{ color: ink.muted, fontSize: 26 }}>nickneely.dev</div>
       </div>
 

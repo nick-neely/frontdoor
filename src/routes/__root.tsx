@@ -24,8 +24,14 @@ export const Route = createRootRoute({
     links: [
       { href: appCss, rel: "stylesheet" },
       { href: "/manifest.json", rel: "manifest" },
-      { href: "/favicon.ico", rel: "icon", sizes: "32x32" },
-      { href: siteConfig.icon.path, rel: "icon", type: siteConfig.icon.type },
+      { href: "/favicon.ico", rel: "icon", sizes: "any" },
+      {
+        href: siteConfig.icon.paths.dark,
+        id: "site-favicon",
+        rel: "icon",
+        sizes: "32x32",
+        type: siteConfig.icon.type,
+      },
     ],
     meta: [
       { charSet: "utf-8" },

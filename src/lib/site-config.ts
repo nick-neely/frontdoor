@@ -9,8 +9,17 @@ export const siteConfig = {
   contactEmail,
   description:
     "Nick Neely is a product-minded software consultant who turns messy business and engineering workflows into maintainable software.",
-  /** SVG favicon. Replace the file, keep the shape. */
-  icon: { path: "/mark.svg", type: "image/svg+xml" },
+  icon: {
+    manifest: [
+      { path: "/brand/frontdoor-app-icon-192.png", sizes: "192x192" },
+      { path: "/brand/frontdoor-app-icon-512.png", sizes: "512x512" },
+    ],
+    paths: {
+      dark: "/favicon-dark.png",
+      light: "/favicon-light.png",
+    },
+    type: "image/png",
+  },
   language: "en-US",
   /** Canonical off-site destinations used throughout the site. */
   links: {
@@ -24,6 +33,16 @@ export const siteConfig = {
     x: "https://x.com/nickneely00",
   },
   locale: "en_US",
+  mark: {
+    dark: {
+      src: "/brand/frontdoor-mark-dark.png",
+      src2x: "/brand/frontdoor-mark-dark@2x.png",
+    },
+    light: {
+      src: "/brand/frontdoor-mark-light.png",
+      src2x: "/brand/frontdoor-mark-light@2x.png",
+    },
+  },
   name: "Nick Neely",
   navigation: [
     { href: "/", label: "Home" },
@@ -50,7 +69,7 @@ export const siteConfig = {
   /** Installed-application name. Keep it short enough to sit under an icon. */
   shortName: "Nick Neely",
   socialImage: {
-    alt: "Nick Neely. Maintainable software for messy workflows.",
+    alt: "Nick Neely. Maintainable software for messy workflows. Open the front door.",
     height: 630,
     path: "/social-card.png",
     type: "image/png",

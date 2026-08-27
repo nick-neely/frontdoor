@@ -20,16 +20,16 @@ export const generatedSiteFiles = {
         display: "standalone",
         icons: [
           {
-            sizes: "64x64 32x32 24x24 16x16",
+            sizes: "48x48 32x32 16x16",
             src: "/favicon.ico",
             type: "image/x-icon",
           },
-          {
+          ...siteConfig.icon.manifest.map((icon) => ({
             purpose: "any",
-            sizes: "any",
-            src: siteConfig.icon.path,
+            sizes: icon.sizes,
+            src: icon.path,
             type: siteConfig.icon.type,
-          },
+          })),
         ],
         id: "/",
         lang: siteConfig.language,

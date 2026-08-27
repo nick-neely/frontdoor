@@ -13,4 +13,13 @@ describe("generated site files", () => {
     expect(llms.source).toContain(siteConfig.links.contact);
     expect(llms.source).toContain(`${siteConfig.origin}/sitemap.xml`);
   });
+
+  it("publishes production-sized app icons", () => {
+    const manifest = generatedSiteFiles["manifest.json"].source;
+
+    expect(manifest).toContain('"sizes": "192x192"');
+    expect(manifest).toContain('"src": "/brand/frontdoor-app-icon-192.png"');
+    expect(manifest).toContain('"sizes": "512x512"');
+    expect(manifest).toContain('"src": "/brand/frontdoor-app-icon-512.png"');
+  });
 });

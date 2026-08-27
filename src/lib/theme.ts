@@ -20,6 +20,9 @@ export function setTheme(theme: ThemeName): void {
   document
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute("content", siteConfig.themeColors[theme]);
+  document
+    .querySelector<HTMLLinkElement>("#site-favicon")
+    ?.setAttribute("href", siteConfig.icon.paths[theme]);
 
   try {
     localStorage.setItem(storageKey, theme);
@@ -34,4 +37,4 @@ export function setTheme(theme: ThemeName): void {
  * the first paint. The server renders the dark default, which means this only
  * has work to do for a reader who chose light.
  */
-export const themeScript = `(()=>{try{const s=localStorage.getItem(${JSON.stringify(storageKey)});const t=s==="light"||s==="dark"?s:${JSON.stringify(defaultTheme)};document.documentElement.classList.toggle("dark",t==="dark");document.querySelector('meta[name="theme-color"]')?.setAttribute("content",t==="dark"?${JSON.stringify(siteConfig.themeColors.dark)}:${JSON.stringify(siteConfig.themeColors.light)});}catch(e){}})();`;
+export const themeScript = `(()=>{try{const s=localStorage.getItem(${JSON.stringify(storageKey)});const t=s==="light"||s==="dark"?s:${JSON.stringify(defaultTheme)};document.documentElement.classList.toggle("dark",t==="dark");document.querySelector('meta[name="theme-color"]')?.setAttribute("content",t==="dark"?${JSON.stringify(siteConfig.themeColors.dark)}:${JSON.stringify(siteConfig.themeColors.light)});document.querySelector("#site-favicon")?.setAttribute("href",t==="dark"?${JSON.stringify(siteConfig.icon.paths.dark)}:${JSON.stringify(siteConfig.icon.paths.light)});}catch(e){}})();`;
