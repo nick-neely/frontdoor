@@ -4,8 +4,7 @@ const footerLinks = [
   { href: siteConfig.links.github, label: "GitHub" },
   { href: siteConfig.links.linkedin, label: "LinkedIn" },
   { href: siteConfig.links.x, label: "X" },
-  // On-site pages are written literally, the way `/subscribe` already is:
-  // `siteConfig.links` is the inventory of off-site destinations.
+  // On-site pages are written literally, the way `/subscribe` already is.
   { href: "/uses", label: "Uses" },
   { href: "/subscribe", label: "Newsletter" },
   { href: siteConfig.links.rss, label: "RSS" },

@@ -15,7 +15,7 @@ Monospace is a deliberate signal, not decoration. It carries the developer-tool 
 
 ## The front door
 
-The project codename is visible identity. The site mark is an ajar door leaking accent amber, and the hero's blinking block cursor doubles as that door: one amber rectangle that blinks at terminal cadence until the reader opens it. Opening it reveals a dithered amber portal, and the portal itself is the link to the terminal résumé, the old front door; a mono caption names the destination only when the reader hovers or focuses the portal. The metaphor also carries the copy voice where it fits naturally: the 404 page is a wrong door. The door never gates anything; every page reads completely without touching it.
+The project codename is visible identity. The site mark is an ajar door leaking accent amber, and the hero's blinking block cursor doubles as that door: one amber rectangle that blinks at terminal cadence until the reader opens it. Opening it reveals a dithered amber portal, and the portal itself links to the `frontdoor` source repository, closing the metaphorical loop; a mono caption says “View the source.” only when the reader hovers or focuses the portal. The metaphor also carries the copy voice where it fits naturally: the 404 page is a wrong door. The door never gates anything; every page reads completely without touching it.
 
 ## Motion doctrine
 
@@ -29,6 +29,7 @@ That single rule is the line between intriguing and generic. Sites that animate 
 - The hero cursor blink, about 1.06s, an actual terminal cadence rather than a CSS default.
 - The front-door cursor opening and closing, strictly reader-triggered: a hover crack of about 120ms and a click swing that reveals the doorway. Under reduced motion the open state swaps in instantly with no transition, and the hover crack does not run at all.
 - The portal dither inside the opened door: an ambient amber-on-dark dither swirl that exists only after the reader opens the door, in the doorway's small area, on the blink's precedent of sanctioned ambient motion. Its code loads only on first open, and under reduced motion the dither renders static.
+- Portal traversal after the reader activates its link: the doorway becomes an event horizon at the click point, amber energy expands through the viewport, and a dark core overtakes it before navigation. This is the one deliberately intricate transition on the site, lasts under 800ms, and exists because the reader explicitly chose to go through the door. Modified clicks keep their native behavior, and reduced motion navigates immediately without the transition.
 - Route-change view transitions, about 150ms, with a shared-element transition on a post title. This is the one place motion explains where the page went.
 - `focus-visible` rings.
 - One state transition on newsletter subscribe success.

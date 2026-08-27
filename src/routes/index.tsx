@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { FrontDoorCursor } from "@/components/front-door-cursor.tsx";
+import { LeanTechniquesMark } from "@/components/lean-techniques-mark.tsx";
 import { readLatestPush } from "@/lib/github-activity.server.ts";
 import { privateRepoLabel, relativePushLabel } from "@/lib/github-activity.ts";
 import { projects } from "@/lib/projects.ts";
@@ -215,7 +216,11 @@ function NowLine() {
             {now.building}
           </a>
           <Separator />
-          consulting at {now.consulting}
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <span className="mr-0.5">consulting at</span>{" "}
+            <LeanTechniquesMark className="relative top-px size-4 shrink-0 text-foreground" />
+            <span className="text-foreground">{now.consulting}</span>
+          </span>
           <Separator />
           {now.location}
         </span>
