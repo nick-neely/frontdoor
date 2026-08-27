@@ -1437,4 +1437,13 @@
   ::view-transition-new(*) {
     animation: none;
   }
+
+  /*
+   * The spec sheet's blurbs arrive and leave without the fade. The utilities
+   * that carry it come out of `tw-animate-css` rather than out of this file,
+   * so this reaches them by the slot the popover primitive stamps on itself.
+   */
+  [data-slot="popover-content"] {
+    animation: none;
+  }
 }
