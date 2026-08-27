@@ -34,6 +34,19 @@ function countMatches(value, pattern) {
   return value.match(pattern)?.length ?? 0;
 }
 
+/** @param {string} html Rendered document. */
+function visibleText(html) {
+  return html
+    .replaceAll(
+      /<(?<element>script|style|svg)\b[^>]*>[\s\S]*?<\/\k<element>>/gu,
+      " "
+    )
+    .replaceAll(/<[^>]+>/gu, " ")
+    .replaceAll(/&(?:#\d+|#x[\da-f]+|\w+);/giu, " ")
+    .replaceAll(/\s+/gu, " ")
+    .trim();
+}
+
 for (const routePath of publicPaths) {
   const html = readFileSync(htmlOutputPath(routePath), "utf-8");
   const canonical = `${siteConfig.origin}${routePath}`;
@@ -109,6 +122,29 @@ assert.equal(
   publicPaths.length,
   "Page descriptions must be unique"
 );
+
+const homeHtml = readFileSync(htmlOutputPath("/"), "utf-8");
+assert.ok(
+  countMatches(homeHtml, /<h2\b/gu) >= 2,
+  "/: server-rendered outline must have at least two second-level headings"
+);
+assert.ok(
+  countMatches(homeHtml, /<h3\b/gu) >= 3,
+  "/: server-rendered outline must expose the primary destinations"
+);
+
+for (const routePath of ["/about", "/contact", "/privacy"]) {
+  const html = readFileSync(htmlOutputPath(routePath), "utf-8");
+
+  assert.ok(
+    visibleText(html).length >= 500,
+    `${routePath}: trust anchor must contain at least 500 visible characters`
+  );
+  assert.ok(
+    countMatches(html, /<h2\b/gu) >= 1,
+    `${routePath}: trust anchor must have a navigable heading outline`
+  );
+}
 
 const sitemap = readFileSync(".output/public/sitemap.xml", "utf-8");
 assert.equal(countMatches(sitemap, /<loc>/gu), publicPaths.length);

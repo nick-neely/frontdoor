@@ -15,6 +15,7 @@ export const siteConfig = {
     contact: "mailto:contact@nickneely.dev",
     github: "https://github.com/nick-neely",
     linkedin: "https://www.linkedin.com/in/nick-neely/",
+    neelySolutions: "https://neelysolutions.com",
     rss: "/rss.xml",
     source: "https://github.com/nick-neely/frontdoor",
     terminal: "https://terminal.nickneely.dev",
@@ -38,6 +39,11 @@ export const siteConfig = {
     buildingUrl: "https://tendnote.com",
     consulting: "Lean TECHniques",
     location: "Iowa",
+  },
+  organization: {
+    addressCountry: "US",
+    addressRegion: "Iowa",
+    name: "Neely Solutions",
   },
   origin: "https://nickneely.dev",
   /** Installed-application name. Keep it short enough to sit under an icon. */

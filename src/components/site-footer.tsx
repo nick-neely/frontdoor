@@ -4,6 +4,9 @@ const footerLinks = [
   { href: siteConfig.links.github, label: "GitHub" },
   { href: siteConfig.links.linkedin, label: "LinkedIn" },
   { href: siteConfig.links.x, label: "X" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+  { href: "/privacy", label: "Privacy" },
   // On-site pages are written literally, the way `/subscribe` already is.
   { href: "/uses", label: "Uses" },
   { href: "/subscribe", label: "Newsletter" },

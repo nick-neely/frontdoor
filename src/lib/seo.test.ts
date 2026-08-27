@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   absoluteUrl,
   createGraph,
+  createOrganizationSchema,
+  createPersonSchema,
   createSeoHead,
   createWebPageSchema,
   createWebsiteSchema,
@@ -61,5 +63,33 @@ describe("SEO helpers", () => {
     ]);
 
     expect(graph["@graph"]).toHaveLength(2);
+  });
+
+  it("describes the person and consulting organization without inventing identity facts", () => {
+    expect(createPersonSchema()).toMatchObject({
+      "@type": "Person",
+      email: "contact@nickneely.dev",
+      name: siteConfig.name,
+      sameAs: [
+        siteConfig.links.github,
+        siteConfig.links.linkedin,
+        siteConfig.links.x,
+      ],
+      url: `${siteConfig.origin}/`,
+    });
+    expect(createOrganizationSchema()).toMatchObject({
+      "@type": "Organization",
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "US",
+        addressRegion: "Iowa",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        email: "contact@nickneely.dev",
+      },
+      name: "Neely Solutions",
+    });
   });
 });

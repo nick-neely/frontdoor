@@ -6,6 +6,12 @@ import { publicPaths } from "./public-routes.ts";
 import { postPath, publishedWriting } from "./writing.ts";
 
 describe("public route inventory", () => {
+  it("publishes the identity and trust anchor pages", () => {
+    expect(publicPaths).toStrictEqual(
+      expect.arrayContaining(["/about", "/contact", "/privacy"])
+    );
+  });
+
   it("uses paths that join onto the canonical origin without rewriting", () => {
     // The sitemap and `scripts/verify-seo-output.mjs` build canonical URLs by
     // concatenating `siteConfig.origin` with these paths, so a missing leading

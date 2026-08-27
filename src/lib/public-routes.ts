@@ -22,9 +22,12 @@ type DynamicRoutePath = Extract<RoutePath, `${string}$${string}`>;
  */
 const routeVisibility = {
   "/": "public",
+  "/about": "public",
   // A server route renders no document, so there is nothing to prerender,
   // list in the sitemap, or verify with `pnpm seo:verify`.
   "/api/health": "private",
+  "/contact": "public",
+  "/privacy": "public",
   "/projects": "public",
   "/projects/$slug": "public",
   // The confirm landing is the same document, reached with `?token=...`. A

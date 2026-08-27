@@ -54,7 +54,7 @@ interface WebPageSchemaOptions {
   description: string;
   name: string;
   path: string;
-  type?: "AboutPage" | "CollectionPage" | "WebPage";
+  type?: "AboutPage" | "CollectionPage" | "ContactPage" | "WebPage";
 }
 
 /**
@@ -130,6 +130,48 @@ export function createWebsiteSchema() {
     inLanguage: siteConfig.language,
     name: siteConfig.name,
     url: `${siteConfig.origin}/`,
+  } satisfies StructuredData;
+}
+
+/** The canonical identity of the person this site represents. */
+export function createPersonSchema() {
+  return {
+    "@id": `${siteConfig.origin}/#person`,
+    "@type": "Person",
+    description: siteConfig.description,
+    email: siteConfig.links.contact.replace(/^mailto:/u, ""),
+    name: siteConfig.name,
+    sameAs: [
+      siteConfig.links.github,
+      siteConfig.links.linkedin,
+      siteConfig.links.x,
+    ],
+    url: `${siteConfig.origin}/`,
+  } satisfies StructuredData;
+}
+
+/**
+ * The separate business through which consulting Engagements are contracted.
+ * The address stays at region and country precision because those are the only
+ * public location facts this site has established.
+ */
+export function createOrganizationSchema() {
+  return {
+    "@id": `${siteConfig.links.neelySolutions}/#organization`,
+    "@type": "Organization",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: siteConfig.organization.addressCountry,
+      addressRegion: siteConfig.organization.addressRegion,
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      email: siteConfig.links.contact.replace(/^mailto:/u, ""),
+    },
+    founder: { "@id": `${siteConfig.origin}/#person` },
+    name: siteConfig.organization.name,
+    url: siteConfig.links.neelySolutions,
   } satisfies StructuredData;
 }
 

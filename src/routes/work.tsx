@@ -26,7 +26,7 @@ const description =
  * its own tab.
  */
 const conversationUrl = "https://cal.com/nickneely/chat";
-const neelySolutionsUrl = "https://neelysolutions.com";
+const neelySolutionsUrl = siteConfig.links.neelySolutions;
 const contactAddress = siteConfig.links.contact.replace(/^mailto:/u, "");
 
 /**
