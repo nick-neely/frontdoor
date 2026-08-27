@@ -1,6 +1,11 @@
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 import { FastResponse } from "srvx";
 
+import {
+  negotiateDocumentResponse,
+  requestForDocumentRenderer,
+} from "./lib/agent-http.ts";
+
 /**
  * srvx resolves `FastResponse` per runtime. On Node it is a Response with a
  * faster path to the underlying Node response, worth roughly 5% throughput. On
@@ -11,7 +16,9 @@ import { FastResponse } from "srvx";
 globalThis.Response = FastResponse;
 
 export default createServerEntry({
-  fetch(request: Request): Promise<Response> | Response {
-    return handler.fetch(request);
+  async fetch(request: Request): Promise<Response> {
+    const response = await handler.fetch(requestForDocumentRenderer(request));
+
+    return await negotiateDocumentResponse(request, response);
   },
 });

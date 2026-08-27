@@ -3,8 +3,10 @@
  * theme's `--background` token in `src/styles.css` and has to move with it.
  */
 const themeColors = { dark: "#0e0b08", light: "#f8f7f3" } as const;
+const contactEmail = "contact@nickneely.dev";
 
 export const siteConfig = {
+  contactEmail,
   description:
     "Nick Neely is a product-minded software consultant who turns messy business and engineering workflows into maintainable software.",
   /** SVG favicon. Replace the file, keep the shape. */
@@ -12,9 +14,10 @@ export const siteConfig = {
   language: "en-US",
   /** Canonical off-site destinations used throughout the site. */
   links: {
-    contact: "mailto:contact@nickneely.dev",
+    contact: `mailto:${contactEmail}`,
     github: "https://github.com/nick-neely",
     linkedin: "https://www.linkedin.com/in/nick-neely/",
+    neelySolutions: "https://neelysolutions.com",
     rss: "/rss.xml",
     source: "https://github.com/nick-neely/frontdoor",
     terminal: "https://terminal.nickneely.dev",
@@ -40,6 +43,10 @@ export const siteConfig = {
     location: "Iowa",
   },
   origin: "https://nickneely.dev",
+  professionalIdentity: {
+    addressCountry: "US",
+    addressRegion: "Iowa",
+  },
   /** Installed-application name. Keep it short enough to sit under an icon. */
   shortName: "Nick Neely",
   socialImage: {

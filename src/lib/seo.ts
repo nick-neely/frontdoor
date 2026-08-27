@@ -54,7 +54,7 @@ interface WebPageSchemaOptions {
   description: string;
   name: string;
   path: string;
-  type?: "AboutPage" | "CollectionPage" | "WebPage";
+  type?: "AboutPage" | "CollectionPage" | "ContactPage" | "WebPage";
 }
 
 /**
@@ -128,6 +128,48 @@ export function createWebsiteSchema() {
     "@type": "WebSite",
     description: siteConfig.description,
     inLanguage: siteConfig.language,
+    name: siteConfig.name,
+    url: `${siteConfig.origin}/`,
+  } satisfies StructuredData;
+}
+
+/** The canonical identity of the person this site represents. */
+export function createPersonSchema() {
+  return {
+    "@id": `${siteConfig.origin}/#person`,
+    "@type": "Person",
+    description: siteConfig.description,
+    email: siteConfig.contactEmail,
+    name: siteConfig.name,
+    sameAs: [
+      siteConfig.links.github,
+      siteConfig.links.linkedin,
+      siteConfig.links.x,
+    ],
+    url: `${siteConfig.origin}/`,
+  } satisfies StructuredData;
+}
+
+/**
+ * The professional identity published by this personal site. It deliberately
+ * does not represent Neely Solutions, which remains a separate brand and URL.
+ * The address uses only the public location facts established by this site.
+ */
+export function createOrganizationSchema() {
+  return {
+    "@id": `${siteConfig.origin}/#organization`,
+    "@type": "Organization",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: siteConfig.professionalIdentity.addressCountry,
+      addressRegion: siteConfig.professionalIdentity.addressRegion,
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      email: siteConfig.contactEmail,
+    },
+    founder: { "@id": `${siteConfig.origin}/#person` },
     name: siteConfig.name,
     url: `${siteConfig.origin}/`,
   } satisfies StructuredData;

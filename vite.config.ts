@@ -11,6 +11,7 @@ import { defineConfig } from "vite";
 import type { Connect, Plugin } from "vite";
 import { imagetools } from "vite-imagetools";
 
+import { createDocumentRoutingRules } from "./src/lib/agent-http.ts";
 import { mdxOptions } from "./src/lib/mdx-options.ts";
 import type { OgCardContent } from "./src/lib/og-card-layout.ts";
 import { renderOgImage } from "./src/lib/og-image.ts";
@@ -249,7 +250,14 @@ const config = defineConfig({
         host: siteConfig.origin,
       },
     }),
-    nitro(),
+    nitro({
+      vercel: {
+        config: {
+          routes: createDocumentRoutingRules(publicPaths),
+          version: 3,
+        },
+      },
+    }),
     viteReact(),
     siteFiles(),
     contentArtifacts(),

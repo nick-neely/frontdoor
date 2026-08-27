@@ -26,8 +26,8 @@ const description =
  * its own tab.
  */
 const conversationUrl = "https://cal.com/nickneely/chat";
-const neelySolutionsUrl = "https://neelysolutions.com";
-const contactAddress = siteConfig.links.contact.replace(/^mailto:/u, "");
+const neelySolutionsUrl = siteConfig.links.neelySolutions;
+const contactAddress = siteConfig.contactEmail;
 
 /**
  * An employer's mark, in one of the two forms it exists in here: an inline SVG

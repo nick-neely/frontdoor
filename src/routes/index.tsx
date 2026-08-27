@@ -10,6 +10,8 @@ import { privateRepoLabel, relativePushLabel } from "@/lib/github-activity.ts";
 import { projects } from "@/lib/projects.ts";
 import {
   createGraph,
+  createOrganizationSchema,
+  createPersonSchema,
   createSeoHead,
   createWebPageSchema,
   createWebsiteSchema,
@@ -176,6 +178,8 @@ export const Route = createFileRoute("/")({
       canonicalPath: "/",
       description: siteConfig.description,
       structuredData: createGraph([
+        createPersonSchema(),
+        createOrganizationSchema(),
         createWebsiteSchema(),
         createWebPageSchema({
           description: siteConfig.description,
@@ -313,6 +317,49 @@ function HomePage() {
         </p>
 
         <NowLine />
+
+        <section aria-labelledby="start-here" className="mt-20 sm:mt-24">
+          <h2
+            className="font-display text-lg font-semibold tracking-tight"
+            id="start-here"
+          >
+            Start here
+          </h2>
+          <div className="mt-6 grid max-w-3xl gap-8 sm:grid-cols-3">
+            <div className="border-t border-border pt-5">
+              <h3 className="font-display text-xl font-semibold tracking-tight">
+                <Link className="link-underline" to="/work">
+                  Work
+                </Link>
+              </h3>
+              <p className="mt-3 leading-7 text-muted-foreground">
+                Roles, documented Proof Points, and how I approach software
+                consulting.
+              </p>
+            </div>
+            <div className="border-t border-border pt-5">
+              <h3 className="font-display text-xl font-semibold tracking-tight">
+                <Link className="link-underline" to="/projects">
+                  Projects
+                </Link>
+              </h3>
+              <p className="mt-3 leading-7 text-muted-foreground">
+                Products, Client Work, and Experiments that have shipped.
+              </p>
+            </div>
+            <div className="border-t border-border pt-5">
+              <h3 className="font-display text-xl font-semibold tracking-tight">
+                <Link className="link-underline" to="/writing">
+                  Writing
+                </Link>
+              </h3>
+              <p className="mt-3 leading-7 text-muted-foreground">
+                Posts on product engineering, practical AI, and building in
+                public.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {updates.length === 0 ? null : (
           <section aria-labelledby="latest" className="mt-20 sm:mt-24">
