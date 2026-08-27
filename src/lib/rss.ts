@@ -1,6 +1,6 @@
 import { absoluteUrl } from "./seo.ts";
 import { siteConfig } from "./site-config.ts";
-import { postPath, writingDescription } from "./writing-schema.ts";
+import { isPost, postPath, writingDescription } from "./writing-schema.ts";
 import type { WritingFrontmatter } from "./writing-schema.ts";
 
 const xmlEscapes = new Map([
@@ -46,11 +46,18 @@ function renderItem(post: WritingFrontmatter): string {
  * rather than reaching for them, so the build can hand it what it read from
  * disk and a test can hand it the run-time index.
  *
+ * Posts only, and the filter lives here rather than at the two call sites so
+ * that no caller can get it wrong. A feed item is a dated announcement, and a
+ * Note is revised rather than superseded: its `pubDate` would claim a moment
+ * the piece does not have, and a revision would either re-announce something
+ * subscribers already read or land silently at the bottom of the feed.
+ *
  * `lastBuildDate` follows the newest Post rather than the clock, which keeps
  * two builds of the same content byte-identical.
  */
-export function renderRssFeed(posts: readonly WritingFrontmatter[]): string {
+export function renderRssFeed(writing: readonly WritingFrontmatter[]): string {
   const feedUrl = absoluteUrl(siteConfig.links.rss);
+  const posts = writing.filter(isPost);
   const [newest] = posts;
 
   return `${[

@@ -1,5 +1,9 @@
 import type { Project, ProjectMilestone } from "./projects.ts";
-import { pillarLabel, postTitleTransitionName } from "./writing-schema.ts";
+import {
+  isPost,
+  pillarLabel,
+  postTitleTransitionName,
+} from "./writing-schema.ts";
 import type { WritingFrontmatter } from "./writing-schema.ts";
 
 /**
@@ -71,13 +75,18 @@ function fromProject(project: ProjectMilestone): Update {
  * Newest first, capped at `maxUpdates`. The title settles same-day ties, so
  * two things that happened on one day always render in the same order rather
  * than in whichever order the sources happened to be passed.
+ *
+ * An Update is a dated thing that happened, so Notes are dropped here whatever
+ * their frontmatter says. A Note carries a `published` date as provenance and
+ * is then revised in place; announcing that date as an event would date the
+ * feed by something no Note surface even prints.
  */
 export function mergeUpdates(
-  posts: readonly WritingFrontmatter[],
+  writing: readonly WritingFrontmatter[],
   projects: readonly Project[]
 ): Update[] {
   return [
-    ...posts.map(fromPost),
+    ...writing.flatMap((entry) => (isPost(entry) ? [fromPost(entry)] : [])),
     ...projects.flatMap((project) =>
       hasMilestone(project) ? [fromProject(project)] : []
     ),

@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
+import type { z } from "zod";
 
 import {
+  compareNotes,
+  isNote,
+  isPost,
   pillarIds,
   pillarLabels,
+  postOgCard,
   writingFrontmatterSchema,
 } from "./writing-schema.ts";
 
@@ -14,12 +19,52 @@ const valid = {
   title: "A real post",
 };
 
+/** Frontmatter as the collection sees it, so `kind` and `draft` are resolved. */
+const entry = (overrides: Partial<z.input<typeof writingFrontmatterSchema>>) =>
+  writingFrontmatterSchema.parse({ ...valid, ...overrides });
+
 describe("writing frontmatter", () => {
   it("defaults kind and draft so most Posts declare neither", () => {
     const parsed = writingFrontmatterSchema.parse(valid);
 
     expect(parsed.kind).toBe("post");
     expect(parsed.draft).toBeFalsy();
+  });
+
+  it("tells the two kinds apart, which is the only thing kind is for", () => {
+    const note = entry({ kind: "note" });
+    const post = entry({});
+
+    expect(isNote(note)).toBeTruthy();
+    expect(isPost(note)).toBeFalsy();
+    expect(isPost(post)).toBeTruthy();
+    expect(isNote(post)).toBeFalsy();
+  });
+
+  // A Note is revised rather than superseded, so it is shelved alphabetically
+  // and its date never orders anything.
+  it("sorts Notes by title, with the slug settling a tie", () => {
+    const notes = [
+      entry({ published: "2020-01-01", slug: "zebra", title: "Zebra" }),
+      entry({ published: "2026-08-25", slug: "second-ant", title: "Ant" }),
+      entry({ published: "2026-08-25", slug: "first-ant", title: "Ant" }),
+    ];
+
+    expect(notes.toSorted(compareNotes).map((note) => note.slug)).toStrictEqual(
+      ["first-ant", "second-ant", "zebra"]
+    );
+  });
+
+  // The card is the page's claim in a smaller frame, so it makes exactly the
+  // claims the page does: a date for a Post, none for a Note.
+  it("puts the date on a Post's card and leaves it off a Note's", () => {
+    expect(postOgCard(entry({})).meta).toStrictEqual([
+      "Practical AI",
+      "August 25, 2026",
+    ]);
+    expect(postOgCard(entry({ kind: "note" })).meta).toStrictEqual([
+      "Practical AI",
+    ]);
   });
 
   it("requires a Pillar, because a piece that fits none does not belong here", () => {
