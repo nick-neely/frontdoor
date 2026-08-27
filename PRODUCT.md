@@ -16,7 +16,7 @@ They arrive with one of two questions: can this person solve my problem, or is t
 
 nickneely.dev is the canonical hub for Nick Neely's personal brand. It consolidates a footprint currently scattered across LinkedIn, X, GitHub, Neely Solutions, and several product domains into one place that search engines and humans converge on.
 
-Success means an engineering leader can find the proof and book a call, a peer can find the writing and subscribe, and neither has to wonder which Nick Neely they found.
+Success means an engineering leader can find the proof and reach out, a peer can find the writing and subscribe, and neither has to wonder which Nick Neely they found. The consulting funnel itself lives at Neely Solutions, where consulting is contracted through Nick's LLC; this site shows the person and routes buyers there (ADR-0004).
 
 ## Positioning
 

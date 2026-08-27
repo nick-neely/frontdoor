@@ -8,6 +8,8 @@ import {
   PopoverDescription,
   PopoverTrigger,
 } from "@/components/ui/popover.tsx";
+import { VendoredMark } from "@/components/vendored-mark.tsx";
+import type { VendoredMarkSource } from "@/components/vendored-mark.tsx";
 import {
   createGraph,
   createSeoHead,
@@ -29,10 +31,7 @@ const description =
  * `dark` is set only where a second file is cut for dark grounds. A mark that
  * carries its own colour ships one file and is served to both themes.
  */
-interface UseLogo {
-  dark?: string;
-  src: string;
-}
+type UseLogo = VendoredMarkSource;
 
 /** One row: the thing, and what it is doing here. */
 interface UseRow {
@@ -589,58 +588,6 @@ const jumpTargets = [
   { href: `#${stackSectionId}`, label: "Default stack" },
 ];
 
-const logoSize = 18;
-const logoClass = "size-[18px] shrink-0 object-contain";
-
-/**
- * The mark, or the space one would occupy.
- *
- * A section that carries any mark reserves the slot on every row in it, so the
- * mono names stay in a single column instead of stepping in and out around the
- * tools that have one. The light/dark pair swaps in CSS on the same `dark:`
- * variant the theme toggle uses, so the server and the first client paint
- * agree and neither theme waits for hydration to show the right file.
- */
-function ToolLogo({ logo }: { logo?: UseLogo }) {
-  if (logo === undefined) {
-    return <span aria-hidden="true" className={logoClass} />;
-  }
-
-  if (logo.dark === undefined) {
-    return (
-      <img
-        alt=""
-        className={logoClass}
-        decoding="async"
-        height={logoSize}
-        src={logo.src}
-        width={logoSize}
-      />
-    );
-  }
-
-  return (
-    <>
-      <img
-        alt=""
-        className={`${logoClass} dark:hidden`}
-        decoding="async"
-        height={logoSize}
-        src={logo.src}
-        width={logoSize}
-      />
-      <img
-        alt=""
-        className={`hidden ${logoClass} dark:block`}
-        decoding="async"
-        height={logoSize}
-        src={logo.dark}
-        width={logoSize}
-      />
-    </>
-  );
-}
-
 export const Route = createFileRoute("/uses")({
   component: UsesPage,
   head: () =>
@@ -721,7 +668,7 @@ function UsesPage() {
                   return (
                     <div className="py-6 first:pt-0 last:pb-0" key={row.item}>
                       <dt className="flex items-center gap-2.5 font-mono text-[13px]">
-                        {hasLogo ? <ToolLogo logo={logo} /> : null}
+                        {hasLogo ? <VendoredMark mark={logo} /> : null}
                         {row.item}
                       </dt>
                       <dd className="mt-2 leading-7 text-muted-foreground">
@@ -861,7 +808,7 @@ function StackName({ item }: { item: StackItem }) {
 
   return (
     <span className="flex items-center gap-2">
-      {logo === undefined ? null : <ToolLogo logo={logo} />}
+      {logo === undefined ? null : <VendoredMark mark={logo} />}
       <StackNameBody item={item} />
       {qualifier === undefined ? null : (
         <span className="text-muted-foreground">{qualifier}</span>
