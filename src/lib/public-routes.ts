@@ -1,6 +1,13 @@
 import type { FileRouteTypes } from "../routeTree.gen.ts";
+import { readProjectPages } from "./projects-source.ts";
+import { projectPath } from "./projects.ts";
+import { postPath } from "./writing-schema.ts";
+import { readPublishedWriting } from "./writing-source.ts";
 
 type RoutePath = FileRouteTypes["fullPaths"];
+
+/** Routes whose path still contains a parameter, such as `/writing/$slug`. */
+type DynamicRoutePath = Extract<RoutePath, `${string}$${string}`>;
 
 /**
  * Every file route, classified once.
@@ -19,10 +26,53 @@ const routeVisibility = {
   // list in the sitemap, or verify with `pnpm seo:verify`.
   "/api/health": "private",
   "/projects": "public",
+  "/projects/$slug": "public",
+  // The confirm landing is the same document, reached with `?token=...`. A
+  // query string does not make a second page, so there is one entry here and
+  // one URL in the sitemap.
+  "/subscribe": "public",
   "/work": "public",
   "/writing": "public",
+  "/writing/$slug": "public",
 } as const satisfies Record<RoutePath, "private" | "public">;
 
+/**
+ * How each dynamic route becomes real paths. The type is exhaustive over
+ * `DynamicRoutePath`, so adding a parameterised route without teaching this map
+ * to expand it fails `pnpm typecheck`.
+ */
+const dynamicRouteExpansions = {
+  // A Project only has a detail page when someone wrote one, so this expands
+  // over `content/projects` rather than over the inventory: the rows without a
+  // page keep linking straight out to the live thing.
+  "/projects/$slug": () =>
+    readProjectPages().map((page) => projectPath(page.slug)),
+  "/writing/$slug": () => readPublishedWriting().map(postPath),
+} as const satisfies Record<DynamicRoutePath, () => string[]>;
+
+const expansions = new Map<string, () => string[]>(
+  Object.entries(dynamicRouteExpansions)
+);
+
+function expand(routePath: string): string[] {
+  const expansion = expansions.get(routePath);
+
+  if (expansion !== undefined) {
+    return expansion();
+  }
+
+  // `vite.config.ts` prerenders with `failOnError: true`, so a literal `$slug`
+  // reaching the prerenderer is a build failure. Refusing here names the cause.
+  if (routePath.includes("$")) {
+    throw new Error(
+      `${routePath} is a public dynamic route with no entry in dynamicRouteExpansions.`
+    );
+  }
+
+  return [routePath];
+}
+
 export const publicPaths = Object.entries(routeVisibility).flatMap(
-  ([routePath, visibility]) => (visibility === "public" ? [routePath] : [])
+  ([routePath, visibility]) =>
+    visibility === "public" ? expand(routePath) : []
 );

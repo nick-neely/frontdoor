@@ -73,6 +73,21 @@ export default defineConfig({
       rules: { "react-doctor/only-export-components": "off" },
     },
     {
+      // An MDX component map is an object of components by definition: it is
+      // what `@mdx-js` accepts. Fast Refresh cannot track it, and prose is not
+      // something anyone edits expecting state to survive.
+      files: ["src/components/mdx-components.tsx"],
+      rules: { "react-doctor/only-export-components": "off" },
+    },
+    {
+      // An email template is not a Fast Refresh surface. It is rendered on a
+      // server and in `pnpm email`, never in the application, and each file
+      // deliberately exports both the component and the sendable form of it so
+      // the two cannot describe different mail.
+      files: ["src/emails/**/*.tsx"],
+      rules: { "react-doctor/only-export-components": "off" },
+    },
+    {
       files: ["scripts/**/*.mjs"],
       rules: { "anti-slop/no-runtime-typeof": "off" },
     },

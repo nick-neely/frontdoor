@@ -1,0 +1,149 @@
+---
+slug: "diffbill"
+dek: "Merged pull requests in, client-ready invoice drafts out: a GitHub-to-Stripe billing pipeline for freelance developers and small dev agencies."
+---
+
+
+## What it is
+
+Freelance developers do the work in GitHub and bill it somewhere else. At the end of the month, you have a page of merged pull requests titled things like `fix: debounce the repo picker` and a blank invoice. You have to remember what each change delivered, decide what the client should pay for, and describe it in language the client can understand. That reconstruction takes time nobody budgeted for, and billable work quietly falls off the invoice.
+
+![diffbill's home page: the headline Your commits. Your invoice. over a dark green field, above a line about turning merged GitHub pull requests into client-ready Stripe drafts.](./01-marketing-product-thesis.png "The whole product in one line: your commits, your invoice.")
+
+diffbill turns that history into a draft invoice. You choose a repository and date range. It reads merged pull requests, commit messages, linked issues, and changed files, then drafts client-facing line items with estimated hours. You edit the wording, include or exclude rows, redact sensitive details, and inspect the files behind each line. Once you approve the result, diffbill creates a draft in your Stripe account for you to send.
+
+<Process label="From merged pull request to Stripe draft">
+  <ProcessStep title="Collect">Read the selected GitHub work and its evidence.</ProcessStep>
+  <ProcessStep title="Translate">Draft client-facing line items and hour estimates.</ProcessStep>
+  <ProcessStep title="Review">Edit, redact, include, exclude, and inspect provenance.</ProcessStep>
+  <ProcessStep title="Create draft">Write the approved invoice to the connected Stripe account.</ProcessStep>
+</Process>
+
+### Review is the boundary
+
+diffbill is for people who ship the work and own the billing: independent freelancers, solo consultants, and small dev agencies. Every generated row lands in a review step. Low-confidence rows start excluded. The final invoice is a Stripe _draft_ in the user's connected account. The user decides what the client sees and sends the invoice from Stripe; diffbill never holds client funds.
+
+![diffbill's recurring planner: a three-step explanation reading choose the scope, draft created automatically, you review and send - drafts only, nothing auto-sends - above one weekly schedule with its next scheduled draft and billing period.](./11-core-recurring-planner.png "Even the scheduled path stops at a draft. A recurring schedule chooses the scope once and still hands the result back for review.")
+
+<Callout>
+  In my own use the whole path - merged pull requests to a Stripe draft - runs
+  about five minutes, against roughly three hours a month I used to lose
+  reconstructing an invoice by hand. These are personal measurements from my
+  billing. Treat them as one person's baseline.
+</Callout>
+
+## How it's built
+
+### Shape and stack
+
+diffbill is a pnpm and Turborepo monorepo with two Next.js App Router applications and seven shared packages. `apps/marketing` is the public site; `apps/core-app` is the Product. The packages are `ui` for the design system, `flags` for Vercel Flags, `urls` for cross-application URLs, `observability`, transactional email, blob storage, and the Remotion composition behind the marketing hero video.
+
+The Product runs Next 16.2.1 on React 19 with TypeScript throughout. It uses Postgres through Drizzle ORM, Redis for rate limiting and caching, Better Auth for identity, and Stripe for subscriptions and connected-account invoices. At the verified commit, the repository contained 73 API routes and 79 test files. Biome handles linting and formatting; Vitest runs the tests.
+
+### From GitHub to evidence
+
+A user connects GitHub through Better Auth OAuth. Selecting a repository and date range queries merged pull requests and applies label-based filters for internal and chore work before drawing the list. Once the user picks the work to bill, diffbill enriches each pull request in parallel with its body, commit count, churn totals, up to thirty first-line commit messages, changed files across up to four pages, and issues referenced by phrases such as `Fixes #123`.
+
+Changed files are scored by churn and category. Product code receives more weight; generated files and lockfiles receive less. The top 200 files become evidence for the translation step.
+
+![diffbill's pull request selection: merged pull requests from a private repository, each with its number, title, author, merge date and size label, one of them selected.](./06-core-private-github-pr-selection.png "Selection reads real merged pull requests from a connected private repository, with internal and chore work filtered out before the list is drawn.")
+
+The model receives metadata, commit messages, filenames, per-file line counts, and short excerpts from changed lines. The GitHub layer calls neither `/contents/` nor `/git/blobs/`, so it fetches no full file contents and never clones the repository.
+
+The pull request body excerpt, commit messages, and diff excerpts pass through the same redactor before persistence. It strips GitHub token prefixes, long hex strings, email addresses, screaming-snake constants, PEM private keys, Stripe live and webhook secrets, and credential-bearing database connection strings. Redacting the whole payload covers secrets in diff hunks as well as descriptions.
+
+<Callout label="Redaction limits">
+  The redactor matches a fixed list of shapes. JWTs, AWS secret access keys,
+  mixed-case high-entropy strings, and any other unmatched shape pass through.
+  Diff excerpts are redacted before the 400-character trim. Pull request body
+  excerpts are trimmed to 240 characters first, leaving a known boundary case
+  when a credential begins near the cut.
+</Callout>
+
+```ts title="apps/core-app/lib/github/translation-context.ts" {3,4}
+function trimPatch(patch: string | undefined, redactSensitive: boolean) {
+  if (!patch) return ''
+  const safePatch = redactSensitive ? redactSensitiveText(patch) : patch
+  return safePatch.replace(/\s+/g, ' ').trim().slice(0, 400)
+}
+```
+
+The shaped source is persisted as JSONB on the invoice source and line items: body excerpt, labels, commit summaries, and per-file evidence with each trimmed change excerpt. The anonymous client portal renders that evidence behind each billed row, so the person paying can inspect the files that support it. The provenance survives generation and remains attached to the invoice.
+
+![diffbill's invoice items step: four editable line items with hours, rate and amount, each linked to the pull request it came from and to an expandable list of the evidence files behind it, one row showing two changed files with their added and removed line counts.](./09-core-evidence-provenance.png "Every billed row expands into the files it was derived from. The same evidence is what the client sees in the portal.")
+
+Every business table keys off one `userId`; there is no organization or workspace layer. Better Auth encrypts GitHub tokens at rest.
+
+### From evidence to invoice lines
+
+The translation pipeline streams NDJSON to the browser, so rows appear as they are generated. It processes each source separately with bounded concurrency.
+
+Every model call goes through the Vercel AI Gateway via the AI SDK's `createGateway`, which is the Product's provider interface. A routing function maps the user's plan and requested quality mode to a primary model, an ordered fallback list, and a reasoning-effort level. Starter uses a small model at minimal reasoning effort; Pro steps up; Team and escalated requests use the largest configured model at medium effort. Environment variables hold every model ID. A configuration change selects a new model.
+
+Generation uses `streamObject` against named Zod schemas. A segmentation pass splits each source into candidate line items, then a realization pass writes the client-facing wording. Before both passes, a quota function reads the changed-file count, changed-line count, and meaningful directory clusters. It derives minimum, target, and maximum row counts for the prompt, anchoring the number of line items to measured churn.
+
+The system prompt contains twenty numbered grounding rules. They restrict the model to supplied fields, ask for delivered outcomes in client language, ban filenames and internal development terms, require quarter-hour increments, keep rows distinct, and classify each row as internal, chore, documentation, sensitive, or billable. Prompts resolve at request time from PostHog's managed store and stay cached for ten minutes. In-repository builders provide the fallback; a missing managed prompt logs a warning and analytics event while generation continues with that default.
+
+### Quality gates after generation
+
+Generated output passes a deterministic quality gate that scores duplicate descriptions, low-confidence rows, and known filler phrases. On paid plans, failures trigger a retry with repair instructions that name the defect and compact the context. The final retry escalates to the larger model. If a source still yields nothing, code derives a conservative row from churn, marks it low confidence, and excludes it by default.
+
+Code also decides inclusion. Low-confidence and `sensitive` rows stay excluded. The user's settings and label configuration decide whether internal, chore, and documentation rows are included.
+
+![diffbill's review step before an invoice is created: an AI-filtered banner counting one documentation and two internal rows excluded, an editable invoice title, and a table of line items with per-row include toggles, hours, rate, confidence and the pull request each row came from, one row expandable into four evidence files.](./07-core-ai-translation-review.png "Step 4 of 4, where a person decides. Confidence, exclusions, editable wording and the evidence behind each row are all on one screen before anything becomes an invoice.")
+
+The evidence trail has its own gate. The model returns filenames it claims support each row. A resolver tokenizes the description and filename, re-scores the claim against actual changed files, weights by churn and category, and drops files without a match. Model output cannot attach an invented citation to a line item.
+
+```ts title="apps/core-app/lib/ai/evidence-resolver.ts" {3,10}
+  const requestedRanked = requestedFileNames
+    .map((name) => scoredByFilename.get(name))
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .filter(
+      (entry, index, entries) =>
+        entries.findIndex((candidate) => candidate.file.filename === entry.file.filename) === index,
+    )
+    .filter(
+      (entry) =>
+        requested.has(normalizeFilename(entry.file.filename)) && entry.directMatchScore > 0,
+    )
+    .slice(0, maxFiles)
+    .map((entry) => entry.file)
+```
+
+Each model call reports its route, operation, plan, model tier, quality mode, and prompt name to PostHog. Token usage is converted to a dollar estimate using a gateway pricing catalog cached for one day, with a hardcoded fallback table. Stripe meters paid usage; an AI-credit system tracks grants, consumption allocations, and optional auto-replenishment.
+
+### A Stripe draft, ready for a person
+
+Stripe Connect creates the draft in the user's connected account. The user keeps control of delivery and payment, and diffbill stays outside the payment path.
+
+![diffbill's finalize step: a final send preview naming the recipient, the billing email and a 350 dollar total over six included line items, a ready check listing client review, delivery and Stripe preview, a checklist reading Stripe connected, all edits saved, billing email set and six line items included, and a collapsed panel offering to open the Stripe draft.](./10-core-stripe-finalization.png "The last screen before sending, and it still stops at a draft in the user's own Stripe account.")
+
+## Decisions worth defending
+
+### Model routing stays configurable
+
+Every call goes through the Vercel AI Gateway, with model IDs resolved by plan and quality tier. Each route has an ordered fallback list and environment override. The indirection supports inexpensive models on the free tier, provider failover, and model changes through configuration.
+
+### Code decides what reaches review
+
+An invoice is a document a client reads and pays against, so a single generation never has the final word. Pure TypeScript functions score output, direct retries, create conservative fallback rows, and decide inclusion. Unit tests cover those functions as the rules evolve.
+
+### Citations are checked against changed files
+
+The client portal renders source-linked evidence to the person paying the invoice. A resolver independently ranks changed files against each line-item description and discards any model-supplied filename without a genuine match. This small deterministic check blocks fabricated citations from reaching the client.
+
+### Managed prompts keep a working local default
+
+Prompt wording changes frequently, so prompts resolve from PostHog at request time and stay cached for ten minutes. The builder functions remain in the repository as a working default. A cache miss logs and emits an analytics event, then the request continues with the local prompt.
+
+### Database and payment boundaries reinforce ownership
+
+Every authenticated query runs in a transaction that sets `app.current_user_id`, and row-level security policies key off that value. A query that omits its user filter returns zero rows. The anonymous client portal receives a separate context keyed to a hashed token. Stripe Connect creates invoices in the user's account, so diffbill holds no client funds.
+
+### Private repository access is requested when needed
+
+The default OAuth scopes are `read:user` and `user:email`, which cover public repositories. Private repositories require GitHub's broader classic `repo` scope. diffbill reads the granted scopes from GitHub's response headers and offers reauthorization on the repositories page and in the new-invoice flow. People who bill public work never see that prompt.
+
+The classic `repo` scope permits reads and writes. diffbill imposes its own stricter boundary: its GitHub layer contains no write call to a repository endpoint.
+
+![diffbill's repositories page: a connected-repos meter reading four of twenty-five, a toggle for including private repositories, and four connected repositories each marked Private with a Disconnect control.](./12-core-connected-private-repositories.png "The user requests private-repository access by turning on this toggle.")

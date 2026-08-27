@@ -15,3 +15,7 @@ Writing is authored as MDX in the repository. `@mdx-js/rollup` compiles each fil
 Publishing is a deploy. That is accepted, not tolerated.
 
 The prerender inventory in `src/lib/public-routes.ts` is exhaustive over route paths, so a dynamic route appears as the literal `/writing/$slug` and must be expanded into real paths before `vite.config.ts` hands `pages` to the prerenderer with `failOnError: true`. That expansion reads frontmatter directly rather than importing the generated content-collections index, so build ordering between the two plugins can never affect it.
+
+Everything else `vite.config.ts` needs about writing reads the same way, through `src/lib/writing-source.ts`: the feed and the generated social cards. Beyond build ordering there is a second reason, found the hard way. Anything the Vite config imports becomes a config dependency, and Vite restarts the dev server whenever one changes; the content-collections plugin rewrites its index on every start, so importing that index from the config is an endless restart loop.
+
+So there are two readers of the same content: `writing-source.ts` for the build and `src/lib/writing.ts` for the pages. They share `src/lib/writing-schema.ts`, which owns the frontmatter contract and everything derived from it, and a test asserts the two produce the same entries in the same order.

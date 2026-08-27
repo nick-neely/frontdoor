@@ -8,11 +8,13 @@ import {
 } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { Analytics } from "@vercel/analytics/react";
 
 import { ErrorFallback } from "@/components/error-fallback.tsx";
 import { SiteFooter } from "@/components/site-footer.tsx";
 import { SiteHeader } from "@/components/site-header.tsx";
 import { siteConfig } from "@/lib/site-config.ts";
+import { themeScript } from "@/lib/theme.ts";
 
 import appCss from "../styles.css?url";
 
@@ -35,14 +37,24 @@ export const Route = createRootRoute({
     ],
   }),
   notFoundComponent: () => (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-start gap-4 px-5 py-24 sm:px-8">
-      <p className="text-sm font-medium text-muted-foreground">404</p>
-      <h1 className="text-4xl font-semibold tracking-tight">Page not found</h1>
-      <p className="max-w-xl text-muted-foreground">
+    <main
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-start gap-6 px-5 py-24 sm:px-8"
+      id="main-content"
+    >
+      <p className="font-mono text-[13px] tracking-[0.18em] text-muted-foreground uppercase">
+        404
+      </p>
+      <h1 className="font-display text-5xl font-semibold tracking-[-0.035em] sm:text-6xl">
+        Wrong door.
+      </h1>
+      <p className="max-w-xl text-lg leading-8 text-muted-foreground">
         That page does not exist here.
       </p>
-      <Link className="text-sm font-medium underline underline-offset-4" to="/">
-        Return home
+      <Link
+        className="link-underline link-underline-resting font-mono text-[13px] text-foreground"
+        to="/"
+      >
+        Back through the front door
       </Link>
     </main>
   ),
@@ -65,9 +77,18 @@ function RootErrorComponent({ error }: ErrorComponentProps) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={siteConfig.language}>
+    // The server renders the dark default; `themeScript` swaps the class before
+    // first paint for a reader who chose light, which React cannot match.
+    <html className="dark" lang={siteConfig.language} suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          // A blocking inline script is the only way to set the theme before
+          // first paint, and `themeScript` is a build-time constant with no
+          // reader input in it.
+          // oxlint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
       </head>
       <body>
         <a
@@ -92,6 +113,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             ]}
           />
         ) : null}
+        <Analytics />
         <Scripts />
       </body>
     </html>

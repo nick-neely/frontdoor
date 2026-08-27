@@ -39,8 +39,7 @@ export function ErrorFallback({
           This page couldn&apos;t finish loading.
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-8 text-muted-foreground">
-          Try again. If the problem continues, return to the home page and start
-          from there.
+          Something broke on the way here, and it wasn&apos;t you.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={onRetry} size="lg">

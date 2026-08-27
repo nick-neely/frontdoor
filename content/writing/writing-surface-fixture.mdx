@@ -1,0 +1,213 @@
+---
+title: "Writing surface fixture"
+slug: "writing-surface-fixture"
+description: "A permanent draft that exercises every part of the writing surface: images, code block chrome, callouts, process diagrams, disclosures, heading anchors, keys, wide tables, and footnotes."
+published: "2026-08-25"
+pillar: "product-engineering"
+tags: ["fixture"]
+draft: true
+---
+
+{/* FIXTURE, NOT WRITING. This file is kept deliberately and is never published: `draft: true` keeps it out of the list, the sitemap, the feed, the prerender inventory, and the build output. It exists so that every feature of the writing surface has one place that renders it, and so a regression in any of them is visible by opening one page. Add to it when the surface grows; do not remove it. Its prose is instructions, not voice. */}
+
+This page renders every affordance the writing surface offers. Read it in both
+themes and at 390px wide. Nothing here is a claim about anything.
+
+## Images
+
+An image is written the way Markdown has always written one. Assets live beside
+the Post in `content/writing/writing-surface-fixture/`, and a relative path is
+resolved against that directory, so the prose never repeats the slug.
+
+![A dark panel with amber bars of varying height](./pipeline.png "Every referenced image is resized, re-encoded, hashed, and measured during the build.")
+
+The Markdown title slot is the caption. An image without one stays a bare
+picture, with no empty rule under it:
+
+![A light panel with amber bars of varying height](./measure.png)
+
+An image can also sit inside a sentence, like this ![a small amber glyph](./glyph.png) one.
+It is placed inline at its intrinsic size and carries no caption even if a title
+is written, because a `<figure>` inside a paragraph is not valid markup.
+
+Both forms carry intrinsic `width` and `height`, so nothing on the page moves
+when a picture arrives. The first picture in a Post loads eagerly; every one
+after it loads lazily.
+
+## Code blocks
+
+There is exactly one fence-meta vocabulary. `title="..."` names the file and
+draws a mono bar above the block. A brace list highlights lines, and `{2,5-7}`
+is the only syntax for that: no comment annotations, no second spelling.
+
+````md
+```ts title="src/lib/example.ts" {2,5-7}
+```
+````
+
+Which renders as:
+
+```ts title="src/lib/example.ts" {2,5-7}
+export function pillarLabel(post: WritingFrontmatter): string {
+  return pillarLabels[post.pillar];
+}
+
+export function formatPostDate(date: string): string {
+  return dateFormatter.format(new Date(`${date}T00:00:00Z`));
+}
+```
+
+Either half works alone. A title with no highlighting:
+
+```json title="package.json"
+{
+  "scripts": {
+    "validate": "pnpm check && pnpm typecheck && pnpm test && pnpm build"
+  }
+}
+```
+
+Highlighting with no title, on a single line and a range:
+
+```bash {1,3-4}
+pnpm content
+pnpm dev
+pnpm build
+pnpm seo:verify
+```
+
+And a fence with no meta at all, which is still highlighted and still copyable:
+
+```tsx
+const bodies = import.meta.glob<{ default: MDXContent }>(
+  "/content/writing/*.mdx",
+  { eager: true }
+);
+```
+
+Every block carries a copy control at its top right. It appears only after
+hydration, because a prerendered page has no JavaScript behind it and a control
+that does nothing is worse than no control. Clicking it confirms with a brief
+"Copied", which is the one thing on this site that motion is allowed to do.
+
+Inline `code` is unchanged, and so is a `--flag` in the middle of a sentence.
+
+## Callouts
+
+There is one callout style, and it has no severity, no icon, and no colour
+variant.
+
+<Callout label="Note">
+  A callout is an aside. It holds a paragraph or two of prose that sits beside
+  the argument rather than inside it.
+
+  It can hold more than one paragraph, and lists, and `code`.
+</Callout>
+
+The label is optional:
+
+<Callout>
+  Without a label a callout is a quiet box. Reach for it when the aside needs no
+  announcing.
+</Callout>
+
+## Disclosures
+
+A long aside goes in a native `<details>`, which the reader opens. The indicator
+rotates in 120ms because the reader clicked it, and swaps instantly under
+reduced motion.
+
+<details>
+  <summary>Why the disclosure is native</summary>
+
+  Because it works before JavaScript arrives, it is keyboard-operable without
+  anyone writing key handlers, and the browser already tells assistive
+  technology what it is. A rebuilt one would be three of those things at best.
+
+  The body is indented to the same rail as a list, so an open aside reads as
+  subordinate to the paragraph above it.
+</details>
+
+## Process diagrams
+
+A short workflow stays an ordered list in the document. At wider measures it
+becomes a divided row, while narrow screens keep the linear reading order.
+
+<Process label="From source file to published Post">
+  <ProcessStep title="Author">Write the Post as MDX.</ProcessStep>
+  <ProcessStep title="Compile">Build the content collection.</ProcessStep>
+  <ProcessStep title="Verify">Inspect the rendered HTML.</ProcessStep>
+  <ProcessStep title="Publish">Deploy the verified output.</ProcessStep>
+</Process>
+
+## Headings and anchors
+
+Every `h2` and `h3` carries a stable id and an anchor affordance that appears on
+hover or keyboard focus. It holds its space at all times, so revealing it never
+moves a word.
+
+### A third-level heading
+
+This one exists so the anchor affordance can be checked at both levels.
+
+## Keys
+
+Press <kbd>Cmd</kbd> <kbd>K</kbd> to open the palette, or <kbd>Esc</kbd> to
+close it. A paragraph full of keys keeps the same line rhythm as one with none:
+this sentence has no keys in it at all, and the two should sit on the same
+baseline grid.
+
+## Tables
+
+A table wider than the measure scrolls inside its own box. The page never
+scrolls sideways.
+
+| Stage | Command | Reads | Writes | Fails on | Typical | Owner |
+| --- | --- | --- | --- | --- | --- | --- |
+| Index | `pnpm content` | `content/writing` | `.content-collections` | Bad frontmatter | 0.3s | content-collections |
+| Lint | `pnpm check` | Everything | Nothing | Any rule | 1.4s | Ultracite |
+| Types | `pnpm typecheck` | Everything | Nothing | Any error | 1.1s | TypeScript |
+| Tests | `pnpm test` | `src/**` | Nothing | Any failure | 0.9s | Vitest |
+| Build | `pnpm build` | Everything | `.output` | Any error | 2.2s | Nitro |
+| Verify | `pnpm seo:verify` | `.output/public` | Nothing | Missing metadata | 0.2s | Node |
+
+A narrow table should not be stretched or scrolled:
+
+| Token | Use |
+| --- | --- |
+| `--signal` | Amber |
+| `--card` | Elevation |
+
+## Footnotes
+
+A reference mark sits above the line without changing its rhythm[^one], and a
+second one proves the numbering[^two]. The section below is separated by a rule
+and set one step smaller, and the return arrow goes back to the mark.
+
+[^one]: The first note. It is a paragraph, so it can be as long as it needs to
+    be, and it can contain [a link](https://nickneely.dev) and `code`.
+
+[^two]: The second note, deliberately short.
+
+## Everything else
+
+A blockquote:
+
+> Motion only ever confirms an action the reader took. Nothing moves because it
+> scrolled into view.
+
+An unordered list:
+
+- A first item
+- A second item, with [a prose link](https://nickneely.dev) in it
+- A third item
+
+An ordered list:
+
+1. Read the file
+2. Change the file
+3. Run `pnpm validate`
+
+And a horizontal rule, which ends the fixture.
+
+---
