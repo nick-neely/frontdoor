@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
 
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
@@ -7,6 +8,7 @@ import type { SatoriOptions } from "satori";
 import { ogCardSize } from "./og-card-layout.ts";
 import type { OgCardContent } from "./og-card-layout.ts";
 import { OgCard } from "./og-card.tsx";
+import { siteConfig } from "./site-config.ts";
 
 function fontFile(name: string): Buffer {
   return readFileSync(new URL(`../../assets/fonts/${name}`, import.meta.url));
@@ -34,9 +36,13 @@ const fonts: SatoriOptions["fonts"] = [
 
 /** Renders one social card to PNG bytes. Build time only. */
 export async function renderOgImage(
-  content: OgCardContent
+  content: OgCardContent,
+  publicDirectory: string
 ): Promise<Uint8Array> {
-  const svg = await satori(OgCard(content), {
+  const siteMark = `data:image/png;base64,${readFileSync(
+    path.join(publicDirectory, siteConfig.icon.manifest[0].path)
+  ).toString("base64")}`;
+  const svg = await satori(OgCard({ ...content, siteMark }), {
     fonts,
     height: ogCardSize.height,
     width: ogCardSize.width,

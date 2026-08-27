@@ -39,13 +39,14 @@ interface GeneratedCard {
 /** Renders one card on demand in development, where no bundle is emitted. */
 async function serveOgImage(
   card: GeneratedCard,
+  publicDirectory: string,
   response: ServerResponse,
   next: Connect.NextFunction
 ): Promise<void> {
   let png: Uint8Array;
 
   try {
-    png = await renderOgImage(card.content);
+    png = await renderOgImage(card.content, publicDirectory);
   } catch (error) {
     next(error);
     return;
@@ -145,7 +146,12 @@ function generatedCards(): GeneratedCard[] {
  * middleware has to beat the application's catch-all handler.
  */
 function contentArtifacts(): Plugin {
+  let publicDirectory = "";
+
   return {
+    configResolved(config) {
+      publicDirectory = config.publicDir;
+    },
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
         const name = request.url?.split("?")[0]?.replace(/^\//u, "") ?? "";
@@ -168,7 +174,7 @@ function contentArtifacts(): Plugin {
           return;
         }
 
-        void serveOgImage(card, response, next);
+        void serveOgImage(card, publicDirectory, response, next);
       });
     },
     enforce: "pre",
@@ -186,7 +192,7 @@ function contentArtifacts(): Plugin {
       const rendered = await Promise.all(
         generatedCards().map(async (card) => ({
           fileName: card.fileName,
-          source: await renderOgImage(card.content),
+          source: await renderOgImage(card.content, publicDirectory),
         }))
       );
 

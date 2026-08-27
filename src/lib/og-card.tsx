@@ -1,11 +1,7 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-
 import type { ReactElement } from "react";
 
 import { fitTitle, ogCardSize } from "./og-card-layout.ts";
 import type { OgCardContent } from "./og-card-layout.ts";
-import { siteConfig } from "./site-config.ts";
 
 /**
  * The card's own palette. It is deliberately literal rather than tokenised:
@@ -21,12 +17,11 @@ const ink = {
   text: "#f4f1ed",
 } as const;
 
-/** The dark-ground production mark, embedded because Satori needs a data URI. */
-const siteMark = `data:image/png;base64,${readFileSync(
-  path.join(process.cwd(), "public", siteConfig.icon.manifest[0].path)
-).toString("base64")}`;
+interface OgCardProps extends OgCardContent {
+  siteMark: string;
+}
 
-export function OgCard({ meta, title }: OgCardContent): ReactElement {
+export function OgCard({ meta, siteMark, title }: OgCardProps): ReactElement {
   const { fontSize, lines } = fitTitle(title);
 
   return (
