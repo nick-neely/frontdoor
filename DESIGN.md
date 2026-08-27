@@ -29,6 +29,7 @@ That single rule is the line between intriguing and generic. Sites that animate 
 - The hero cursor blink, about 1.06s, an actual terminal cadence rather than a CSS default.
 - The front-door cursor opening and closing, strictly reader-triggered: a hover crack of about 120ms and a click swing that reveals the doorway. Under reduced motion the open state swaps in instantly with no transition, and the hover crack does not run at all.
 - The portal dither inside the opened door: an ambient amber-on-dark dither swirl that exists only after the reader opens the door, in the doorway's small area, on the blink's precedent of sanctioned ambient motion. Its code loads only on first open, and under reduced motion the dither renders static.
+- Portal traversal after the reader activates its link: the doorway becomes an event horizon at the click point, amber energy expands through the viewport, and a dark core overtakes it before navigation. This is the one deliberately intricate transition on the site, lasts under 800ms, and exists because the reader explicitly chose to go through the door. Modified clicks keep their native behavior, and reduced motion navigates immediately without the transition.
 - Route-change view transitions, about 150ms, with a shared-element transition on a post title. This is the one place motion explains where the page went.
 - `focus-visible` rings.
 - One state transition on newsletter subscribe success.

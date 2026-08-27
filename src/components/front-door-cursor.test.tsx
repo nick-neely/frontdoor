@@ -2,7 +2,7 @@
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { FrontDoorCursor } from "./front-door-cursor.tsx";
 
@@ -21,7 +21,10 @@ const captionText = "View the source.";
  */
 
 describe(FrontDoorCursor, () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
   it("renders shut, with nothing behind the door to find", () => {
     render(<FrontDoorCursor />);
@@ -67,6 +70,93 @@ describe(FrontDoorCursor, () => {
     // Same tab keeps the portal feeling like a doorway rather than a launcher.
     expect(portal.getAttribute("rel")).toBe("noreferrer");
     expect(portal.getAttribute("target")).toBeNull();
+  });
+
+  it("turns an unmodified portal click into a transition from its bounds", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: false }))
+    );
+    render(<FrontDoorCursor />);
+
+    fireEvent.click(screen.getByRole("button", { name: openName }));
+    const portal = screen.getByRole("link", { name: portalName });
+
+    Object.defineProperty(portal, "getBoundingClientRect", {
+      value: () => ({
+        bottom: 260,
+        height: 160,
+        left: 980,
+        right: 1080,
+        top: 100,
+        width: 100,
+        x: 980,
+        y: 100,
+      }),
+    });
+
+    fireEvent.click(portal);
+
+    const transit = document.body.querySelector<HTMLElement>(
+      ".front-door-transit"
+    );
+    expect(transit).not.toBeNull();
+    expect({
+      hidden: transit?.getAttribute("aria-hidden"),
+      x: transit?.style.getPropertyValue("--front-door-transit-x"),
+      y: transit?.style.getPropertyValue("--front-door-transit-y"),
+    }).toStrictEqual({ hidden: "true", x: "1030.00px", y: "180.00px" });
+    expect(
+      Array.from(transit?.children ?? [], (child) => child.className)
+    ).toStrictEqual([
+      "front-door-transit-field",
+      "front-door-transit-energy",
+      "front-door-transit-core",
+    ]);
+  });
+
+  it("keeps portal navigation immediate under reduced motion", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: true }))
+    );
+    render(<FrontDoorCursor />);
+
+    fireEvent.click(screen.getByRole("button", { name: openName }));
+    const portal = screen.getByRole("link", { name: portalName });
+
+    // JSDOM cannot follow an external URL. Prevent only its native default so
+    // this test can prove the React handler leaves reduced-motion clicks alone.
+    portal.addEventListener(
+      "click",
+      (event) => {
+        event.preventDefault();
+      },
+      {
+        once: true,
+      }
+    );
+    fireEvent.click(portal);
+
+    expect(document.body.querySelector(".front-door-transit")).toBeNull();
+  });
+
+  it("clears a completed transit when browser history restores the page", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: false }))
+    );
+    render(<FrontDoorCursor />);
+
+    fireEvent.click(screen.getByRole("button", { name: openName }));
+    fireEvent.click(screen.getByRole("link", { name: portalName }));
+    expect(document.body.querySelector(".front-door-transit")).not.toBeNull();
+
+    const restored = new Event("pageshow");
+    Object.defineProperty(restored, "persisted", { value: true });
+    fireEvent(window, restored);
+
+    expect(document.body.querySelector(".front-door-transit")).toBeNull();
   });
 
   it("takes the door's own footprint and stands behind the leaf", () => {

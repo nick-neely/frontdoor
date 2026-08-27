@@ -775,6 +775,160 @@
   }
 
   /*
+   * Going through the door. The overlay is portalled to `body`, so no
+   * parallax transform can turn its fixed viewport into a local containing
+   * block. Its geometry comes from the clicked aperture: the effect grows
+   * from the exact place the reader chose rather than from the middle of the
+   * screen like a generic page transition.
+   *
+   * The field establishes the portal's dark room, the energy layer enlarges
+   * the doorway's Paper dither, and the dark core catches and overtakes both.
+   * Three pieces, one material idea: an event horizon.
+   */
+  .front-door-transit {
+    --front-door-transit-void: oklch(0.26 0.014 70);
+    contain: strict;
+    inset: 0;
+    isolation: isolate;
+    overflow: hidden;
+    pointer-events: auto;
+    position: fixed;
+    z-index: 100;
+  }
+
+  .dark .front-door-transit {
+    --front-door-transit-void: oklch(0.035 0.004 75);
+  }
+
+  .front-door-transit-field,
+  .front-door-transit-energy,
+  .front-door-transit-core {
+    display: block;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .front-door-transit-field {
+    background-color: var(--front-door-transit-void);
+    clip-path: circle(
+      var(--front-door-transit-radius) at var(--front-door-transit-x)
+        var(--front-door-transit-y)
+    );
+    inset: 0;
+    z-index: 0;
+  }
+
+  .front-door-transit-energy,
+  .front-door-transit-core {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    height: calc(var(--front-door-transit-radius) * 2);
+    inset-block-start: var(--front-door-transit-y);
+    inset-inline-start: var(--front-door-transit-x);
+    translate: -50% -50%;
+    width: calc(var(--front-door-transit-radius) * 2);
+  }
+
+  .front-door-transit-energy {
+    box-shadow: inset 0 0 5rem var(--front-door-transit-void);
+    opacity: 0;
+    overflow: hidden;
+    scale: 1.02;
+    z-index: 1;
+  }
+
+  /* The doorway's Paper dither, now filling the event-horizon disc. */
+  .front-door-transit-shader {
+    height: 100%;
+    width: 100%;
+  }
+
+  .front-door-transit-core {
+    background-color: var(--front-door-transit-void);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--signal) 92%, transparent),
+      0 0 4rem color-mix(in oklab, var(--signal) 48%, transparent);
+    scale: 1.03;
+    z-index: 2;
+  }
+
+  @keyframes front-door-transit-lifetime {
+    from {
+      opacity: 0.999;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes front-door-transit-reveal {
+    from {
+      clip-path: circle(
+        0 at var(--front-door-transit-x) var(--front-door-transit-y)
+      );
+    }
+    to {
+      clip-path: circle(
+        var(--front-door-transit-radius) at var(--front-door-transit-x)
+          var(--front-door-transit-y)
+      );
+    }
+  }
+
+  @keyframes front-door-transit-energy {
+    0% {
+      opacity: 0;
+      rotate: 0deg;
+      scale: var(--front-door-transit-start-scale);
+    }
+    14% {
+      opacity: 1;
+    }
+    72% {
+      opacity: 0.92;
+    }
+    100% {
+      opacity: 0;
+      rotate: 105deg;
+      scale: 1.02;
+    }
+  }
+
+  @keyframes front-door-transit-core {
+    0%,
+    18% {
+      scale: calc(var(--front-door-transit-start-scale) * 0.34);
+    }
+    44% {
+      scale: calc(var(--front-door-transit-start-scale) * 0.72);
+    }
+    100% {
+      scale: 1.03;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .front-door-transit {
+      animation: front-door-transit-lifetime 760ms linear both;
+    }
+
+    .front-door-transit-field {
+      animation: front-door-transit-reveal 720ms cubic-bezier(0.16, 1, 0.3, 1)
+        both;
+    }
+
+    .front-door-transit-energy {
+      animation: front-door-transit-energy 720ms cubic-bezier(0.16, 1, 0.3, 1)
+        both;
+    }
+
+    .front-door-transit-core {
+      animation: front-door-transit-core 760ms cubic-bezier(0.7, 0, 0.84, 0)
+        both;
+    }
+  }
+
+  /*
    * The caption names the destination while the reader is pointing at the
    * portal. The open leaf swings towards the reader and overhangs the closed
    * footprint, so the caption's offset scales with the poster type and stays

@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import type { ComponentType } from "react";
+import type {
+  AnimationEvent as ReactAnimationEvent,
+  ComponentType,
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+} from "react";
+import { createPortal } from "react-dom";
 
+import type { FrontDoorPortalProps } from "@/components/front-door-portal.tsx";
 import { siteConfig } from "@/lib/site-config.ts";
 import { cn } from "@/lib/utils.ts";
 
@@ -27,8 +34,65 @@ const portalId = "front-door-portal";
 const portalName =
   "View the source of nickneely.dev in the frontdoor repository on GitHub";
 
+const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
+
+interface PortalTransit {
+  destination: string;
+  shaderOffsetX: number;
+  shaderOffsetY: number;
+  style: CSSProperties & {
+    "--front-door-transit-radius": string;
+    "--front-door-transit-start-scale": number;
+    "--front-door-transit-x": string;
+    "--front-door-transit-y": string;
+  };
+}
+
+function canAnimatePortalClick(
+  event: ReactMouseEvent<HTMLAnchorElement>
+): boolean {
+  const modified =
+    event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+
+  return (
+    event.button === 0 &&
+    !modified &&
+    !window.matchMedia(reducedMotionQuery).matches
+  );
+}
+
+function portalTransitFrom(
+  portal: HTMLAnchorElement,
+  destination: string
+): PortalTransit {
+  const bounds = portal.getBoundingClientRect();
+  const x = bounds.left + bounds.width / 2;
+  const y = bounds.top + bounds.height / 2;
+  const radius =
+    Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    ) * 1.04;
+  const portalRadius = Math.max(bounds.width, bounds.height) / 2;
+
+  return {
+    destination,
+    // Paper's object UV uses half-width coordinates around the viewport
+    // centre. Matching that system puts the shader's swirl under the doorway
+    // rather than under the screen's generic midpoint.
+    shaderOffsetX: x / window.innerWidth - 0.5,
+    shaderOffsetY: y / window.innerHeight - 0.5,
+    style: {
+      "--front-door-transit-radius": `${radius.toFixed(2)}px`,
+      "--front-door-transit-start-scale": portalRadius / radius,
+      "--front-door-transit-x": `${x.toFixed(2)}px`,
+      "--front-door-transit-y": `${y.toFixed(2)}px`,
+    },
+  };
+}
+
 /** The shader lives behind a dynamic import and takes no props. */
-type PortalComponent = ComponentType;
+type PortalComponent = ComponentType<FrontDoorPortalProps>;
 
 /**
  * One in-flight import per document, kept at module scope so closing the door
@@ -97,8 +161,30 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
   const [open, setOpen] = useState(false);
   // Null until the chunk lands, which is what the plain dark doorway is for.
   const [portal, setPortal] = useState<PortalComponent | null>(null);
+  const [transit, setTransit] = useState<PortalTransit | null>(null);
   const rootRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const navigationStartedRef = useRef(false);
+
+  useEffect(() => {
+    function clearRestoredTransit(event: PageTransitionEvent) {
+      if (!event.persisted) {
+        return;
+      }
+
+      // Back/forward cache revives the exact React tree that navigated away,
+      // including the completed black overlay. Remove it as the page becomes
+      // visible again so browser Back returns to the homepage beneath it.
+      navigationStartedRef.current = false;
+      setTransit(null);
+    }
+
+    window.addEventListener("pageshow", clearRestoredTransit);
+
+    return () => {
+      window.removeEventListener("pageshow", clearRestoredTransit);
+    };
+  }, []);
 
   useEffect(() => {
     function closeOnEscape(event: KeyboardEvent) {
@@ -125,6 +211,28 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);
+
+  useEffect(() => {
+    let fallback: number | undefined;
+
+    if (transit !== null) {
+      // `animationend` is the normal handoff. This fallback keeps navigation
+      // functional if the browser drops the animation after it has begun (for
+      // example, when the motion preference changes during the transition).
+      fallback = window.setTimeout(() => {
+        if (!navigationStartedRef.current) {
+          navigationStartedRef.current = true;
+          window.location.assign(transit.destination);
+        }
+      }, 900);
+    }
+
+    return () => {
+      if (fallback !== undefined) {
+        window.clearTimeout(fallback);
+      }
+    };
+  }, [transit]);
 
   useEffect(() => {
     let live = true;
@@ -203,10 +311,21 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
         of its own doorway.
       */}
       {open ? (
+        // oxlint-disable-next-line react-doctor/no-prevent-default -- the same link is followed after the bounded traversal animation
         <a
           className="front-door-portal"
           href={siteConfig.links.source}
           id={portalId}
+          onClick={(event) => {
+            if (!canAnimatePortalClick(event)) {
+              return;
+            }
+            event.preventDefault();
+            navigationStartedRef.current = false;
+            setTransit(
+              portalTransitFrom(event.currentTarget, event.currentTarget.href)
+            );
+          }}
           rel="noreferrer"
         >
           {Portal === null ? null : <Portal />}
@@ -234,6 +353,37 @@ export function FrontDoorCursor({ className }: FrontDoorCursorProps) {
           </span>
         </span>
       ) : null}
+      {transit === null
+        ? null
+        : createPortal(
+            <span
+              aria-hidden="true"
+              className="front-door-transit"
+              onAnimationEnd={(event: ReactAnimationEvent<HTMLSpanElement>) => {
+                if (
+                  event.currentTarget === event.target &&
+                  !navigationStartedRef.current
+                ) {
+                  navigationStartedRef.current = true;
+                  window.location.assign(transit.destination);
+                }
+              }}
+              style={transit.style}
+            >
+              <span className="front-door-transit-field" />
+              <span className="front-door-transit-energy">
+                {Portal === null ? null : (
+                  <Portal
+                    mode="transit"
+                    offsetX={transit.shaderOffsetX}
+                    offsetY={transit.shaderOffsetY}
+                  />
+                )}
+              </span>
+              <span className="front-door-transit-core" />
+            </span>,
+            document.body
+          )}
     </span>
   );
 }

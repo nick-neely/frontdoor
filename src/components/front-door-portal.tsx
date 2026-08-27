@@ -25,12 +25,18 @@ const stillPreference = "(prefers-reduced-motion: reduce)";
  */
 const swirlSpeed = 0.24;
 
+/** The traversal is brief and consequential, so the same swirl moves faster. */
+const transitSpeed = 0.72;
+
 /**
  * The dither grid, in device pixels. Paper's preset uses 2, which at this
  * scale is fine enough to read as film grain; 3 keeps the individual cells
  * visible, which is the entire point of dithering rather than shading.
  */
 const ditherSize = 3;
+
+/** Larger cells keep the full-viewport shader visibly dithered, not smooth. */
+const transitDitherSize = 6;
 
 /**
  * How much of the swirl the doorway shows. At Paper's default of 1 the whole
@@ -42,6 +48,12 @@ const ditherSize = 3;
  * arm still sweeps the opening often enough to read as alive.
  */
 const swirlScale = 1.35;
+
+/** Pull enough of the swirl into view to read as a tunnel around its center. */
+const transitSwirlScale = 0.72;
+
+/** Bound the one full-screen shader pass below a typical 1440p canvas. */
+const transitPixelBudget = 1_200_000;
 
 /**
  * The brand amber as a literal, for the same reason `door-mark.tsx` states it:
@@ -77,28 +89,49 @@ function stillOnTheServer(): boolean {
   return true;
 }
 
-export function FrontDoorPortal() {
+export interface FrontDoorPortalProps {
+  mode?: "aperture" | "transit";
+  offsetX?: number;
+  offsetY?: number;
+}
+
+export function FrontDoorPortal({
+  mode = "aperture",
+  offsetX = 0,
+  offsetY = 0,
+}: FrontDoorPortalProps) {
   const still = useSyncExternalStore(
     subscribeToStillness,
     prefersStillness,
     stillOnTheServer
   );
+  const traversing = mode === "transit";
+  let speed = traversing ? transitSpeed : swirlSpeed;
+
+  if (still) {
+    speed = 0;
+  }
 
   return (
     <Dithering
-      className="front-door-portal-shader"
+      className={
+        traversing ? "front-door-transit-shader" : "front-door-portal-shader"
+      }
       colorBack={portalVoid}
       colorFront={portalAmber}
-      scale={swirlScale}
+      maxPixelCount={traversing ? transitPixelBudget : undefined}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      scale={traversing ? transitSwirlScale : swirlScale}
       // The prop is Paper's, and naming the pattern source is exactly what it
       // does here - there is no domain role to rename it for.
       // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names
       shape="swirl"
-      size={ditherSize}
+      size={traversing ? transitDitherSize : ditherSize}
       // Zero stops the animation frame loop outright rather than slowing it,
       // which is what makes the reduced-motion portal a still image and not a
       // very slow one.
-      speed={still ? 0 : swirlSpeed}
+      speed={speed}
       type="8x8"
     />
   );
