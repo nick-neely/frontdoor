@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as SubscribeRouteImport } from './routes/subscribe'
+import { Route as UsesRouteImport } from './routes/uses'
 import { Route as WorkRouteImport } from './routes/work'
 import { Route as WritingRouteImport } from './routes/writing'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -31,6 +32,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
 const SubscribeRoute = SubscribeRouteImport.update({
   id: '/subscribe',
   path: '/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsesRoute = UsesRouteImport.update({
+  id: '/uses',
+  path: '/uses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkRoute = WorkRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
   '/subscribe': typeof SubscribeRoute
+  '/uses': typeof UsesRoute
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
   '/subscribe': typeof SubscribeRoute
+  '/uses': typeof UsesRoute
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRoute
   '/subscribe': typeof SubscribeRoute
+  '/uses': typeof UsesRoute
   '/work': typeof WorkRoute
   '/writing': typeof WritingRoute
   '/api/health': typeof ApiHealthRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/projects'
     | '/subscribe'
+    | '/uses'
     | '/work'
     | '/writing'
     | '/api/health'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/projects'
     | '/subscribe'
+    | '/uses'
     | '/work'
     | '/writing'
     | '/api/health'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/projects'
     | '/subscribe'
+    | '/uses'
     | '/work'
     | '/writing'
     | '/api/health'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProjectsRoute: typeof ProjectsRoute
   SubscribeRoute: typeof SubscribeRoute
+  UsesRoute: typeof UsesRoute
   WorkRoute: typeof WorkRoute
   WritingRoute: typeof WritingRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/subscribe'
       fullPath: '/subscribe'
       preLoaderRoute: typeof SubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/uses': {
+      id: '/uses'
+      path: '/uses'
+      fullPath: '/uses'
+      preLoaderRoute: typeof UsesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/work': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProjectsRoute: ProjectsRoute,
   SubscribeRoute: SubscribeRoute,
+  UsesRoute: UsesRoute,
   WorkRoute: WorkRoute,
   WritingRoute: WritingRoute,
   ApiHealthRoute: ApiHealthRoute,

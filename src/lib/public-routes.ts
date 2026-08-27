@@ -31,6 +31,7 @@ const routeVisibility = {
   // query string does not make a second page, so there is one entry here and
   // one URL in the sitemap.
   "/subscribe": "public",
+  "/uses": "public",
   "/work": "public",
   "/writing": "public",
   "/writing/$slug": "public",
