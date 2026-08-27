@@ -290,7 +290,7 @@ say "The <Analytics /> component already ships in the app; it just needs the"
 say "project toggle."
 open_url "https://vercel.com/dashboard"
 step "New project → Analytics tab → Enable Web Analytics."
-note "Custom events (intro-call-click, newsletter-subscribe) appear once real"
+note "Custom events (chat-click, newsletter-subscribe) appear once real"
 note "traffic sends them."
 pause "Enabled? Press Enter."
 
