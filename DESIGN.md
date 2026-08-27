@@ -32,6 +32,7 @@ That single rule is the line between intriguing and generic. Sites that animate 
 - Route-change view transitions, about 150ms, with a shared-element transition on a post title. This is the one place motion explains where the page went.
 - `focus-visible` rings.
 - One state transition on newsletter subscribe success.
+- The default stack's blurbs on `/uses`: a name on the spec sheet opens a popover holding a sentence on why that one, at about 100ms with a small fade and scale. It is on the same footing as the hover underline -- the reader hovered, focused, or tapped a name, and something appeared because they did. The sheet answers what; this answers why, and only while it is being asked.
 
 ### Banned
 

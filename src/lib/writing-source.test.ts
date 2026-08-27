@@ -56,6 +56,19 @@ describe("what the build reads off disk", () => {
     });
   });
 
+  // This reader is what `public-routes.ts` expands `/writing/$slug` with and
+  // what the build draws cards from, so a Note reaching it is what makes a
+  // Note a real page rather than a row on a list. Only the feed narrows to
+  // Posts, and it does that itself.
+  it("includes a published Note, which is a page exactly like a Post", () => {
+    withFixture(`${published}\nkind: note`, () => {
+      const entries = readPublishedWriting(fixtureDirectory);
+
+      expect(entries.map((entry) => entry.slug)).toContain(fixtureSlug);
+      expect(entries.every((entry) => entry.kind === "note")).toBeTruthy();
+    });
+  });
+
   // A draft has no page, so its prose has no reason to be in the bundle every
   // published Post shares. This is what `vite.config.ts` asks before it decides
   // whether to compile a body at all.

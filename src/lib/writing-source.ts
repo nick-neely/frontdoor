@@ -83,6 +83,11 @@ export function readWriting(
 /**
  * A draft has no prerendered page, no sitemap entry, no card, and no feed
  * item. Excluding it here is what makes all four true at once.
+ *
+ * Both kinds are included: a Note is a public page exactly like a Post, so it
+ * prerenders, lands in the sitemap, and gets a card. The feed is the one
+ * consumer that wants Posts alone, and `renderRssFeed` narrows to them itself
+ * rather than making every caller remember to.
  */
 export function readPublishedWriting(
   directory = writingDirectory

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { projectPages } from "./project-pages.ts";
 import { projectPath } from "./projects.ts";
 import { publicPaths } from "./public-routes.ts";
-import { postPath, posts } from "./writing.ts";
+import { postPath, publishedWriting } from "./writing.ts";
 
 describe("public route inventory", () => {
   it("uses paths that join onto the canonical origin without rewriting", () => {
@@ -36,14 +36,19 @@ describe("public route inventory", () => {
     );
   });
 
-  it("lists exactly the published Posts under /writing", () => {
+  it("lists exactly the published writing under /writing, Notes included", () => {
     // The expansion reads frontmatter from disk while the accessor reads the
     // generated index. They are separate on purpose, so this is the assertion
     // that keeps them agreeing.
+    //
+    // Both kinds belong here: a Note is a public page like any other, and the
+    // split between the two is how they are listed, not whether they exist.
     const listed = publicPaths.filter((routePath) =>
       routePath.startsWith("/writing/")
     );
 
-    expect(listed.toSorted()).toStrictEqual(posts.map(postPath).toSorted());
+    expect(listed.toSorted()).toStrictEqual(
+      publishedWriting.map(postPath).toSorted()
+    );
   });
 });

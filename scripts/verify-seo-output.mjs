@@ -7,7 +7,12 @@ import { projectOgImagePath, projectPath } from "../src/lib/projects.ts";
 import { publicPaths } from "../src/lib/public-routes.ts";
 import { siteConfig } from "../src/lib/site-config.ts";
 import { generatedSiteFiles } from "../src/lib/site-files.ts";
-import { postOgImagePath, postPath, posts } from "../src/lib/writing.ts";
+import {
+  postOgImagePath,
+  postPath,
+  posts,
+  publishedWriting,
+} from "../src/lib/writing.ts";
 
 const pageTitles = new Set();
 const pageDescriptions = new Set();
@@ -161,9 +166,10 @@ function assertPng(assetPath, width, height) {
   assert.equal(file.readUInt32BE(20), height, `${assetPath} height`);
 }
 
-// Every Post carries an Article, a card of its own, and a feed item. These are
-// generated during the build rather than authored, so they are verified in the
-// output rather than trusted from configuration.
+// Every published piece carries an Article and a card of its own; only a Post
+// carries a feed item. These are generated during the build rather than
+// authored, so they are verified in the output rather than trusted from
+// configuration.
 const feed = readFileSync(
   path.resolve(".output/public", siteConfig.links.rss.slice(1)),
   "utf-8"
@@ -180,10 +186,10 @@ assert.ok(
   "The feed is not a page and does not belong in the sitemap"
 );
 
-for (const post of posts) {
-  const routePath = postPath(post);
+for (const entry of publishedWriting) {
+  const routePath = postPath(entry);
   const html = readFileSync(htmlOutputPath(routePath), "utf-8");
-  const imagePath = postOgImagePath(post);
+  const imagePath = postOgImagePath(entry);
   const imageUrl = `${siteConfig.origin}${imagePath}`;
 
   assert.ok(
@@ -196,12 +202,19 @@ for (const post of posts) {
   );
   assert.ok(html.includes('"@type":"Article"'), `${routePath}: Article schema`);
   assert.ok(
-    html.includes(`"datePublished":"${post.published}"`),
+    html.includes(`"datePublished":"${entry.published}"`),
     `${routePath}: publication date in schema`
   );
-  assert.ok(
-    feed.includes(`${siteConfig.origin}${routePath}`),
-    `${routePath}: feed item`
+  // A Note is revised rather than superseded, so it is a page and a card but
+  // never a feed item. Asserting both directions here is what proves the rule
+  // in the shipped output rather than in the function that renders the feed.
+  // The URL is matched inside its <link> element rather than as a bare
+  // substring, so a slug that prefixes another slug cannot count as evidence
+  // for it.
+  assert.equal(
+    feed.includes(`<link>${siteConfig.origin}${routePath}</link>`),
+    entry.kind === "post",
+    `${routePath}: feed item present for a Post and absent for a Note`
   );
 
   assertPng(
@@ -290,5 +303,5 @@ for (const fileName of clientScripts) {
 }
 
 console.log(
-  `Verified SEO output for ${publicPaths.length} public pages, ${posts.length + projectPages.length} generated cards, and the feed.`
+  `Verified SEO output for ${publicPaths.length} public pages, ${publishedWriting.length + projectPages.length} generated cards, and the feed.`
 );

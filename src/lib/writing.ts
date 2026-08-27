@@ -10,12 +10,18 @@
 // untyped index.
 // oxlint-disable-next-line react-doctor/no-barrel-import
 import { allWritings } from "../../.content-collections/generated/index.js";
-import { comparePosts } from "./writing-schema.ts";
+import {
+  compareNotes,
+  comparePosts,
+  isNote,
+  isPost,
+} from "./writing-schema.ts";
 
 // Re-exported so a route needs one import, and so that whether a helper is
 // derived from frontmatter or from the index stays an implementation detail.
 export {
   formatPostDate,
+  isNote,
   pillarLabel,
   postCanonicalPath,
   postOgImagePath,
@@ -24,43 +30,68 @@ export {
   writingDescription,
 } from "./writing-schema.ts";
 
-/** One entry in the writing collection: frontmatter plus what the build adds. */
-export type Post = (typeof allWritings)[number];
+/**
+ * One entry in the writing collection: frontmatter plus what the build adds.
+ * Both kinds are this type, because a Post and a Note differ in how they are
+ * listed and dated rather than in what they carry.
+ */
+export type WritingEntry = (typeof allWritings)[number];
 
 /** Everything in the collection, newest first, drafts included. */
-const allPosts: readonly Post[] = allWritings.toSorted(comparePosts);
+const allEntries: readonly WritingEntry[] = allWritings.toSorted(comparePosts);
 
 /**
- * Every Post the site publishes, newest first. Drafts never appear here, which
- * is what keeps them off the list, off the reading surface, and out of the
- * metadata each page emits. Notes share the collection until the visible split
- * lands.
+ * Everything the site publishes, newest first, of either kind. Drafts never
+ * appear here, which is what keeps them off every list, off the reading
+ * surface, and out of the metadata each page emits.
+ *
+ * This is the list that answers whether a URL exists: a Note is a public page
+ * exactly like a Post, so it prerenders, appears in the sitemap, and gets a
+ * card. The kinds part company below, where the difference is visible.
  */
-export const posts: readonly Post[] = allPosts.filter((entry) => !entry.draft);
+export const publishedWriting: readonly WritingEntry[] = allEntries.filter(
+  (entry) => !entry.draft
+);
 
-export function findPost(slug: string): Post | undefined {
-  return posts.find((post) => post.slug === slug);
+/**
+ * Every published Post, newest first. This is the dated half of the site: the
+ * `/writing` feed, the RSS items, and the home page Updates all come from
+ * here and from nowhere else.
+ */
+export const posts: readonly WritingEntry[] = publishedWriting.filter(isPost);
+
+/**
+ * Every published Note, by title. A Note is evergreen and revised in place, so
+ * it is listed alphabetically and undated; see `compareNotes`.
+ */
+export const notes: readonly WritingEntry[] = publishedWriting
+  .filter(isNote)
+  .toSorted(compareNotes);
+
+export function findWriting(slug: string): WritingEntry | undefined {
+  return publishedWriting.find((entry) => entry.slug === slug);
 }
 
 /**
- * The Post a reading URL resolves to, which is not quite the same question.
+ * The entry a reading URL resolves to, which is not quite the same question.
  *
- * In production it is a published Post and nothing else: a draft is a wrong
- * door, exactly like a slug that was never written. In development a draft
- * opens at its own URL, because a draft nobody can read is a draft nobody can
- * review - and `content/writing/writing-surface-fixture.mdx` is a permanent one
- * whose whole purpose is to be opened and looked at.
+ * In production it is a published Post or Note and nothing else: a draft is a
+ * wrong door, exactly like a slug that was never written. In development a
+ * draft opens at its own URL, because a draft nobody can read is a draft
+ * nobody can review - and the fixtures under `content/writing` are permanent
+ * ones whose whole purpose is to be opened and looked at.
  *
- * It still does not appear on `/writing`, in the feed, or in the sitemap. The
- * URL has to be typed, which is the entire mechanism and the entire safeguard.
+ * A draft still does not appear on `/writing`, in the feed, or in the sitemap.
+ * The URL has to be typed, which is the entire mechanism and the entire
+ * safeguard.
  */
-export function findReadablePost(slug: string): Post | undefined {
-  const readable = import.meta.env.DEV ? allPosts : posts;
+export function findReadableWriting(slug: string): WritingEntry | undefined {
+  const readable = import.meta.env.DEV ? allEntries : publishedWriting;
 
-  return readable.find((post) => post.slug === slug);
+  return readable.find((entry) => entry.slug === slug);
 }
 
 /** Module specifier of the compiled MDX body, and the key its glob is under. */
-export function postModuleId(post: Post): string {
-  return `/content/writing/${post.fileName}`;
+export function postModuleId(entry: WritingEntry): string {
+  return `/content/writing/${entry.fileName}`;
 }

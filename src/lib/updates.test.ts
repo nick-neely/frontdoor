@@ -27,6 +27,14 @@ function post(
   };
 }
 
+function note(
+  published: string,
+  slug: string,
+  title: string
+): WritingFrontmatter {
+  return { ...post(published, slug, title), kind: "note" };
+}
+
 function project(name: string, updatedAt?: string): Project {
   return {
     description: `${name} description`,
@@ -77,6 +85,21 @@ describe(mergeUpdates, () => {
         url: "https://a-project.example",
       },
     ]);
+  });
+
+  // An Update is a dated thing that happened. A Note carries a `published`
+  // date as provenance and is then revised in place, so announcing that date
+  // as an event would date the home feed by something no Note surface prints.
+  it("drops a Note however recent its frontmatter date is", () => {
+    const merged = mergeUpdates(
+      [
+        note("2026-08-24", "a-note", "A Note"),
+        post("2026-08-20", "a-post", "A Post"),
+      ],
+      []
+    );
+
+    expect(merged.map((update) => update.title)).toStrictEqual(["A Post"]);
   });
 
   it("skips a Project that has reached no milestone", () => {

@@ -51,8 +51,12 @@ const sitePathPattern = /^\/(?![/\\])[^\\]*$/u;
 
 /**
  * Frontmatter for everything under `content/writing`. Posts and Notes share
- * the schema and the namespace; `kind` is what separates them, and the visible
- * split is deferred.
+ * the schema and the namespace; `kind` is what separates them, and it is what
+ * `/writing` splits its two lists on.
+ *
+ * `published` is required of both. For a Post it is the date the page prints
+ * and the feed sorts on; for a Note it is only provenance, which is why no
+ * Note surface renders it.
  */
 export const writingFrontmatterSchema = z.object({
   /** Absolute URL when the piece was first published elsewhere. */
@@ -98,6 +102,33 @@ export function comparePosts(
   );
 }
 
+/**
+ * Alphabetical, with the slug settling ties deterministically. Notes are
+ * ordered by title rather than by date on purpose: a Note is revised rather
+ * than superseded, so date order would advertise a recency the kind rejects.
+ */
+export function compareNotes(
+  left: WritingFrontmatter,
+  right: WritingFrontmatter
+): number {
+  return (
+    left.title.localeCompare(right.title) || left.slug.localeCompare(right.slug)
+  );
+}
+
+/**
+ * Which kind an entry is. `kind` is the whole distinction - Posts and Notes
+ * share the schema, the namespace, and every URL derived below - so these are
+ * the only place a surface is allowed to ask.
+ */
+export function isPost(entry: WritingFrontmatter): boolean {
+  return entry.kind === "post";
+}
+
+export function isNote(entry: WritingFrontmatter): boolean {
+  return entry.kind === "note";
+}
+
 export function postPath(post: WritingFrontmatter): string {
   return `/writing/${post.slug}`;
 }
@@ -136,10 +167,17 @@ export function formatPostDate(date: string): string {
   return dateFormatter.format(new Date(`${date}T00:00:00Z`));
 }
 
-/** What a Post's generated social card says: the title, the Pillar, the date. */
+/**
+ * What a generated social card says: the title, the Pillar, and - for a Post -
+ * the date. A Note's card drops the date for the same reason its page does:
+ * the date it was first written is not a fact about a piece that is revised in
+ * place, and a card is the page's claim in a smaller frame.
+ */
 export function postOgCard(post: WritingFrontmatter): OgCardContent {
   return {
-    meta: [pillarLabel(post), formatPostDate(post.published)],
+    meta: isNote(post)
+      ? [pillarLabel(post)]
+      : [pillarLabel(post), formatPostDate(post.published)],
     title: post.title,
   };
 }
