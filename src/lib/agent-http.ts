@@ -116,6 +116,7 @@ export async function negotiateDocumentResponse(
   const headers = new Headers(response.headers);
 
   appendVary(headers, "Accept");
+  appendVary(headers, "Accept-Encoding");
 
   if (representation === undefined) {
     headers.delete("content-encoding");
@@ -184,6 +185,19 @@ export function createDocumentRoutingRules(
           key: "accept",
           type: "header",
           value: { re: "(?i)(?:^|,)\\s*text/markdown(?:\\s*;|\\s*(?:,|$))" },
+        },
+      ],
+      src: pathPattern,
+    },
+    {
+      dest: "/__server",
+      has: [
+        {
+          key: "accept",
+          type: "header",
+          value: {
+            re: "(?i)(?:text/html|text/markdown|\\*/\\*)\\s*;[^,]*\\bq=0(?:\\.0*)?(?:\\D|$)",
+          },
         },
       ],
       src: pathPattern,

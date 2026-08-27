@@ -65,7 +65,7 @@ describe("agent HTTP representations", () => {
       html.clone()
     );
     expect(unsupported.status).toBe(406);
-    expect(unsupported.headers.get("vary")).toBe("Accept");
+    expect(unsupported.headers.get("vary")).toBe("Accept, Accept-Encoding");
   });
 
   it("returns a useful markdown body while preserving a not-found status", async () => {
@@ -100,5 +100,13 @@ describe("agent HTTP representations", () => {
         has: [expect.objectContaining({ key: "accept", type: "header" })],
       })
     );
+    expect(
+      rules.some(
+        (rule) =>
+          rule.dest === "/__server" &&
+          rule.has?.some((condition) => condition.value.re.includes("q=0")) ===
+            true
+      )
+    ).toBeTruthy();
   });
 });

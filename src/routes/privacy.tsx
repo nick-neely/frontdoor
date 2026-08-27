@@ -98,7 +98,7 @@ function PrivacyPage() {
                 className="link-underline text-foreground"
                 href={siteConfig.links.contact}
               >
-                {siteConfig.links.contact.replace(/^mailto:/u, "")}
+                {siteConfig.contactEmail}
               </a>
               .
             </p>

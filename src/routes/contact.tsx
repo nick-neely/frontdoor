@@ -10,7 +10,7 @@ import {
 import { siteConfig } from "@/lib/site-config.ts";
 import { cn } from "@/lib/utils.ts";
 
-const contactAddress = siteConfig.links.contact.replace(/^mailto:/u, "");
+const contactAddress = siteConfig.contactEmail;
 const description =
   "Contact Nick Neely about product engineering, workflow software, practical AI-assisted development, or a software consulting Engagement.";
 

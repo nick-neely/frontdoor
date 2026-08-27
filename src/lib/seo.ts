@@ -139,7 +139,7 @@ export function createPersonSchema() {
     "@id": `${siteConfig.origin}/#person`,
     "@type": "Person",
     description: siteConfig.description,
-    email: siteConfig.links.contact.replace(/^mailto:/u, ""),
+    email: siteConfig.contactEmail,
     name: siteConfig.name,
     sameAs: [
       siteConfig.links.github,
@@ -151,27 +151,27 @@ export function createPersonSchema() {
 }
 
 /**
- * The separate business through which consulting Engagements are contracted.
- * The address stays at region and country precision because those are the only
- * public location facts this site has established.
+ * The professional identity published by this personal site. It deliberately
+ * does not represent Neely Solutions, which remains a separate brand and URL.
+ * The address uses only the public location facts established by this site.
  */
 export function createOrganizationSchema() {
   return {
-    "@id": `${siteConfig.links.neelySolutions}/#organization`,
+    "@id": `${siteConfig.origin}/#organization`,
     "@type": "Organization",
     address: {
       "@type": "PostalAddress",
-      addressCountry: siteConfig.organization.addressCountry,
-      addressRegion: siteConfig.organization.addressRegion,
+      addressCountry: siteConfig.professionalIdentity.addressCountry,
+      addressRegion: siteConfig.professionalIdentity.addressRegion,
     },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "sales",
-      email: siteConfig.links.contact.replace(/^mailto:/u, ""),
+      email: siteConfig.contactEmail,
     },
     founder: { "@id": `${siteConfig.origin}/#person` },
-    name: siteConfig.organization.name,
-    url: siteConfig.links.neelySolutions,
+    name: siteConfig.name,
+    url: `${siteConfig.origin}/`,
   } satisfies StructuredData;
 }
 

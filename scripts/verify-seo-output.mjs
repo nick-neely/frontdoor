@@ -125,6 +125,10 @@ assert.equal(
 
 const homeHtml = readFileSync(htmlOutputPath("/"), "utf-8");
 assert.ok(
+  visibleText(homeHtml).length >= 500,
+  "/: homepage must contain at least 500 visible characters"
+);
+assert.ok(
   countMatches(homeHtml, /<h2\b/gu) >= 2,
   "/: server-rendered outline must have at least two second-level headings"
 );

@@ -13,7 +13,7 @@ const footerLinks = [
   { href: siteConfig.links.rss, label: "RSS" },
   {
     href: siteConfig.links.contact,
-    label: siteConfig.links.contact.replace(/^mailto:/u, ""),
+    label: siteConfig.contactEmail,
   },
 ];
 

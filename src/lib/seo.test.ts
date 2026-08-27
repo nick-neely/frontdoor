@@ -65,7 +65,7 @@ describe("SEO helpers", () => {
     expect(graph["@graph"]).toHaveLength(2);
   });
 
-  it("describes the person and consulting organization without inventing identity facts", () => {
+  it("describes the person and professional identity without conflating brands", () => {
     expect(createPersonSchema()).toMatchObject({
       "@type": "Person",
       email: "contact@nickneely.dev",
@@ -89,7 +89,11 @@ describe("SEO helpers", () => {
         contactType: "sales",
         email: "contact@nickneely.dev",
       },
-      name: "Neely Solutions",
+      name: siteConfig.name,
+      url: `${siteConfig.origin}/`,
+    });
+    expect(createOrganizationSchema()).not.toMatchObject({
+      url: siteConfig.links.neelySolutions,
     });
   });
 });
