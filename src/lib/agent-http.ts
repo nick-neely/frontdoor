@@ -209,6 +209,19 @@ export function createDocumentRoutingRules(
           key: "accept",
           type: "header",
           value: {
+            re: "(?i)(?:^|,)\\s*text/html\\s*;[^,]*\\bq=",
+          },
+        },
+      ],
+      src: pathPattern,
+    },
+    {
+      dest: "/__server",
+      has: [
+        {
+          key: "accept",
+          type: "header",
+          value: {
             re: "(?i)^(?!.*(?:text/html|text/markdown|\\*/\\*)).+$",
           },
         },

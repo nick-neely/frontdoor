@@ -68,6 +68,21 @@ describe("agent HTTP representations", () => {
     expect(unsupported.headers.get("vary")).toBe("Accept, Accept-Encoding");
   });
 
+  it("lets a higher-quality wildcard prefer markdown over explicit HTML", async () => {
+    const response = await negotiateDocumentResponse(
+      new Request("https://nickneely.dev/about", {
+        headers: { accept: "text/html;q=0.5, */*;q=0.9" },
+      }),
+      new Response("<main><h1>About Nick</h1></main>", {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      })
+    );
+
+    expect(response.headers.get("content-type")).toBe(
+      "text/markdown; charset=utf-8"
+    );
+  });
+
   it("returns a useful markdown body while preserving a not-found status", async () => {
     const response = await negotiateDocumentResponse(
       new Request("https://nickneely.dev/missing", {
@@ -100,13 +115,14 @@ describe("agent HTTP representations", () => {
         has: [expect.objectContaining({ key: "accept", type: "header" })],
       })
     );
-    expect(
-      rules.some(
-        (rule) =>
-          rule.dest === "/__server" &&
-          rule.has?.some((condition) => condition.value.re.includes("q=0")) ===
-            true
-      )
-    ).toBeTruthy();
+    const qualityRule = rules.find(
+      (rule) =>
+        rule.has?.some((condition) =>
+          condition.value.re.includes("(?:^|,)\\s*text/html")
+        ) === true
+    );
+
+    expect(qualityRule?.has?.[0]?.value.re).toContain("\\bq=");
+    expect(qualityRule?.has?.[0]?.value.re).not.toContain("q=0");
   });
 });
