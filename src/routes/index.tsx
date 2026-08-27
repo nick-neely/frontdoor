@@ -217,7 +217,7 @@ function NowLine() {
           </a>
           <Separator />
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-            <span className="mr-0.5">consulting at</span>
+            <span className="mr-0.5">consulting at</span>{" "}
             <LeanTechniquesMark className="relative top-px size-4 shrink-0 text-foreground" />
             <span className="text-foreground">{now.consulting}</span>
           </span>
