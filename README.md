@@ -15,7 +15,7 @@ Live at [nickneely.dev](https://nickneely.dev).
 
 ## Develop
 
-Requirements: Node.js 24 and pnpm 12.
+Requirements: Node.js 24 and pnpm 11.24.0.
 
 ```bash
 pnpm install
