@@ -251,14 +251,14 @@ if command -v curl >/dev/null 2>&1; then
   fi
 fi
 
-# ── 4 · Verify the apex in Resend ─────────────────────────────────────────
-stage "Verify nickneely.dev for sending in Resend"
-say "Per ADR-0003 the apex is the sending domain: mail goes out as"
-say "hello@nickneely.dev, and Resend's records live on send. and _domainkey."
+# ── 4 · Verify send.nickneely.dev in Resend ───────────────────────────────
+stage "Verify send.nickneely.dev for sending in Resend"
+say "Per ADR-0003 Resend's verified domain is send.nickneely.dev: mail goes"
+say "out as hello@send.nickneely.dev. Replies still go to contact@nickneely.dev."
 open_url "https://resend.com/domains"
-step "Add domain: nickneely.dev (region of your choice)."
-step "Resend lists DNS records: an MX + TXT (SPF) on send.nickneely.dev and"
-step "DKIM records under *._domainkey.nickneely.dev."
+step "Add domain: send.nickneely.dev (region of your choice)."
+step "Resend lists DNS records for that domain (bounce MX + SPF on a send."
+step "label, DKIM CNAMEs under _domainkey.send.nickneely.dev)."
 step "Add exactly those in Cloudflare, DNS only."
 warn "DO NOT touch the apex MX records or the apex 'v=spf1"
 warn "include:_spf.mx.cloudflare.net ~all' TXT. contact@nickneely.dev"
@@ -356,8 +356,8 @@ step "and confirm it still arrives where Cloudflare routes it."
 step "Outbound: in Resend, send a test email (or use the newsletter confirm"
 step "flow on /subscribe with your own address)."
 step "Open the received message's original headers (Gmail: 'Show original')."
-say "All three must pass, aligned to nickneely.dev:"
-say "  SPF: pass · DKIM: pass with d=nickneely.dev · DMARC: pass"
+say "All three must pass, aligned to send.nickneely.dev:"
+say "  SPF: pass · DKIM: pass with d=send.nickneely.dev · DMARC: pass"
 note "DMARC stays at p=none for launch; tightening to p=quarantine after two"
 note "clean weeks is issue #12."
 pause "Both directions verified? Press Enter."

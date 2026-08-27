@@ -12,7 +12,7 @@ The personal brand site for Nick Neely: one canonical hub that consolidates cons
 
 **Neely Solutions**: The separate business brand serving local and small-business clients. It is linked from this site and never co-headlined on it. _Avoid_: the agency, my company, NS
 
-**Now Line**: The single line beneath the bio stating current context: what Nick is building, where he consults, and where he lives. _Avoid_: status, tagline, bio line
+**Now Line**: The strip beneath the bio stating current context: what Nick is building, where he consults, and where he lives. A live push, when there is one, hangs on the next line rather than extending the sentence. _Avoid_: status, tagline, bio line
 
 ### Things that were built
 

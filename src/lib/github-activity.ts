@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * The GitHub activity appended to the home page's Now Line.
+ * The GitHub activity hung under the home page's Now Line.
  *
  * The single hard rule here is that a private repository name must never leave
  * the server. It is enforced at the source rather than at the rendering
