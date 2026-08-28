@@ -56,9 +56,9 @@ const transitSwirlScale = 0.72;
 const transitPixelBudget = 1_200_000;
 
 /**
- * The brand amber as a literal, for the same reason `door-mark.tsx` states it:
- * this is a graphic rather than a text colour, and it is the same amber in
- * both themes. The theme-aware `--signal` token is the one that darkens for
+ * The brand amber stays literal because this is a graphic rather than a text
+ * colour, and it is the same amber in both themes. The theme-aware `--signal`
+ * token is the one that darkens for
  * contrast on a light page, and nothing here sits on a light page - the
  * doorway is a hole with an unlit room behind it in either theme.
  */
