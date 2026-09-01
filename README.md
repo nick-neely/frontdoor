@@ -1,6 +1,5 @@
 <img width="1200" height="630" alt="04-architectural-threshold" src="https://github.com/user-attachments/assets/589da4a9-a303-464e-90a2-e874e2caa716" />
 
-
 The personal site of Nick Neely: consulting, shipped projects, and writing on product engineering, practical AI-assisted development, and building in public.
 
 Live at [nickneely.dev](https://nickneely.dev).
