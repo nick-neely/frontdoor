@@ -49,6 +49,15 @@ interface UseSection {
   title: string;
 }
 
+/** Model names share one treatment; reasoning settings stay in the sentence. */
+function ModelName({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-block rounded-md border bg-card px-1.5 py-0.5 font-mono text-[0.82em] leading-none font-medium text-foreground">
+      {children}
+    </span>
+  );
+}
+
 /*
  * Two sources feed the notes below, and neither of them is memory. Anything
  * about how a tool is configured comes off a file in `nick-neely/dotfiles`;
@@ -83,9 +92,22 @@ const sections = [
     nav: "AI",
     rows: [
       {
+        item: "T3 Code",
+        logo: { dark: "/logos/t3-dark.svg", src: "/logos/t3.svg" },
+        note: (
+          <>
+            Where I do most development work and orchestrate agent sessions. A
+            session started at the desktop reopens on the MacBook or a phone
+            because it lives on the VM below. <ModelName>GPT-6 Astra</ModelName>{" "}
+            at medium reasoning is my main driver. I still like{" "}
+            <ModelName>GPT-6 Luna</ModelName> at max reasoning.
+          </>
+        ),
+      },
+      {
         item: "Codex",
         logo: { dark: "/logos/codex-dark.svg", src: "/logos/codex.svg" },
-        note: "The primary driver, and like Claude Code it runs in auto mode. `gpt-5.6-sol` at medium, high when the work earns it, and `luna-max` for the tasks that need less thinking, where it is still very effective. Sub-agents are doing more of it now.",
+        note: "I reach for Codex when I need computer use or a clearer view of what sub-agents are doing.",
       },
       {
         item: "Claude Code",
@@ -93,12 +115,15 @@ const sections = [
           dark: "/logos/anthropic-dark.svg",
           src: "/logos/anthropic.svg",
         },
-        note: "The second opinion, on a different model, running the same sub-agent workflow. Which agent gets a job is a written rule rather than a mood.",
-      },
-      {
-        item: "T3 Code",
-        logo: { dark: "/logos/t3-dark.svg", src: "/logos/t3.svg" },
-        note: "The biggest change to how I work lately. A session started at the desktop reopens on the MacBook, or on a phone with both machines shut, because the session lives on the VM below and T3 is only a surface onto it.",
+        note: (
+          <>
+            I keep the plan for its models but rarely use the interface or CLI
+            now. I used <ModelName>Fable 5.1</ModelName> almost exclusively;{" "}
+            <ModelName>Opus 5.5</ModelName> has become my favorite model. It
+            feels more capable and efficient to me, with{" "}
+            <ModelName>GPT-6 Astra</ModelName> close behind.
+          </>
+        ),
       },
       {
         item: "AGENTS.md",
