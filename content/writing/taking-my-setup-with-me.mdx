@@ -1,0 +1,69 @@
+---
+title: "The dotfiles setup I kept putting off"
+slug: "taking-my-setup-with-me"
+description: "How coding agents helped me build the cross-machine development setup I had kept postponing, with synced skills, a custom CLI, and reminders in my terminal."
+published: "2026-09-24"
+pillar: "practical-ai"
+tags: ["dotfiles", "developer-tools", "coding-agents"]
+draft: true
+---
+
+import dotHelpImage from "./taking-my-setup-with-me/dot-help.png?url";
+
+For a long time, I wanted my work laptop and personal desktop to feel the same when I sat down to develop. The same aliases, the same tools, the same agent skills. Instead, I’d change something on one machine and forget to change it on the other.
+
+I’d talked about fixing this. I just kept finding other things I wanted to work on more.
+
+Getting a MacBook of my own finally pushed me to do something about it. I started from [Kun Chen’s Mac dotfiles repo](https://github.com/kunchenguid/dotfiles), a collection of configuration files for setting up a development environment, and began adapting it for my machines.
+
+Coding agents made this practical enough for me to take on. I used 5.6 Sol for most of the work and had a good experience with it, especially for ambiguous tasks and long-running sessions. Without that help, I would have built something much smaller. I might still be putting off syncing the machines.
+
+## Taking a change to another machine
+
+Today, I manage the setup through a custom command called `dot`. It gives me one place to sync configuration and restore the agent skills I want across my devices. Those consistent skills are one of my favorite parts: adding or changing one no longer means remembering to repeat the work on every machine.
+
+For a change to the tracked configuration or skill inventory, the path looks like this:
+
+<Process label="How a change reaches another machine">
+  <ProcessStep title="Change">Edit the configuration or declared skill inventory.</ProcessStep>
+  <ProcessStep title="Publish">Run `dot publish` to check and push the change.</ProcessStep>
+  <ProcessStep title="Sync">Run `dot sync` on the other machine to pull the changes.</ProcessStep>
+  <ProcessStep title="Apply">Review and confirm activation. It applies the setup and restores the declared skills.</ProcessStep>
+</Process>
+
+<Callout label="Consistent across different machines">
+  A lot of my development setup can be shared between Windows Subsystem for Linux
+  (WSL) and macOS. Some applications and configuration stay specific to the
+  operating system. The goal is a familiar experience wherever I work.
+</Callout>
+
+## A reminder where I’m already working
+
+I still need to bring each machine up to date, but I don’t have to remember to check. My terminal prompt shows when there are changes to sync. Pressing <kbd>Ctrl</kbd> + <kbd>G</kbd> puts the suggested command, such as `dot sync`, on the command line, ready for me to run. It puts the reminder and the next step right where I’m already working.
+
+![The terminal shows a dot update reminder and dot sync filled in at the prompt after pressing Ctrl+G.](./dot-sync-reminder.png "A simulated update reminder, with dot sync ready to run after pressing Ctrl+G.")
+
+The key binding reads the suggested command from a small local file. This excerpt shows the part that puts it into the shell’s editable command line, `BUFFER`:
+
+```bash title="modules/shared/shell.nix (excerpt)" {4}
+local remedy=
+[[ -s $DOT_STATE_DIR/remedy ]] && read -r remedy <$DOT_STATE_DIR/remedy
+[[ -n $remedy ]] || return 0
+BUFFER=$remedy
+```
+
+The shortcut fills in the command; I still press <kbd>Enter</kbd> to run it.
+
+## Room to keep improving it
+
+The CLI wasn’t part of the original plan. As the setup grew, I kept finding little things I wanted it to do. Once the foundation was there, adding a feature mostly meant asking for it and trying the result. I welcomed the extra scope because those conveniences were useful to me.
+
+![The dot help menu, with colored commands grouped into checks, machine changes, publishing, and skill management.](./dot-help.png "One interface for checking the setup, syncing machines, and managing skills.")
+
+<a href={dotHelpImage} target="_blank" rel="noreferrer">View the full-size help menu</a>
+
+Getting to that point took planning and investigation. Early on, I used [Matt Pocock’s Grill Me skill](https://github.com/mattpocock/skills), which prompts the agent to question you about what you want until you reach a shared understanding. I spent time working through what this setup should do before asking agents to build it.
+
+I didn’t closely read most of the code. My confidence came from automated checks, including linting and tests, and from using the setup on my machines. When something didn’t work, I kept iterating with the agents. Seeing it work in daily use mattered.
+
+Building this became enjoyable, especially as I saw it working across my machines. I’d wanted a consistent setup for a long time without wanting to spend the effort to create it. Agents made that effort manageable enough for me to finally do it, and to keep adding conveniences I wouldn’t otherwise have bothered building.
