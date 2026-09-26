@@ -37,7 +37,8 @@ const order: Relationship[] = ["translate", "conform"];
  * It is drawn as a narrow vertical column so the labels stay legible at phone
  * width. Every colour comes from `.context-map` in `src/styles.css`. The
  * switch renders only after hydration, the picture starts on "translate"
- * either way, and the change is a swap rather than an animation.
+ * either way, and the change is a swap rather than an animation. The caption
+ * is a live region, so the new relationship is announced too.
  */
 export function ContextMap() {
   const hydrated = useHydrated();
@@ -187,7 +188,9 @@ export function ContextMap() {
           downstream
         </text>
       </svg>
-      <figcaption>{current.caption}</figcaption>
+      {/* A polite live region, so switching the relationship is announced as
+          well as drawn, like the outcome lines on the other examples. */}
+      <figcaption aria-live="polite">{current.caption}</figcaption>
     </figure>
   );
 }

@@ -50,4 +50,14 @@ describe(ContextMap, () => {
         .getAttribute("aria-pressed")
     ).toBe("true");
   });
+
+  it("announces the new relationship through a live caption", () => {
+    const { container } = render(<ContextMap />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Conform" }));
+
+    const caption = container.querySelector("figcaption");
+    expect(caption?.getAttribute("aria-live")).toBe("polite");
+    expect(caption?.textContent).toMatch(/^Conform:/u);
+  });
 });
