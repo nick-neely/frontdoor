@@ -1,9 +1,21 @@
 import type { MDXComponents } from "mdx/types";
+import { isValidElement } from "react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { CodeBlock } from "@/components/code-block.tsx";
 import { Figure } from "@/components/figure.tsx";
 import { cn } from "@/lib/utils.ts";
+
+/**
+ * Whether a link's whole content is one inline code span, as in
+ * [`CONTEXT.md`](...). Such a link carries its underline on the chip instead
+ * of beneath it, because the chip's rounded corners would otherwise leave the
+ * link's own underline showing at its bottom edges. Mixed content keeps the
+ * ordinary underline, since a chip inside a phrase is a small part of it.
+ */
+function isCodeOnly(children: ReactNode): boolean {
+  return isValidElement(children) && children.type === "code";
+}
 
 /**
  * A link inside a Post. Prose links need to be visible before the pointer
@@ -25,7 +37,10 @@ export function ProseLink({
 
   return (
     <a
-      className={cn("link-underline-resting", className)}
+      className={cn(
+        isCodeOnly(children) ? "prose-code-link" : "link-underline-resting",
+        className
+      )}
       href={href}
       rel={external ? "noreferrer" : undefined}
       {...props}
@@ -143,6 +158,80 @@ export function ProcessStep({ children, title }: ProcessStepProps) {
   );
 }
 
+interface GlossaryProps {
+  children: ReactNode;
+  /** A mono line above the entries, usually the file the glossary lives in. */
+  label: string;
+}
+
+/**
+ * A glossary excerpt, shaped like an entry in `CONTEXT.md`: a term, what it
+ * means, and the words to avoid for it. The entries are a definition list,
+ * so the term-to-meaning pairing survives without the styling.
+ */
+export function Glossary({ children, label }: GlossaryProps) {
+  return (
+    <figure className="glossary">
+      <figcaption className="glossary-label">{label}</figcaption>
+      <dl>{children}</dl>
+    </figure>
+  );
+}
+
+interface GlossaryEntryProps {
+  /** Words that must not stand in for this term. Rendered struck through. */
+  avoid?: string[];
+  children: ReactNode;
+  term: string;
+}
+
+export function GlossaryEntry({ avoid, children, term }: GlossaryEntryProps) {
+  return (
+    <div className="glossary-entry">
+      <dt>{term}</dt>
+      <dd>{children}</dd>
+      {avoid === undefined || avoid.length === 0 ? null : (
+        <dd className="glossary-avoid">
+          Avoid:{" "}
+          {avoid.map((word, index) => (
+            <span key={word}>
+              {index === 0 ? null : ", "}
+              <s>{word}</s>
+            </span>
+          ))}
+        </dd>
+      )}
+    </div>
+  );
+}
+
+interface CompareProps {
+  children: ReactNode;
+}
+
+/**
+ * Two things read against each other. Side by side when the measure can hold
+ * both, stacked on a phone, and in both cases in source order, so a reader
+ * who cannot see the layout still meets one side and then the other.
+ */
+export function Compare({ children }: CompareProps) {
+  return <div className="compare">{children}</div>;
+}
+
+interface CompareSideProps {
+  children: ReactNode;
+  title: string;
+}
+
+export function CompareSide({ children, title }: CompareSideProps) {
+  return (
+    <section aria-label={title} className="compare-side">
+      <p className="compare-title">{title}</p>
+      {children}
+    </section>
+  );
+}
+
 /**
  * What a Post's prose overrides. Everything not listed here is typography,
  * which `.prose` in `src/styles.css` handles - `details`, `kbd`, footnotes and
@@ -154,7 +243,11 @@ export function ProcessStep({ children, title }: ProcessStepProps) {
  */
 export const mdxComponents: MDXComponents = {
   Callout,
+  Compare,
+  CompareSide,
   Figure,
+  Glossary,
+  GlossaryEntry,
   Process,
   ProcessStep,
   a: ProseLink,
