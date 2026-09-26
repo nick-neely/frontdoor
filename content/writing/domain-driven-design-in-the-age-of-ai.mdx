@@ -1,0 +1,182 @@
+---
+title: "Domain-driven design in the age of AI"
+slug: "domain-driven-design-in-the-age-of-ai"
+description: "Code is getting cheap to write, and understanding is now the bottleneck. How Eric Evans's domain-driven design makes a domain legible to people and coding agents alike."
+published: "2026-09-25"
+pillar: "practical-ai"
+tags: ["domain-driven-design", "coding-agents", "software-design"]
+---
+
+import { CheckoutPlayground } from "@/components/posts/checkout-playground.tsx";
+import { ContextMap } from "@/components/posts/context-map.tsx";
+import { OrderTicket } from "@/components/posts/order-ticket.tsx";
+
+For six months, my team has been reading Eric Evans's _Domain-Driven Design_ in a book club. The book is from 2003, older than every AI tool we now write code with. Chapter after chapter, it reads like a manual for working with coding agents.
+
+The repository behind this site makes the point for me. Its root holds a [`CONTEXT.md`](https://github.com/nick-neely/frontdoor/blob/main/CONTEXT.md): a glossary of what each word means here, and which words to avoid.
+
+<Glossary label="CONTEXT.md">
+  <GlossaryEntry term="Post" avoid={["article", "blog", "blog post", "entry"]}>A dated piece of writing, tied to exactly one Pillar.</GlossaryEntry>
+</Glossary>
+
+Every coding agent working in that repo is told to "use `CONTEXT.md`'s words." I didn't invent the habit. Matt Pocock's [`grill-with-docs`](https://github.com/mattpocock/skills/tree/main/skills/engineering/grill-with-docs) skill writes and sharpens the same file while it interviews you about a design. Without quite noticing, a lot of us working with agents have rebuilt something Evans described more than twenty years ago.
+
+Now picture a codebase without that file. It runs an online store, and every order a customer places ends up as a sales order in the company's ERP. You ask an agent to let customers cancel an order. It finds a class called `Order` and writes a clean, typed, tested cancellation.
+
+It's also wrong. In this codebase `Order` means three things: the cart a customer is still building, the checkout they submitted, and the sales order the ERP has started filling. Take the agent's seat and pick one:
+
+<OrderTicket />
+
+Every guess builds something plausible, and every guess breaks something. The agent picked one too, and nothing in the code said which one you meant.
+
+Writing code is getting cheap. Understanding what it should do isn't, and that's the new bottleneck. An agent writes the right code only when the domain is clear in three places: your language, your structure, and your boundaries. That's roughly the arc of Evans's book, and it's the arc of this Post.
+
+## Language
+
+The agent didn't invent the confusion. It inherited it. Ask three people on the team what an order is:
+
+| Who | By "order" they mean | Because |
+| --- | --- | --- |
+| Product manager | The submitted checkout | Revenue is counted there |
+| Warehouse lead | The ERP's sales order | It's what gets picked |
+| Developer | A row in `orders` | It was there first |
+
+Three honest answers. The code froze the disagreement in place, and the agent read it back as fact.
+
+Evans's fix starts with conversations, not renaming. Developers sit down with domain experts, the people who run checkout and the warehouse, and work through real cases until one model of the business holds up. Can a customer cancel after the warehouse starts picking? Who decides, and what happens to the sales order in the ERP? Each question forces a distinction the old `Order` blurred. Evans calls this knowledge crunching. It's the book's first chapter, and every later idea assumes you've done it.
+
+What the crunching produces is a vocabulary. Evans calls it the Ubiquitous Language, and "ubiquitous" is the demanding part: the same words in meetings, tickets, tests, and class names. When the words people say stop matching the code, one of them is wrong, and fixing it is real work, not cosmetic renaming.
+
+An agent is the newest member of your team, and it never attends a meeting. It knows only what's written down: the code, the tests, the docs, and the prompt. It usually starts each session from scratch, so it never absorbs the language the way a new hire does. If the Ubiquitous Language lives only in people's heads, the agent never gets it. Your team's vocabulary is the prompt vocabulary, whether you planned it that way or not.
+
+So write it down where the agent will read it. That's all the `CONTEXT.md` at the top of this Post is: a Ubiquitous Language on disk. For our store, it might start like this:
+
+<Glossary label="CONTEXT.md">
+  <GlossaryEntry term="Cart" avoid={["order"]}>What a customer is still building. Nothing has been submitted.</GlossaryEntry>
+  <GlossaryEntry term="Checkout" avoid={["order"]}>What a customer submitted.</GlossaryEntry>
+  <GlossaryEntry term="Sales order" avoid={["order"]}>The ERP's record of what it is filling.</GlossaryEntry>
+</Glossary>
+
+The definitions help, but the avoid lists do the most work. They name the words that keep dragging people and agents back into the old muddle.
+
+## Structure
+
+A glossary tells an agent what words mean. It doesn't say what's allowed. Say the experts settle the question from earlier: a checkout can be cancelled until the warehouse starts picking, and never after. Evans calls that an invariant: a rule that must hold no matter which code path touches the data.
+
+Now ask where that rule lives. If the honest answer is "in a few `if` statements across three services," the agent will find two, miss the third, and write a fourth path that skips them all. A rule the code only implies is a rule the agent can't see.
+
+Evans's answer is the aggregate: a cluster of objects treated as one unit, with a single entry point, the root, that every change must pass through. Make `Checkout` the root. Its line items can't be edited from outside, and `cancel()` is the only way to cancel, so the rule lives in exactly one place:
+
+```ts title="src/checkout/checkout.ts" {12-14}
+type CheckoutStatus = "submitted" | "picking" | "cancelled";
+
+export class Checkout {
+  #status: CheckoutStatus = "submitted";
+  readonly #lines: LineItem[];
+
+  constructor(readonly id: CheckoutId, lines: LineItem[]) {
+    this.#lines = [...lines];
+  }
+
+  cancel(): void {
+    if (this.#status === "picking") {
+      throw new Error("A Checkout cannot be cancelled once picking starts.");
+    }
+    this.#status = "cancelled";
+  }
+
+  startPicking(): void {
+    if (this.#status !== "submitted") {
+      throw new Error("Only a submitted Checkout can be picked.");
+    }
+    this.#status = "picking";
+  }
+}
+```
+
+<CheckoutPlayground />
+
+An agent asked to add "cancel from the admin screen" can't flip a status field, because there's no field to reach. The shortest path to working code runs through the rule. When the agent gets it wrong anyway, it gets a thrown error or a failing test instead of a quiet bug, and that's a mistake it can notice and fix on its own.
+
+Look again at `startPicking()`. Who calls it? In the real business, "picking started" is something the ERP reports, and often exactly one person on the team knows how that signal arrives, how late it can be, and what happens when it never comes. That's tribal knowledge, and an agent can't infer it from a status string. Evans gives this a whole chapter, "Making Implicit Concepts Explicit": when the business talks about something the code only hints at, give it a name and a place in the model. Here that might be a `PickingStarted` message from the ERP that `Checkout` handles on purpose, instead of a status some background job flips. Now the concept is in the code, where people and agents can both read it.
+
+The aggregate has a supporting cast, and each member is a small promise about how the model behaves:
+
+<Glossary label="Evans's other building blocks">
+  <GlossaryEntry term="Entity">An object with an identity that lasts while it changes. Two checkouts with identical items are still two checkouts.</GlossaryEntry>
+  <GlossaryEntry term="Value object">An object defined entirely by its values, never changed in place, only replaced. `LineItem` and `Money` are values.</GlossaryEntry>
+  <GlossaryEntry term="Repository">Loads and saves a whole aggregate at once. `CheckoutRepository` hands back a `Checkout`, never its line items on their own.</GlossaryEntry>
+  <GlossaryEntry term="Domain service">Logic that belongs to no single object, like turning a `Cart` into a `Checkout`.</GlossaryEntry>
+</Glossary>
+
+For an agent, each one removes a wrong move. It can't mutate a price that can't be mutated, or save half an aggregate the repository won't accept.
+
+Put the two codebases side by side and hand an agent the same ticket: let support staff cancel a customer's order from the admin screen.
+
+<Compare>
+  <CompareSide title="Muddled codebase">
+    - It finds `Order`, a `status` string, and three cancellation checks spread across services.
+    - It writes a clean fourth path that sets `status = "cancelled"`.
+    - Its own tests pass. Nothing complains until a box that has already been picked gets refunded.
+  </CompareSide>
+  <CompareSide title="Modeled codebase">
+    - The glossary lists "order" as a word to avoid, so the agent has to choose `Checkout` or `SalesOrder` on purpose.
+    - The only way to cancel is `Checkout.cancel()`.
+    - The first test against a checkout in picking throws the rule the business decided on.
+  </CompareSide>
+</Compare>
+
+Same agent, same ticket. The difference is how much of the domain the code made impossible to miss.
+
+Structure is a prompt, too. It's just one the agent can't ignore.
+
+## Boundaries
+
+We put sales orders in our glossary, but we don't own them. The ERP does, and its model was built by other people for other jobs. Its sales order carries accounting periods, tax codes, and fulfillment details our checkout never sees, and it uses words like "customer" and "line" in ways that only partly overlap with ours. Neither model is wrong. Each is right inside its own boundary. Evans calls that boundary a bounded context: the space inside which one model and one language hold without contradiction. A Ubiquitous Language was never meant to cover the whole company, just one context at a time.
+
+This is the idea that matters most for agents. An agent can't hold your whole system in its head, and neither can you. A well-bounded context is small and consistent enough to reason about on its own: its own language, its own model, a clear edge. Point an agent at Checkout and it can do good work without first learning how the ERP books tax. The tooling from the top of this Post already works this way. When a repo has more than one context, the [`domain-modeling`](https://github.com/mattpocock/skills/tree/main/skills/engineering/domain-modeling) skill that `grill-with-docs` calls expects a `CONTEXT-MAP.md` at the root pointing to one `CONTEXT.md` per context. For our store, that looks like this:
+
+```text title="the store's repository"
+/
+├── CONTEXT-MAP.md
+└── src/
+    ├── checkout/
+    │   └── CONTEXT.md
+    └── warehouse/
+        └── CONTEXT.md
+```
+
+The map names each context and the ERP upstream of them. Checkout's glossary holds cart, checkout, and sales order; the warehouse's holds its own words. An agent working on Checkout loads one glossary instead of one for everything.
+
+With more than one context, you need a map. Evans calls it a context map: each context as a box, and a name for how each pair relates. In our store, the ERP is upstream of Checkout. It sends what it sends, on its own schedule, and it won't change its model for us. That leaves Checkout two honest choices. It can conform, using the ERP's model and shapes directly, which Evans calls being a conformist. Or it can translate at the edge. Warehouse sits downstream of both, acting on what Checkout decides and what the ERP releases. Naming these relationships turns "it's complicated" into something a team, or an agent, can check a change against.
+
+Checkout translates. Evans calls the translator an anticorruption layer: a thin piece at the edge of a context that turns the upstream model into your own concepts. The ERP's tax codes, status flags, and idea of a "line" stop at the border. Inside, its messages arrive as things Checkout already understands, like `PickingStarted`. Switch the map between the two choices:
+
+<ContextMap />
+
+The layer protects the model from the ERP, and it protects it from agents too. Agents tend to mirror whatever shape is closest to hand. If ERP-shaped objects are imported three files away, new Checkout code comes out ERP-shaped, and the model you crunched erodes one plausible pull request at a time. When the only thing nearby is your own model, that's the shape the agent copies.
+
+Not every context deserves this much care, and Evans says so plainly. He calls the sorting distillation: separate the core domain, the part that makes this business different and deserves your best people, from the generic subdomains, the problems every business has and someone has already solved.
+
+<Compare>
+  <CompareSide title="Core domain">
+    - When a checkout can change, and how it stays in step with the warehouse.
+    - People decide what the model is. Agents still write code inside it.
+  </CompareSide>
+  <CompareSide title="Generic subdomains">
+    - Receipt emails, address validation, and sign-in.
+    - Let agents churn these out.
+  </CompareSide>
+</Compare>
+
+That split follows where a plausible answer is safe. In generic code the patterns are well known, and a plausible answer is usually a right one. The core is exactly where a plausible answer and a right one come apart.
+
+## So what
+
+You don't need a rewrite to start. These are the three practices I'd reach for first. They come from what we've kept coming back to in book club, not from a settled playbook, and each one helps people and agents at once.
+
+1. **Keep a living glossary, and hand it to your agent.** Write the Ubiquitous Language down, one `CONTEXT.md` per context, with avoid lists. Then point your agent's instructions at it, whether that's `AGENTS.md`, `CLAUDE.md`, or Copilot's instructions file. Update it the moment a word gets settled, not in a cleanup sprint later.
+2. **Clean up one boundary.** Pick the place where an outside model leaks furthest into yours, often an ERP or a vendor API, and put one anticorruption layer there. One honest boundary teaches more than a diagram of ten.
+3. **Review invariants and names, not just logic.** Add two questions to pull request review: does this change use the glossary's words, and does it go through the aggregate that owns the rule? Those are the two mistakes agents make most plausibly, and the two a reviewer skimming for correctness misses.
+
+None of this is new. Evans wrote it down in 2003, for teams made entirely of people. Agents didn't create the need for domain-driven design. They made the cost of skipping it visible, and they made it arrive faster. The code will keep getting cheaper. The understanding is still ours to do.
