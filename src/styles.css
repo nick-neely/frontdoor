@@ -1091,6 +1091,30 @@
   }
 
   /*
+   * A link that is nothing but a code chip, marked by `ProseLink`. The usual
+   * underline is a background on the link, and the chip's rounded corners
+   * leave it showing at the bottom edges, so the rule moves onto the chip's
+   * text instead. Resting colour and the amber on hover and focus match every
+   * other prose link.
+   */
+  .prose-code-link > code {
+    text-decoration: underline 1px var(--muted-foreground);
+    text-underline-offset: 0.3em;
+  }
+
+  .prose-code-link:focus-visible > code {
+    color: var(--signal);
+    text-decoration-color: var(--signal);
+  }
+
+  @media (hover: hover) {
+    .prose-code-link:hover > code {
+      color: var(--signal);
+      text-decoration-color: var(--signal);
+    }
+  }
+
+  /*
    * Shiki writes the surface and every token colour as `var(--code-*)`, which
    * the theme blocks above define. The border and radius are stated here so a
    * code block is one restrained card rather than a slab of colour.
@@ -1404,6 +1428,283 @@
     .process-step-body {
       margin-top: 0.45em;
     }
+  }
+
+  /*
+   * A Post's context map. It is ruled like `.process`, drawn in the ink and
+   * border tokens rather than the accent, and capped narrow so its labels keep
+   * their size at phone width. The dashed band is the anticorruption layer.
+   */
+  .context-map {
+    border-block: 1px solid var(--border);
+    padding-block: 1.1em;
+  }
+
+  .context-map svg {
+    display: block;
+    height: auto;
+    margin-inline: auto;
+    max-width: 22.5rem;
+    width: 100%;
+  }
+
+  .context-map text {
+    font-family: var(--font-mono);
+  }
+
+  .context-map-box {
+    fill: var(--card);
+    stroke: var(--muted-foreground);
+    stroke-width: 1;
+  }
+
+  .context-map-layer {
+    fill: var(--muted);
+    stroke: var(--foreground);
+    stroke-dasharray: 4 3;
+    stroke-width: 1;
+  }
+
+  .context-map-name,
+  .context-map-role,
+  .context-map-layer-label,
+  .context-map-edge-label-vertical {
+    text-anchor: middle;
+  }
+
+  .context-map-name {
+    fill: var(--foreground);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .context-map-role,
+  .context-map-edge-label {
+    fill: var(--muted-foreground);
+    font-size: 12px;
+  }
+
+  .context-map-layer-label {
+    fill: var(--foreground);
+    font-size: 12px;
+  }
+
+  .context-map-edge {
+    stroke: var(--muted-foreground);
+    stroke-width: 1;
+  }
+
+  .context-map-arrowhead {
+    fill: var(--muted-foreground);
+  }
+
+  .context-map-box[data-conforming] {
+    fill: var(--muted);
+  }
+
+  .context-map figcaption {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    margin-top: 0.9em;
+  }
+
+  .context-map-switch {
+    border: 0;
+    display: flex;
+    min-width: 0;
+    padding: 0;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1em;
+  }
+
+  /*
+   * A glossary excerpt in the shape of a `CONTEXT.md` entry. Ruled like
+   * `.process`, with each term set above its meaning and the words to avoid
+   * struck through in metadata voice.
+   */
+  .glossary {
+    border-block: 1px solid var(--border);
+    padding-block: 1.1em;
+  }
+
+  .glossary-label,
+  .compare-title,
+  .playground-label {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+
+  .glossary dl {
+    margin-top: 0.4em;
+  }
+
+  .glossary-entry {
+    padding-block: 0.7em;
+  }
+
+  .glossary-entry + .glossary-entry {
+    border-top: 1px solid var(--border);
+  }
+
+  .glossary dt {
+    font-weight: 600;
+  }
+
+  .glossary dd {
+    font-size: 0.95em;
+  }
+
+  .glossary .glossary-avoid {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    margin-top: 0.3em;
+  }
+
+  .glossary-avoid s {
+    text-decoration-color: var(--muted-foreground);
+  }
+
+  /*
+   * Two sides read against each other: stacked on a phone, a divided pair
+   * once the measure can hold both, and source order either way.
+   */
+  .compare {
+    border-block: 1px solid var(--border);
+    display: grid;
+    font-size: 0.95em;
+    padding-block: 1.1em;
+  }
+
+  .compare-side + .compare-side {
+    border-top: 1px solid var(--border);
+    margin-top: 1em;
+    padding-top: 1em;
+  }
+
+  .compare-side > * + * {
+    margin-top: 0.6em;
+  }
+
+  @media (min-width: 40rem) {
+    .compare {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compare-side:first-child {
+      padding-right: 1.25em;
+    }
+
+    .compare-side + .compare-side {
+      border-left: 1px solid var(--border);
+      border-top: 0;
+      margin-top: 0;
+      padding-left: 1.25em;
+      padding-top: 0;
+    }
+  }
+
+  /*
+   * A live object the reader can call. Controls borrow the code-copy
+   * control's voice, and the only accent is the hover and focus state
+   * `DESIGN.md` allows. A thrown error is marked by weight, not colour.
+   */
+  .playground {
+    border-block: 1px solid var(--border);
+    padding-block: 1.1em;
+  }
+
+  .playground-state,
+  .playground-outcome {
+    @apply font-mono;
+    font-size: 0.875rem;
+  }
+
+  .playground-state {
+    margin-top: 0.6em;
+  }
+
+  .playground-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.9em;
+  }
+
+  .playground-button {
+    @apply rounded-sm font-mono;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    line-height: 1;
+    padding: 0.5rem 0.65rem;
+  }
+
+  .playground-button[aria-pressed="true"] {
+    border-color: var(--foreground);
+    color: var(--foreground);
+  }
+
+  .playground-button:focus-visible {
+    color: var(--signal);
+  }
+
+  @media (hover: hover) {
+    .playground-button:hover {
+      color: var(--signal);
+    }
+  }
+
+  .playground-outcome {
+    color: var(--muted-foreground);
+    display: block;
+    margin-top: 0.9em;
+  }
+
+  .ticket-text {
+    font-size: 1.1em;
+    margin-top: 0.6em;
+  }
+
+  /* The ambiguous word, marked in ink rather than the accent. */
+  .ticket-word {
+    font-weight: 600;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.2em;
+  }
+
+  .ticket-choices {
+    border: 0;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .ticket-choices legend {
+    margin-bottom: 0.6em;
+    width: 100%;
+  }
+
+  .ticket-outcome > span {
+    display: block;
+  }
+
+  .ticket-outcome > span + span {
+    margin-top: 0.4em;
+  }
+
+  .ticket-outcome [data-breaks] {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .playground-outcome[data-threw] {
+    color: var(--foreground);
+    font-weight: 600;
   }
 
   /*

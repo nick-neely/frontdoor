@@ -1,5 +1,13 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.mjs"],
+  // The MDX glob is listed so Vite's `resolve.tsconfigPaths` resolves `@/`
+  // inside a Post. TypeScript itself skips the extension.
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    "**/*.mjs",
+    "content/**/*.mdx"
+  ],
   "exclude": [
     "node_modules",
     ".agents",

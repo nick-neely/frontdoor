@@ -1,7 +1,7 @@
 ---
 title: "Writing surface fixture"
 slug: "writing-surface-fixture"
-description: "A permanent draft that exercises every part of the writing surface: images, code block chrome, callouts, process diagrams, disclosures, heading anchors, keys, wide tables, and footnotes."
+description: "A permanent draft that exercises every part of the writing surface: images, code block chrome, callouts, process diagrams, glossaries, comparisons, disclosures, heading anchors, keys, wide tables, and footnotes."
 published: "2026-08-25"
 pillar: "product-engineering"
 tags: ["fixture"]
@@ -91,6 +91,10 @@ that does nothing is worse than no control. Clicking it confirms with a brief
 "Copied", which is the one thing on this site that motion is allowed to do.
 
 Inline `code` is unchanged, and so is a `--flag` in the middle of a sentence.
+A link made only of code, like [`CONTEXT.md`](https://github.com/nick-neely/frontdoor/blob/main/CONTEXT.md),
+carries its underline on the chip, so no rule shows at the chip's rounded
+corners. A link with [some `code` inside](https://nickneely.dev) keeps the
+ordinary underline.
 
 ## Callouts
 
@@ -139,6 +143,32 @@ becomes a divided row, while narrow screens keep the linear reading order.
   <ProcessStep title="Verify">Inspect the rendered HTML.</ProcessStep>
   <ProcessStep title="Publish">Deploy the verified output.</ProcessStep>
 </Process>
+
+## Glossaries
+
+A glossary excerpt takes the shape of a `CONTEXT.md` entry: a term, its
+meaning, and the words to avoid, struck through. The avoid line is optional.
+
+<Glossary label="CONTEXT.md">
+  <GlossaryEntry term="Post" avoid={["article", "blog", "blog post", "entry"]}>A dated piece of writing, tied to exactly one Pillar.</GlossaryEntry>
+  <GlossaryEntry term="Tag">A free-form secondary label on a Post.</GlossaryEntry>
+</Glossary>
+
+## Comparisons
+
+Two sides sit next to each other once the measure can hold both, and stack in
+source order on a phone. Each side holds ordinary Markdown.
+
+<Compare>
+  <CompareSide title="Before">
+    - One word for three things.
+    - A rule spread across services.
+  </CompareSide>
+  <CompareSide title="After">
+    - Three words, one for each thing.
+    - A rule with one owner.
+  </CompareSide>
+</Compare>
 
 ## Headings and anchors
 
