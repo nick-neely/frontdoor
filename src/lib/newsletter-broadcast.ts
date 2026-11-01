@@ -34,12 +34,9 @@ export interface BroadcastDraft {
 }
 
 /**
- * The Post a slug names, or an error that says which of the two things went
- * wrong.
- *
- * A draft and a typo are the same to a reader and very different to whoever
- * just typed the command, so they get different messages. Nothing here reads
- * the environment or the network, so a wrong slug costs nothing.
+ * The Post a slug names, or an error that lists the slugs it could have been.
+ * Nothing here reads the environment or the network, so a wrong slug costs
+ * nothing.
  */
 export function selectBroadcastPost(
   slug: string,
@@ -48,18 +45,10 @@ export function selectBroadcastPost(
   const post = entries.find((entry) => entry.slug === slug);
 
   if (post === undefined) {
-    const known = entries
-      .flatMap((entry) => (entry.draft ? [] : [entry.slug]))
-      .join(", ");
+    const known = entries.map((entry) => entry.slug).join(", ");
 
     throw new Error(
       `No Post with the slug "${slug}". Published slugs: ${known || "none"}.`
-    );
-  }
-
-  if (post.draft) {
-    throw new Error(
-      `"${slug}" is still a draft. Publish it before broadcasting it.`
     );
   }
 

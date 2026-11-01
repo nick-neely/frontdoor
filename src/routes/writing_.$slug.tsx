@@ -41,13 +41,13 @@ import type { WritingEntry } from "@/lib/writing.ts";
  * check the chunk sizes if this ever needs to change.
  */
 const bodies = import.meta.glob<{ default: MDXContent }>(
-  "/content/writing/*.mdx",
+  ["/content/writing/*.mdx", "/content/fixtures/*.mdx"],
   { eager: true }
 );
 
 export const Route = createFileRoute("/writing_/$slug")({
-  // In production a draft and an unknown slug are the same thing to a reader: a
-  // wrong door. Deciding here rather than in the component settles the 404
+  // In production a fixture and an unknown slug are the same thing to a reader:
+  // a wrong door. Deciding here rather than in the component settles the 404
   // before anything renders, and it keeps the body glob out of the eager route
   // module.
   loader: ({ params }) => {

@@ -8,6 +8,7 @@ import { readingMinutes } from "./src/lib/reading-time.ts";
 import { writingFrontmatterSchema } from "./src/lib/writing-schema.ts";
 
 const writingDirectory = "content/writing";
+const fixturesDirectory = "content/fixtures";
 const projectsDirectory = "content/projects";
 const mdxExtension = ".mdx";
 
@@ -31,40 +32,56 @@ function assertSlugMatchesFileName(
 }
 
 /**
- * The typed index of everything under `content/writing`, per ADR-0001. It
- * carries frontmatter and nothing else: `@mdx-js/rollup` compiles each body
- * into its own module, and `src/lib/writing.ts` pairs the two lazily, so the
- * list page, the home feed, the sitemap, and the feed never load prose.
+ * A typed index of writing frontmatter, per ADR-0001. It carries frontmatter
+ * and nothing else: `@mdx-js/rollup` compiles each body into its own module,
+ * and `src/lib/writing.ts` pairs the two lazily, so the list page, the home
+ * feed, the sitemap, and the feed never load prose.
  *
  * `frontmatter-only` keeps the body out of the document, which is why reading
  * time is computed from a separate read of the file rather than from a
  * `content` field the schema would otherwise have to declare.
+ *
+ * `modulePath` is where the compiled body lives, which is how the reading
+ * route finds it whichever directory the entry came from.
  */
-const writing = defineCollection({
-  directory: writingDirectory,
-  include: `*${mdxExtension}`,
-  name: "writing",
-  parser: "frontmatter-only",
-  schema: writingFrontmatterSchema,
-  transform: (document) => {
-    const { _meta, ...frontmatter } = document;
-    const { fileName } = _meta;
+function writingCollection(name: string, typeName: string, directory: string) {
+  return defineCollection({
+    directory,
+    include: `*${mdxExtension}`,
+    name,
+    parser: "frontmatter-only",
+    schema: writingFrontmatterSchema,
+    transform: (document) => {
+      const { _meta, ...frontmatter } = document;
+      const { fileName } = _meta;
 
-    assertSlugMatchesFileName(writingDirectory, fileName, frontmatter.slug);
+      assertSlugMatchesFileName(directory, fileName, frontmatter.slug);
 
-    const source = readFileSync(
-      path.join(writingDirectory, _meta.filePath),
-      "utf-8"
-    );
+      const source = readFileSync(
+        path.join(directory, _meta.filePath),
+        "utf-8"
+      );
 
-    return {
-      ...frontmatter,
-      fileName,
-      readingMinutes: readingMinutes(source),
-    };
-  },
-  typeName: "Post",
-});
+      return {
+        ...frontmatter,
+        fileName,
+        modulePath: `/${directory}/${fileName}`,
+        readingMinutes: readingMinutes(source),
+      };
+    },
+    typeName,
+  });
+}
+
+/** Everything under `content/writing`, all of it published. */
+const writing = writingCollection("writing", "Post", writingDirectory);
+
+/**
+ * The writing-surface fixtures: pieces written to exercise the reading
+ * surface, never to be read. They share the writing schema so they render
+ * exactly like writing, and only the development server ever renders them.
+ */
+const fixtures = writingCollection("fixtures", "Fixture", fixturesDirectory);
 
 /**
  * The typed index of every Project detail page. Same arrangement as `writing`
@@ -92,4 +109,4 @@ const projectPage = defineCollection({
   typeName: "ProjectPage",
 });
 
-export default defineConfig({ content: [writing, projectPage] });
+export default defineConfig({ content: [writing, fixtures, projectPage] });

@@ -26,7 +26,7 @@ import { renderRssFeed } from "./src/lib/rss.ts";
 import { siteConfig } from "./src/lib/site-config.ts";
 import { generatedSiteFiles } from "./src/lib/site-files.ts";
 import { postOgCard, postOgImagePath } from "./src/lib/writing-schema.ts";
-import { isDraftBody, readPublishedWriting } from "./src/lib/writing-source.ts";
+import { isFixtureBody, readWriting } from "./src/lib/writing-source.ts";
 
 const feedFileName = siteConfig.links.rss.replace(/^\//u, "");
 
@@ -108,12 +108,12 @@ function cardFileName(cardPath: string): string {
  * detail page. A Post that names its own `ogImage` is skipped, because a
  * hand-made card is already in `public/`.
  *
- * Both halves read the same sources as the prerender inventory, so a draft, a
+ * Both halves read the same sources as the prerender inventory, so a new Post, a
  * renamed slug, or a detail page that has not been written yet moves the card,
  * the page, and the sitemap entry together.
  */
 function generatedCards(): GeneratedCard[] {
-  const writingCards = readPublishedWriting()
+  const writingCards = readWriting()
     .filter((post) => post.ogImage === undefined)
     .map((post) => ({
       content: postOgCard(post),
@@ -161,7 +161,7 @@ function contentArtifacts(): Plugin {
         // should not wait for a restart. It is a handful of small files.
         if (name === feedFileName) {
           response.setHeader("content-type", "application/rss+xml");
-          response.end(renderRssFeed(readPublishedWriting()));
+          response.end(renderRssFeed(readWriting()));
           return;
         }
 
@@ -185,7 +185,7 @@ function contentArtifacts(): Plugin {
 
       this.emitFile({
         fileName: feedFileName,
-        source: renderRssFeed(readPublishedWriting()),
+        source: renderRssFeed(readWriting()),
         type: "asset",
       });
 
@@ -205,26 +205,26 @@ function contentArtifacts(): Plugin {
 }
 
 /**
- * Empties a draft's prose out of the production bundle.
+ * Empties the fixtures' prose out of the production bundle.
  *
- * The compiled bodies reach the route through an exhaustive glob over
- * `content/writing`, which cannot tell a draft from a Post; a draft therefore
- * has no page while its prose, and every picture it imports, still ships inside
- * the chunk every published Post shares. Returning an empty source is enough:
- * `@mdx-js/rollup` still compiles a real module, so the glob's shape is
+ * The compiled bodies reach the route through a glob that includes
+ * `content/fixtures`, so the development server can render them. Production
+ * never does, yet their prose, and every picture they import, would still ship
+ * inside the chunk every published Post shares. Returning an empty source is
+ * enough: `@mdx-js/rollup` still compiles a real module, so the glob's shape is
  * unchanged, and the module has no content and no imports left in it.
  *
  * `apply: "build"` is the whole point of the plugin being conditional. In
- * development a draft still renders, which is how one is previewed.
+ * development a fixture still renders, which is what it is for.
  */
-function draftBodies(): Plugin {
+function fixtureBodies(): Plugin {
   return {
     apply: "build",
     enforce: "pre",
     load(id) {
-      return isDraftBody(id) ? "" : null;
+      return isFixtureBody(id) ? "" : null;
     },
-    name: "writing-draft-bodies",
+    name: "fixture-bodies",
   };
 }
 
@@ -242,7 +242,7 @@ const config = defineConfig({
     // under `node_modules/.cache`, which is what keeps `pnpm validate` fast on
     // the second run.
     imagetools(),
-    draftBodies(),
+    fixtureBodies(),
     tailwindcss(),
     tanstackStart({
       pages: publicPaths.map((path) => ({ path })),

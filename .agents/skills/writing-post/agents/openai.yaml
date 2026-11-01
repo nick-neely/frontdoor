@@ -1,0 +1,5 @@
+interface:
+  display_name: "Writing Post"
+  short_description: "Take an idea to a researched, figure-rich MDX Post"
+policy:
+  allow_implicit_invocation: false

@@ -72,7 +72,8 @@ function RootErrorComponent({ error }: ErrorComponentProps) {
 
   return (
     <ErrorFallback
-      error={error}
+      // The router hands over whatever was thrown, which need not be an Error.
+      error={error instanceof Error ? error : new Error(String(error))}
       onRetry={() => {
         void router.invalidate();
       }}

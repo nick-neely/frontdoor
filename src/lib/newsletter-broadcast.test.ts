@@ -11,7 +11,6 @@ import type { WritingFrontmatter } from "./writing-schema.ts";
 
 const published = {
   description: "Why the terminal résumé moved to a subdomain.",
-  draft: false,
   kind: "post",
   pillar: "building-in-public",
   published: "2026-08-25",
@@ -19,17 +18,7 @@ const published = {
   title: "Building the new front door",
 } as const satisfies WritingFrontmatter;
 
-const unpublished = {
-  description: "Not finished.",
-  draft: true,
-  kind: "post",
-  pillar: "practical-ai",
-  published: "2026-09-01",
-  slug: "half-written",
-  title: "Half written",
-} as const satisfies WritingFrontmatter;
-
-const entries: WritingFrontmatter[] = [published, unpublished];
+const entries: WritingFrontmatter[] = [published];
 
 describe("choosing what to broadcast", () => {
   it("finds a published Post by slug", () => {
@@ -39,18 +28,6 @@ describe("choosing what to broadcast", () => {
   it("refuses an unknown slug and names the ones that exist", () => {
     expect(() => selectBroadcastPost("no-such-post", entries)).toThrow(
       /no-such-post[\s\S]*building-the-new-front-door/u
-    );
-  });
-
-  it("does not offer drafts as alternatives", () => {
-    expect(() => selectBroadcastPost("no-such-post", entries)).toThrow(
-      /^(?![\s\S]*half-written)/u
-    );
-  });
-
-  it("refuses a draft by saying it is one", () => {
-    expect(() => selectBroadcastPost(unpublished.slug, entries)).toThrow(
-      /still a draft/u
     );
   });
 });

@@ -1,0 +1,130 @@
+---
+title: "The agentic software gold rush"
+slug: "agentic-software-gold-rush"
+description: "Agents write code faster than I can review it. The picks and shovels of this gold rush are the infrastructure that lets agents check their own work, stop at the right boundaries, and leave evidence a team can understand."
+published: "2026-10-31"
+pillar: "practical-ai"
+tags: ["coding-agents", "verification", "code-review"]
+---
+
+import { ComprehensionGap } from "@/components/posts/comprehension-gap.tsx";
+import { MergeDanger } from "@/components/posts/merge-danger.tsx";
+import { MorningHandoff } from "@/components/posts/morning-handoff.tsx";
+import { ReviewBottleneckChart } from "@/components/posts/review-bottleneck-chart.tsx";
+import { SelfGradedTests } from "@/components/posts/self-graded-tests.tsx";
+
+Agents can write code faster than I can review it. I already trust them with a lot of the work on my personal projects, but I still review every PR before anything reaches main. Smaller PRs help. More of them still means more work for me, because smaller units of review don't give me more hours in the day.
+
+Implementation got faster. My ability to understand what changed, and how it fits into the system, didn't keep pace.
+
+It isn't just me. Faros AI's telemetry shows the same shape across thousands of teams: the more a team leans on AI, the more it ships into review, and the longer review takes.
+
+<ReviewBottleneckChart />
+
+Faros reads the smaller rise in merged PRs in its 2026 report as a review bottleneck throttling throughput, not as the tools running out of steam. Some teams are routing around the queue instead: in Faros's [Q3 2026 update](https://www.faros.ai/blog/ai-speed-trap-takeaways), the rise in PRs merged without any review grew from 31.3% to 76.3%. That isn't the fix I'm after.
+
+## Picks and shovels
+
+<Callout label="The original picks and shovels">
+  Samuel Brannan, the merchant who famously shouted "Gold! Gold! Gold! Gold from the American River!", never dug for gold himself. His store sold [as much as $5,000 in goods per day](https://www.pbs.org/wgbh/americanexperience/features/goldrush-samuel-brannan/) to miners. Levi Strauss [arrived in 1853](https://www.levistrauss.com/2024/06/11/truth-and-exaggerations-of-lsco/) and opened a dry goods business supplying the general stores of the West. The riveted work pants came twenty years later.
+</Callout>
+
+That's why I'm interested in the picks and shovels of this gold rush: the infrastructure that makes greater autonomy practical. Agents need ways to check their work, recognize when to stop, and leave evidence a team can use to understand the result.
+
+A lot of the pieces already exist: reproducible environments, automated tests, ways to inspect running software, and ways to recover when something fails. The opportunity is connecting them so an agent can use them on its own, in a loop:
+
+<Process label="The loop an agent needs to run on its own">
+  <ProcessStep title="Try">Make the change somewhere it can reset state and safely break things.</ProcessStep>
+  <ProcessStep title="Exercise">Run the affected workflow for real: the screen, the request, the job.</ProcessStep>
+  <ProcessStep title="Inspect">Look at what actually happened across screens, logs, and data.</ProcessStep>
+  <ProcessStep title="Decide">Keep going, fix the mistake, or stop and ask.</ProcessStep>
+</Process>
+
+Verification belongs throughout that loop, not just at the end. And the same evidence that lets an agent move forward should let a human catch up.
+
+## Green isn't the same as verified
+
+Passing tests alone wouldn't convince me, and I don't think I'm unusual. In Stack Overflow's [2026 Developer Survey](https://survey.stackoverflow.co/2026/ai), the most common answer to how much developers trust AI output was "I trust it when I can easily verify the output", at 48.0%. Only 6.6% trust it with important work decisions.
+
+So what would convince me? I'd want to know what was exercised, what the checks establish, and what remains uncertain. If an agent changes both the implementation and its tests, the two can agree with each other and still miss the requirement.
+
+Here's a small version. The rule is that refunds of $500 or more need a manager's approval. The agent read it as "over $500" and wrote this, along with its tests:
+
+```ts title="src/refunds/needs-approval.ts" {2}
+export function needsApproval(amount: number): boolean {
+  return amount > 500;
+}
+```
+
+```ts title="src/refunds/needs-approval.test.ts" {4}
+it("follows the approval threshold", () => {
+  expect(needsApproval(499)).toBe(false);
+  expect(needsApproval(501)).toBe(true);
+  expect(needsApproval(500)).toBe(false);
+});
+```
+
+<SelfGradedTests />
+
+Every check the agent wrote is green, and the one case the product owner cared about is wrong. The tests confirm the agent's reading of the rule, not the rule. Infrastructure that only counts passing checks could give a team false confidence, which is part of why getting it right matters. It has to make those limits visible: what was exercised, and whose examples the checks came from.
+
+## Knowing when to stop
+
+How much evidence is enough depends on what a change could affect and how easily it can be undone. I've been using [Matt Pocock's PR skill](https://github.com/mattpocock/skills/blob/main/skills/engineering/pr/SKILL.md), which asks about merge danger: the blast radius, and whether a change is a one-way or a two-way door. Does it touch billing? Can we walk it back?
+
+<MergeDanger />
+
+A routine, reversible change might proceed on its own. A destructive migration should wait for human judgment. Teams need to own those boundaries, and agents need to recognize when their work crosses them. Until they reliably do, I'd have trouble taking "independently verified and safe to merge" at face value, and I suspect a lot of engineers would too.
+
+## The comprehension gap
+
+Even with those boundaries in place, I still need to understand the system the agents are changing, and implementation used to be how I built that understanding. Suppose an agent saves me four hours of coding. I've also skipped the time I'd have spent following dependencies, discovering constraints, and reconsidering the design. Writing code was doing two jobs.
+
+<ComprehensionGap />
+
+A good PR description helps, but then I'm relying on the agent's explanation of its own work. The agent writes the change, then chooses what I see about it. What if the missing context is exactly what would have made me disagree?
+
+What I'd want instead:
+
+- **A map of the system** that shows where a change fits.
+- **Recordings** that show the new behavior in the working software.
+- **Answers to "why"**, tied to the code and evidence behind them, that I can push on until I understand.
+
+I don't want to read a log of everything the agent did. I want to know what matters, then dig deeper where I need to.
+
+## Two futures
+
+Helping humans catch up may be only one possible future. Even if you're skeptical of today's agents, imagine an AI reviewer that becomes demonstrably more reliable than a human at understanding code and finding problems. What does a mandatory human rubber stamp contribute then? The longer-term opportunity might be making it safer for us to need less understanding of the implementation.
+
+<Compare>
+  <CompareSide title="Help people understand more">
+    - Maps, recordings, and answers that let a reviewer keep pace with the change.
+    - A person still reads the result and signs off.
+  </CompareSide>
+  <CompareSide title="Make it safe to understand less">
+    - Verification good enough that most changes never need a person to read them.
+    - People own the boundaries and the bar for evidence, not every diff.
+  </CompareSide>
+</Compare>
+
+Both could matter, in different parts of the same system. But there's a catch.
+
+In 1983, Lisanne Bainbridge described the same worry about industrial automation in ["Ironies of Automation"](https://doi.org/10.1016/0005-1098(83)90046-8):
+
+> There is some concern that the present generation of automated systems, which are monitored by former manual operators, are riding on their skills, which later generations of operators cannot be expected to have.
+
+Swap "operators" for engineers. The expertise we rely on to supervise these systems could weaken through lack of use. If agents handle most implementation and debugging, people get fewer chances to practice recognizing what went wrong. Keeping someone available to intervene means little if they've lost the understanding needed to do it. What minimum understanding must we preserve, and how do we keep it alive?
+
+## What the team still owns
+
+I don't have a complete answer. But teams still need to understand the intent, the consequential design decisions, and what counts as acceptable evidence. Some of that comes from [domain modeling](/writing/domain-driven-design-in-the-age-of-ai) and from working through examples with a product owner, like the $500 refund above. The infrastructure needs to carry those agreed rules and reasons into the agents' work, and bring gaps and contradictions back to the team. Google's [DORA 2025 report](https://dora.dev/dora-report-2025/) puts it bluntly: AI "magnifies the strengths of high-performing organizations and the dysfunctions of struggling ones."
+
+More capable agents make this more important, not less. Capability expands what we can delegate. It doesn't decide what we should authorize, or what evidence we should accept.
+
+Now imagine agents working while the team is away, finishing routine maintenance and verifying changes within the agreed boundaries. The team comes back to evidence it can inspect and decisions that need its judgment, instead of a transcript:
+
+<MorningHandoff />
+
+If everyone spends the day reconstructing what happened overnight, the bottleneck survives. The payoff is attention: more of it for deciding what's worth building, and for weighing the larger design tradeoffs.
+
+That's the picks-and-shovels opportunity as I see it: connecting the practices we already have so agents can work on their own and teams can judge the results. Faster implementation brought me to the review bottleneck. Getting past it will take infrastructure that earns our trust, and helps us understand enough to stay responsible for what we build.

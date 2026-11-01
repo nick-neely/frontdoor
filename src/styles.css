@@ -1708,6 +1708,203 @@
   }
 
   /*
+   * A two-by-two of blast radius against reversibility. The quadrant a
+   * reader's pick lands in is marked in ink, like a pressed button, and the
+   * one-way row sits on the muted fill because those are the changes that
+   * wait. It is a real table, so the axes are announced with every cell.
+   */
+  .prose .merge-danger-grid {
+    border-collapse: separate;
+    border-spacing: 0.4rem;
+    margin-inline: -0.4rem;
+    margin-top: 0.6em;
+    min-width: 0;
+    table-layout: fixed;
+    width: calc(100% + 0.8rem);
+  }
+
+  .prose .merge-danger-grid th {
+    border: 0;
+    letter-spacing: 0.02em;
+    padding: 0;
+    text-transform: none;
+  }
+
+  .prose .merge-danger-grid thead th:first-child,
+  .prose .merge-danger-grid th[scope="row"] {
+    width: 4.75rem;
+  }
+
+  @media (min-width: 40rem) {
+    .prose .merge-danger-grid thead th:first-child,
+    .prose .merge-danger-grid th[scope="row"] {
+      width: 7.75rem;
+    }
+  }
+
+  .prose .merge-danger-grid td {
+    @apply rounded-sm;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.9em;
+    line-height: 1.4;
+    padding: 0.75em 0.8em;
+    vertical-align: top;
+  }
+
+  .prose .merge-danger-grid td[data-door="one-way"] {
+    background-color: var(--muted);
+  }
+
+  .prose .merge-danger-grid td[data-active] {
+    border-color: var(--foreground);
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  /*
+   * A single-series horizontal bar chart. Thin bars with a rounded data end,
+   * the value printed beside each, and no grid: the printed values are the
+   * axis. Output bars sit in the secondary ink and review bars in the primary
+   * ink, but the group heading is what names them, never the colour alone.
+   */
+  .bar-chart-group {
+    margin-top: 1.1em;
+  }
+
+  .bar-chart-group-title {
+    @apply font-mono;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .bar-chart-row {
+    display: grid;
+    gap: 0.25em;
+    margin-top: 0.6em;
+  }
+
+  .bar-chart-row dt {
+    color: var(--muted-foreground);
+    font-size: 0.9em;
+  }
+
+  .bar-chart-row dd {
+    align-items: center;
+    display: flex;
+    gap: 0.6em;
+  }
+
+  .bar-chart-bar {
+    background-color: var(--muted-foreground);
+    border-radius: 0 4px 4px 0;
+    display: block;
+    height: 0.65rem;
+    min-width: 2px;
+  }
+
+  .bar-chart-group[data-group="review"] .bar-chart-bar {
+    background-color: var(--foreground);
+  }
+
+  .bar-chart-value {
+    @apply font-mono;
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+  }
+
+  @media (min-width: 40rem) {
+    .bar-chart-row {
+      align-items: center;
+      grid-template-columns: 15rem minmax(0, 1fr);
+    }
+  }
+
+  /*
+   * Two lanes over the same stretch of time. A skipped piece of
+   * understanding keeps its outline and loses its fill, so the gap reads as
+   * a space where something should have been.
+   */
+  .comprehension-gap-lanes {
+    display: grid;
+    gap: 0.9em;
+    margin-top: 1em;
+  }
+
+  .comprehension-gap-lane {
+    display: grid;
+    gap: 0.4em;
+  }
+
+  .comprehension-gap-lane dt {
+    @apply font-mono;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+  }
+
+  .comprehension-gap-lane dd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .comprehension-gap-segment {
+    @apply rounded-sm font-mono;
+    background-color: var(--muted);
+    border: 1px solid var(--muted-foreground);
+    flex: 1 1 8rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    padding: 0.55em 0.7em;
+  }
+
+  .comprehension-gap-segment[data-skipped] {
+    background-color: transparent;
+    border-style: dashed;
+    color: var(--muted-foreground);
+  }
+
+  @media (min-width: 40rem) {
+    .comprehension-gap-lane {
+      align-items: center;
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+  }
+
+  /*
+   * The same night two ways: a dense transcript in metadata voice, and the
+   * sorted handoff in the compare voice, so the second view reads as the
+   * first one with the judgment already done.
+   */
+  .prose .morning-handoff-log {
+    @apply rounded-sm font-mono;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    list-style: none;
+    margin-top: 1em;
+    padding: 0.75em 1em;
+  }
+
+  .prose .morning-handoff-log li + li {
+    margin-top: 0.1em;
+  }
+
+  .morning-handoff-evidence {
+    display: grid;
+    font-size: 0.95em;
+    gap: 1.1em;
+    margin-top: 1em;
+  }
+
+  .morning-handoff-evidence ul {
+    margin-top: 0.4em;
+  }
+
+  /*
    * A native disclosure, styled rather than rebuilt. The summary is metadata
    * voice; the body is indented to the same rail as a list so an open aside
    * reads as subordinate to the paragraph above it.

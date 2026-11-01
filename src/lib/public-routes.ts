@@ -2,7 +2,7 @@ import type { FileRouteTypes } from "../routeTree.gen.ts";
 import { readProjectPages } from "./projects-source.ts";
 import { projectPath } from "./projects.ts";
 import { postPath } from "./writing-schema.ts";
-import { readPublishedWriting } from "./writing-source.ts";
+import { readWriting } from "./writing-source.ts";
 
 type RoutePath = FileRouteTypes["fullPaths"];
 
@@ -51,7 +51,7 @@ const dynamicRouteExpansions = {
   // page keep linking straight out to the live thing.
   "/projects/$slug": () =>
     readProjectPages().map((page) => projectPath(page.slug)),
-  "/writing/$slug": () => readPublishedWriting().map(postPath),
+  "/writing/$slug": () => readWriting().map(postPath),
 } as const satisfies Record<DynamicRoutePath, () => string[]>;
 
 const expansions = new Map<string, () => string[]>(

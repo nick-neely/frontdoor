@@ -18,7 +18,6 @@ function post(
 ): WritingFrontmatter {
   return {
     description: `${title} description`,
-    draft: false,
     kind: "post",
     pillar: "practical-ai",
     published,
