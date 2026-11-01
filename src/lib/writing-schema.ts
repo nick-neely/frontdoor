@@ -50,19 +50,24 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const sitePathPattern = /^\/(?![/\\])[^\\]*$/u;
 
 /**
- * Frontmatter for everything under `content/writing`. Posts and Notes share
- * the schema and the namespace; `kind` is what separates them, and it is what
- * `/writing` splits its two lists on.
+ * Frontmatter for everything under `content/writing`, and for the fixtures
+ * under `content/fixtures`. Posts and Notes share the schema and the
+ * namespace; `kind` is what separates them, and it is what `/writing` splits
+ * its two lists on.
+ *
+ * The object is strict, so a field the site does not read fails the build
+ * instead of vanishing. That matters most for `draft`: there is no draft state,
+ * since everything in `content/writing` is published, and a stray
+ * `draft: true` would otherwise publish a Post its author meant to hold back.
  *
  * `published` is required of both. For a Post it is the date the page prints
  * and the feed sorts on; for a Note it is only provenance, which is why no
  * Note surface renders it.
  */
-export const writingFrontmatterSchema = z.object({
+export const writingFrontmatterSchema = z.strictObject({
   /** Absolute URL when the piece was first published elsewhere. */
   canonical: z.url().optional(),
   description: z.string().min(1),
-  draft: z.boolean().default(false),
   kind: z.enum(["post", "note"]).default("post"),
   /** Site-relative path to a hand-made card, replacing the generated one. */
   ogImage: z.string().regex(sitePathPattern).optional(),

@@ -9,7 +9,10 @@
 // no declarations, so importing one directly trades a handful of bytes for an
 // untyped index.
 // oxlint-disable-next-line react-doctor/no-barrel-import
-import { allWritings } from "../../.content-collections/generated/index.js";
+import {
+  allFixtures,
+  allWritings,
+} from "../../.content-collections/generated/index.js";
 import {
   compareNotes,
   comparePosts,
@@ -37,21 +40,16 @@ export {
  */
 export type WritingEntry = (typeof allWritings)[number];
 
-/** Everything in the collection, newest first, drafts included. */
-const allEntries: readonly WritingEntry[] = allWritings.toSorted(comparePosts);
-
 /**
- * Everything the site publishes, newest first, of either kind. Drafts never
- * appear here, which is what keeps them off every list, off the reading
- * surface, and out of the metadata each page emits.
+ * Everything the site publishes, newest first, of either kind. Everything
+ * under `content/writing` is published: merging it is publishing it.
  *
  * This is the list that answers whether a URL exists: a Note is a public page
  * exactly like a Post, so it prerenders, appears in the sitemap, and gets a
  * card. The kinds part company below, where the difference is visible.
  */
-export const publishedWriting: readonly WritingEntry[] = allEntries.filter(
-  (entry) => !entry.draft
-);
+export const publishedWriting: readonly WritingEntry[] =
+  allWritings.toSorted(comparePosts);
 
 /**
  * Every published Post, newest first. This is the dated half of the site: the
@@ -75,23 +73,20 @@ export function findWriting(slug: string): WritingEntry | undefined {
 /**
  * The entry a reading URL resolves to, which is not quite the same question.
  *
- * In production it is a published Post or Note and nothing else: a draft is a
- * wrong door, exactly like a slug that was never written. In development a
- * draft opens at its own URL, because a draft nobody can read is a draft
- * nobody can review - and the fixtures under `content/writing` are permanent
- * ones whose whole purpose is to be opened and looked at.
- *
- * A draft still does not appear on `/writing`, in the feed, or in the sitemap.
- * The URL has to be typed, which is the entire mechanism and the entire
- * safeguard.
+ * In production it is published writing and nothing else. In development the
+ * fixtures under `content/fixtures` open at their own URLs too, because their
+ * whole purpose is to be opened and looked at. They never appear on
+ * `/writing`, in the feed, or in the sitemap; the URL has to be typed.
  */
 export function findReadableWriting(slug: string): WritingEntry | undefined {
-  const readable = import.meta.env.DEV ? allEntries : publishedWriting;
+  const readable = import.meta.env.DEV
+    ? [...publishedWriting, ...allFixtures]
+    : publishedWriting;
 
   return readable.find((entry) => entry.slug === slug);
 }
 
 /** Module specifier of the compiled MDX body, and the key its glob is under. */
 export function postModuleId(entry: WritingEntry): string {
-  return `/content/writing/${entry.fileName}`;
+  return entry.modulePath;
 }

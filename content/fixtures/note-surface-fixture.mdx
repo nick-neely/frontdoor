@@ -1,16 +1,15 @@
 ---
 title: "Note surface fixture"
 slug: "note-surface-fixture"
-description: "A permanent draft Note, kept so the undated half of the writing surface has exactly one thing to render: a title in the Notes list, a metadata line with no publication date, and a piece the feed refuses."
+description: "A permanent fixture Note, kept so the undated half of the writing surface has exactly one thing to render: a title in the Notes list, a metadata line with no publication date, and a piece the feed refuses."
 published: "2026-08-25"
 updated: "2026-08-26"
 pillar: "product-engineering"
 kind: "note"
 tags: ["fixture"]
-draft: true
 ---
 
-{/* FIXTURE, NOT WRITING. This file is kept deliberately and is never published: `draft: true` keeps it out of both lists, the sitemap, the feed, the prerender inventory, and the build output. It is the Note counterpart to `writing-surface-fixture.mdx`, which is a Post: together they are one of each kind, so every rule that depends on `kind` has something to render. Its prose is instructions, not voice. */}
+{/* FIXTURE, NOT WRITING. This file is kept deliberately and is never published: it lives in `content/fixtures`, which only the development server renders, at `/writing/note-surface-fixture`. The production build empties its body and lists it nowhere. It is the Note counterpart to `writing-surface-fixture.mdx`, which is a Post: together they are one of each kind, so every rule that depends on `kind` has something to render. Its prose is instructions, not voice. */}
 
 This page exists so the Note half of the writing surface can be looked at. Open
 it in both themes and read the line under the title.
@@ -29,11 +28,11 @@ of that surface is exercised; nothing here repeats it.
 
 ## What it proves by being absent
 
-Set `draft: false`, restart nothing, and `/writing` grows a second list: a
+Copy this file into `content/writing` and `/writing` grows a second list: a
 "Posts" heading over the dated feed, a "Notes" heading over this, sorted by
-title and printing no dates. Revert it and the page returns to the single
+title and printing no dates. Delete the copy and the page returns to the single
 undivided list it ships with.
 
-While it is published, `/rss.xml` must still not mention it, and neither must
+While the copy is there, `/rss.xml` must still not mention it, and neither must
 the Latest feed on the home page. Both are lists of dated things that happened,
 and a Note is neither dated nor a thing that happened once.

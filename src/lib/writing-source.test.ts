@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { isDraftBody, readPublishedWriting } from "./writing-source.ts";
+import { isFixtureBody, readWriting } from "./writing-source.ts";
 
 const fixtureSlug = "writing-source-fixture";
 
@@ -40,19 +40,11 @@ describe("what the build reads off disk", () => {
     }
   });
 
-  it("excludes drafts, so a draft never reaches the prerenderer or the feed", () => {
-    withFixture(`${published}\ndraft: true`, () => {
-      expect(
-        readPublishedWriting(fixtureDirectory).map((post) => post.slug)
-      ).not.toContain(fixtureSlug);
-    });
-  });
-
-  it("includes the same file once it is no longer a draft", () => {
+  it("includes every Post on disk, because merging one is publishing it", () => {
     withFixture(published, () => {
-      expect(
-        readPublishedWriting(fixtureDirectory).map((post) => post.slug)
-      ).toContain(fixtureSlug);
+      expect(readWriting(fixtureDirectory).map((post) => post.slug)).toContain(
+        fixtureSlug
+      );
     });
   });
 
@@ -62,35 +54,32 @@ describe("what the build reads off disk", () => {
   // Posts, and it does that itself.
   it("includes a published Note, which is a page exactly like a Post", () => {
     withFixture(`${published}\nkind: note`, () => {
-      const entries = readPublishedWriting(fixtureDirectory);
+      const entries = readWriting(fixtureDirectory);
 
       expect(entries.map((entry) => entry.slug)).toContain(fixtureSlug);
       expect(entries.every((entry) => entry.kind === "note")).toBeTruthy();
     });
   });
 
-  // A draft has no page, so its prose has no reason to be in the bundle every
-  // published Post shares. This is what `vite.config.ts` asks before it decides
-  // whether to compile a body at all.
-  it("recognises a draft body by the file the build is about to compile", () => {
-    withFixture(`${published}\ndraft: true`, () => {
+  // A fixture has no production page, so its prose has no reason to be in the
+  // bundle every published Post shares. This is what `vite.config.ts` asks
+  // before it decides whether to compile a body at all. Only the directory
+  // decides, so these need no files on disk.
+  describe("which bodies the build empties", () => {
+    const fixtures = path.resolve("content", "fixtures");
+
+    it("recognises a fixture body by the directory it lives in", () => {
       expect(
-        isDraftBody(
-          path.join(fixtureDirectory, `${fixtureSlug}.mdx`),
-          fixtureDirectory
-        )
+        isFixtureBody(path.join(fixtures, "a-fixture.mdx?import"), fixtures)
       ).toBeTruthy();
     });
-  });
 
-  it.each([
-    ["a published Post", published, `${fixtureSlug}.mdx`],
-    ["a file that is not writing at all", published, "notes.txt"],
-  ])("does not call %s a draft body", (_case, frontmatter, fileName) => {
-    withFixture(frontmatter, () => {
-      expect(
-        isDraftBody(path.join(fixtureDirectory, fileName), fixtureDirectory)
-      ).toBeFalsy();
+    it.each([
+      ["a published Post", path.resolve("content", "writing", "a-post.mdx")],
+      ["a fixture's picture", path.join(fixtures, "a-fixture", "glyph.png")],
+      ["a file that is not writing at all", path.join(fixtures, "notes.txt")],
+    ])("does not call %s a fixture body", (_case, id) => {
+      expect(isFixtureBody(id, fixtures)).toBeFalsy();
     });
   });
 
@@ -104,7 +93,7 @@ describe("what the build reads off disk", () => {
     ["YAML that does not parse", `${published}\n  indented: oops`],
   ])("refuses %s, naming the file", (_case, frontmatter) => {
     withFixture(frontmatter, () => {
-      expect(() => readPublishedWriting(fixtureDirectory)).toThrow(fixtureSlug);
+      expect(() => readWriting(fixtureDirectory)).toThrow(fixtureSlug);
     });
   });
 });

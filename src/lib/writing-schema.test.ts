@@ -19,16 +19,23 @@ const valid = {
   title: "A real post",
 };
 
-/** Frontmatter as the collection sees it, so `kind` and `draft` are resolved. */
+/** Frontmatter as the collection sees it, so `kind` is resolved. */
 const entry = (overrides: Partial<z.input<typeof writingFrontmatterSchema>>) =>
   writingFrontmatterSchema.parse({ ...valid, ...overrides });
 
 describe("writing frontmatter", () => {
-  it("defaults kind and draft so most Posts declare neither", () => {
+  it("defaults kind so most Posts never declare it", () => {
     const parsed = writingFrontmatterSchema.parse(valid);
 
     expect(parsed.kind).toBe("post");
-    expect(parsed.draft).toBeFalsy();
+  });
+
+  // Merging a Post publishes it, so a leftover `draft: true` has to stop the
+  // build rather than be dropped and publish the Post anyway.
+  it("refuses a field it does not know, such as draft", () => {
+    expect(
+      writingFrontmatterSchema.safeParse({ ...valid, draft: true }).success
+    ).toBeFalsy();
   });
 
   it("tells the two kinds apart, which is the only thing kind is for", () => {

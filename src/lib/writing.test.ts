@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readPublishedWriting } from "./writing-source.ts";
+import { readWriting } from "./writing-source.ts";
 import {
   findWriting,
   notes,
@@ -20,8 +20,12 @@ describe("the writing index", () => {
     expect(posts.length).toBeGreaterThan(0);
   });
 
-  it("excludes drafts, which is what keeps them out of the build and the feed", () => {
-    expect(publishedWriting.some((entry) => entry.draft)).toBeFalsy();
+  it("never publishes a fixture", () => {
+    expect(
+      publishedWriting.some((entry) =>
+        entry.modulePath.startsWith("/content/fixtures/")
+      )
+    ).toBeFalsy();
   });
 
   // The two lists are the whole split: `posts` is the dated feed and `notes`
@@ -63,7 +67,7 @@ describe("the writing index", () => {
   // index; ADR-0001 keeps them separate so plugin order can never matter. This
   // is the assertion that keeps them saying the same thing.
   it("agrees with what the build reads off disk", () => {
-    expect(readPublishedWriting().map(identity)).toStrictEqual(
+    expect(readWriting().map(identity)).toStrictEqual(
       publishedWriting.map(identity)
     );
   });
