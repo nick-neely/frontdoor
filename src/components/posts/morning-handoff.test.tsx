@@ -28,4 +28,15 @@ describe(MorningHandoff, () => {
     expect(waiting.textContent).toContain("Drop a database column");
     expect(screen.queryByText("bump logging library")).toBeNull();
   });
+
+  it("announces the view the reader switched to", () => {
+    const { container } = render(<MorningHandoff />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Evidence and decisions" })
+    );
+
+    const region = container.querySelector("[aria-live='polite']");
+    expect(region?.textContent).toMatch(/^Showing the night sorted into/u);
+  });
 });

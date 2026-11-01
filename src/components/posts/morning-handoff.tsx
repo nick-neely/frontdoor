@@ -11,6 +11,13 @@ const views = {
 
 const order: View[] = ["log", "evidence"];
 
+/** What the live region says when the reader switches views. */
+const announcements = {
+  evidence:
+    "Showing the night sorted into finished work, decisions waiting for you, and a contradiction brought back to the team.",
+  log: "Showing the log of everything the agents did.",
+} as const satisfies Record<View, string>;
+
 /** A night of agent work, as a transcript would hand it back. */
 const log = [
   "read src/settings/labels.ts",
@@ -79,7 +86,8 @@ const evidence = [
  * merge-danger grid earlier in the Post.
  *
  * Both views are ordinary lists. The figure starts on the log, the switch
- * renders only after hydration, and the swap has no motion.
+ * renders only after hydration, and the swap has no motion. A polite live
+ * region names the view the reader switched to.
  */
 export function MorningHandoff() {
   const hydrated = useHydrated();
@@ -107,6 +115,13 @@ export function MorningHandoff() {
             </button>
           ))}
         </fieldset>
+      ) : null}
+      {/* The swapped content is long, so a short line names the new view
+          rather than the whole list being read out on every switch. */}
+      {hydrated ? (
+        <p aria-live="polite" className="sr-only">
+          {announcements[view]}
+        </p>
       ) : null}
       {view === "log" ? (
         <>
