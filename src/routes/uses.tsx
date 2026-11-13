@@ -126,10 +126,6 @@ const sections = [
         ),
       },
       {
-        item: "AGENTS.md",
-        note: "One shared base file, concatenated with a per-harness and a per-host overlay into whatever file each agent actually reads. Same rules across four machines and two harnesses.",
-      },
-      {
         item: "Skills",
         note: (
           <>
@@ -148,10 +144,6 @@ const sections = [
           </>
         ),
       },
-      {
-        item: "Hunk",
-        note: "Diff review with a CLI attached, so an agent and I can work through the same hunks in the same session.",
-      },
     ],
     title: "AI coding setup",
   },
@@ -162,6 +154,10 @@ const sections = [
         item: "Ghostty",
         logo: { src: "/logos/ghostty.svg" },
         note: "Terminal on the Mac: FiraCode Nerd Font Mono at 14, Dracula. On the WSL desktop the shell is the same one and the window around it is not mine to configure.",
+      },
+      {
+        item: "Rex",
+        note: "I am trialing Rex against Ghostty as a terminal. It can also replace Herdr, but I have not decided to replace either yet.",
       },
       {
         item: "Starship",
@@ -186,7 +182,7 @@ const sections = [
     rows: [
       {
         item: "Desktop",
-        note: "The primary workstation, and where I am most comfortable working. Ryzen 7 9800X3D, 64GB of DDR5-6000 Trident Z5 Neo, 4TB plus 2TB of NVMe, an RTX 3070, an NZXT H9 Elite with a Kraken Elite 360 on top of it. Still holding out for a 5090 at a price I am willing to pay.",
+        note: "The primary workstation, and where I am most comfortable working. Ryzen 7 9800X3D, 64GB of DDR5-6000 Trident Z5 Neo, 4TB plus 2TB of NVMe, an RTX 5070, an NZXT H9 Elite with a Kraken Elite 360 on top of it.",
       },
       {
         item: "MacBook",
