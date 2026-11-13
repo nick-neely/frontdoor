@@ -52,6 +52,8 @@ The repository's MIT license applies to the original TanStack Start Template cod
 
 - `herdr.svg` and `herdr-dark.svg` are the exception to the paragraph above: svgl does not carry Herdr, so the mark comes from the project itself, [`herdrdev/herdr`](https://github.com/herdrdev/herdr), at `website/assets/ram.svg`. It remains the trademark of its owner and is used on the same identifying terms as the marks above. Two modifications: the source file paints with `currentColor`, so each vendored copy names a colour directly, taking the pair Herdr's own plated `logo.svg` uses — `#303438` on light grounds, its `#d9dad8` plate colour on dark ones — and the `viewBox` is the `125 125 250 250` crop Herdr's own `favicon.svg` takes of the identical artwork, because the uncropped mark is illegible at the 18px this page renders it.
 
+- `rex.png` is the unmodified Rex application icon served as [`rex-icon.png`](https://www.superlogical.com/rex-icon.png) by [Superlogical](https://www.superlogical.com/), Rex's creator. It remains the trademark of its owner and is used only to identify the terminal on `/uses`, on the same terms as the tool marks above.
+
 - The three employer marks in the timeline on `/work` are not tool logos and did not come from svgl. Each one identifies the employer whose Role it sits beside and implies no affiliation with or endorsement by its owner beyond the employment that row describes.
 
   - Lean TECHniques' compact LT mark is drawn inline in `src/components/lean-techniques-mark.tsx`, traced from the company's official wordmark and painted in `currentColor` so it follows the surrounding text in both themes. It also appears in the home page's Now Line. It remains the trademark of Lean TECHniques.
