@@ -75,11 +75,6 @@ const sections = [
         note: "Mainly Zed lately, and mainly for reading: what changed, the diff beside it, project-wide search. The typing is done by an agent, so the editor is where I navigate a codebase rather than where I compose it.",
       },
       {
-        item: "Cursor",
-        logo: { dark: "/logos/cursor-dark.svg", src: "/logos/cursor.svg" },
-        note: "The other main editor, and the one I still switch back to. Zed has had most of the hours recently, but the job either one is doing is identical.",
-      },
-      {
         item: "Neovim",
         logo: { src: "/logos/neovim.svg" },
         note: "Configured in Lua and symlinked out of the Nix store on purpose, so a keymap can change without rebuilding anything. It is a small share of the day now, and saying otherwise would be nostalgia.",
@@ -98,9 +93,10 @@ const sections = [
           <>
             Where I do most development work and orchestrate agent sessions. A
             session started at the desktop reopens on the MacBook or a phone
-            because it lives on the VM below. <ModelName>GPT-6 Astra</ModelName>{" "}
-            at medium reasoning is my main driver. I still like{" "}
-            <ModelName>GPT-6 Luna</ModelName> at max reasoning.
+            because it lives on the VM below. <ModelName>Opus 5.5</ModelName> at
+            high reasoning is my main driver. I use{" "}
+            <ModelName>GPT-6.1 Sol</ModelName> for cross-model corroboration and
+            analysis.
           </>
         ),
       },
@@ -117,11 +113,8 @@ const sections = [
         },
         note: (
           <>
-            I keep the plan for its models but rarely use the interface or CLI
-            now. I used <ModelName>Fable 5.1</ModelName> almost exclusively;{" "}
-            <ModelName>Opus 5.5</ModelName> has become my favorite model. It
-            feels more capable and efficient to me, with{" "}
-            <ModelName>GPT-6 Astra</ModelName> close behind.
+            I rarely use the interface or CLI now, but{" "}
+            <ModelName>Opus 5.5</ModelName> has been my favorite model.
           </>
         ),
       },
@@ -157,6 +150,7 @@ const sections = [
       },
       {
         item: "Rex",
+        logo: { src: "/logos/rex.png" },
         note: "I am trialing Rex against Ghostty as a terminal. It can also replace Herdr, but I have not decided to replace either yet.",
       },
       {
@@ -182,7 +176,7 @@ const sections = [
     rows: [
       {
         item: "Desktop",
-        note: "The primary workstation, and where I am most comfortable working. Ryzen 7 9800X3D, 64GB of DDR5-6000 Trident Z5 Neo, 4TB plus 2TB of NVMe, an RTX 5070, an NZXT H9 Elite with a Kraken Elite 360 on top of it.",
+        note: "The primary workstation, and where I am most comfortable working. Ryzen 7 9800X3D, 64GB of DDR5-6000 Trident Z5 Neo, 4TB plus 2TB of NVMe, an RTX 5070 Ti, an NZXT H9 Elite with a Kraken Elite 360 on top of it.",
       },
       {
         item: "MacBook",
