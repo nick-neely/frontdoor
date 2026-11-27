@@ -133,7 +133,15 @@ const sections = [
               nick-neely/agent-skills
             </a>
             , plain Markdown and the scripts it calls, so the same skill works
-            in every harness above.
+            in every harness above. The catalog and install commands are at{" "}
+            <a
+              className="link-underline text-foreground"
+              href="https://skills.nickneely.dev"
+              rel="noreferrer"
+            >
+              skills.nickneely.dev
+            </a>
+            .
           </>
         ),
       },
